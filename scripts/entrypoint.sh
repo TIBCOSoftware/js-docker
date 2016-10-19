@@ -64,13 +64,21 @@ _EOL_
 }
 
 run_jasperserver() {
-  # If jasperserver-pro webapp is not present, do deploy-webapp-pro.
+  # If jasperserver-pro webapp is not present or if only WEB-INF/logs present
+  # in tomcat webapps directory do deploy-webapp-pro.
   # Starts upon webapp deployment as database may still be initializing.
   # This speeds up overall startup because deploy-webapp-pro does
   # not depend on database.
-  if [ ! "$(ls -A $CATALINA_HOME/webapps/jasperserver-pro)" ]; then
+  if [[ -d "$CATALINA_HOME/webapps/jasperserver-pro" ]]; then
+    if [[ `ls -1 $CATALINA_HOME/webapps/jasperserver-pro| wc -l` -le 1 \
+      || `ls -1 -v $CATALINA_HOME/webapps/jasperserver-pro| head -n 1` \
+      =~ "WEB-INF.*" ]]; then
+        setup_jasperserver deploy-webapp-pro
+    fi
+  else
     setup_jasperserver deploy-webapp-pro
   fi
+
     
   # Wait for PostgreSQL.
   retry_postgresql
