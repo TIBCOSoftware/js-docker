@@ -1,12 +1,10 @@
 # TIBCO JasperReports Server Docker
 
--    TBD: links to Dockerfile on github
-
 # Table of contents
 
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
-  1. [Downloading JasperReports Server](
+  1. [Downloading JasperReports Server WAR](
 #downloading-jasperreports-server-war)
   1. [Cloning the repository](#cloning-the-repository)
   1. [Repository structure](#repository-structure)
@@ -29,6 +27,14 @@
 1. [Updating Tomcat](#updating-tomcat)
 1. [Customizing JasperReports Server at runtime](
 #customizing-jasperreports-server-at-runtime)
+  1. [Applying customizations](#applying-customizations)
+  2. [Applying customizations manually](
+#applying-customizations-manually)
+  3. [Applying customizations with Docker Compose](
+#applying-customizations-with-docker-compose)
+  4. [Restarting JasperReports Server](
+#restarting-jasperreports-server)
+1. [Logging in](#logging-in)
 1. [Troubleshooting](#troubleshooting)
   1. [Unable to download phantomjs](
 #unable-to-download-phantomjs)
@@ -42,13 +48,13 @@
 
 # Introduction
 
-This distribution includes a `Dockerfile` and supporting files for
+This distribution includes a sample `Dockerfile` and 
+supporting files for
 building, configuring, and running TIBCO JasperReports Server
-in a docker container.
-This simple reference configuration  is provided as a starting point
-for your own implementation and is not intended for production use.
-This configuration is supported by the TIBCO Jaspersoft Community.
-TIBCO Jaspersoft Technical Support and Engineering do not support it.
+in a Docker container.  This sample can be used as is 
+or modified to meet the needs of your environment. 
+The distribution can be downloaded from 
+[https://github.com/TIBCOSoftware/JS-Docker](#https://github.com/TIBCOSoftware/JS-Docker).
 
 This configuration has been certified using
 the PostgreSQL 9.4 database with JasperReports Server 6.3.0.
@@ -211,7 +217,7 @@ the PostgreSQL image from Docker Hub.
 for your build. This image will be used to create containers.
 - `some-jasperserver` is the name of the new JasperReports Server container.
 -  `db_username` and `db_password` are the user credentials for accessing
-the PostgreSQL server.
+the PostgreSQL server. Database settings should be modified for your setup.
 
 # Additional configurations
 
@@ -274,6 +280,8 @@ $ docker volume create --name some-jasperserver-data
 $ docker run --name some-jasperserver \
 -v some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
 jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e \
+DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 Where:
 
@@ -281,6 +289,7 @@ Where:
 - `some-jasperserver` is the name of the new JasperReports Server container.
 - `jasperserver-pro:6.3.0`  is the image name and version tag
 for your build. This image will be used to create containers.
+- Database settings should be modified for your setup.
 
 Now you can access the JasperReports Server web application
 locally. Run `docker volume inspect jasperserver-data` to determine the storage
@@ -313,7 +322,9 @@ $ sudo cp jasperserver.license \
 /var/lib/docker/volumes/some-jasperserver-license/_data
 $ docker run --name some-jasperserver \
 -v some-jasperserver-license:/usr/local/share/jasperreports-pro/license \
--d jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
+-e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
+
 ```
 Where:
 
@@ -324,6 +335,7 @@ local path to volume.
 - `some-jasperserver` is the name of the new JasperReports Server container
 - `jasperserver-pro:6.3.0`  is the image name and version tag
 for your build. This image will be used to create containers.
+- Database settings should be modified for your setup.
 
 See `Dockerfile` and `scripts/entrypoint.sh` for details.
 
@@ -331,11 +343,9 @@ On Windows and Macintosh, you can mount a directory
 with the license resource. 
 See the Docker documentation for more information. 
 See also 
-[Paths to data volumes on Mac and Windows](
-#paths-to-data-volumes-on-mac-and-windows).
+[Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-mac-and-windows).
 For additional information about paths on Mac, see
- [`docker volume inspect` returns incorrect paths on MacOS X](
-#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
+ [`docker volume inspect` returns incorrect paths on MacOS X](#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
 
 
 To update your license without data volumes on an existing container:
@@ -351,6 +361,7 @@ Where:
 
 Note that you need to stop the JasperReports Server container
 prior to license update and restart it after.
+
 # Logging
 
 There are multiple options for log access, aggregation, and management
@@ -376,7 +387,8 @@ for log storage:
 $ docker volume create --name some-jasperserver-log
 $ docker run --name some-jasperserver -v \
 some-jasperserver-log:/usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/logs \
--d jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
+-e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 Where:
 
@@ -384,6 +396,7 @@ Where:
 - `some-jasperserver` is the name of the new JasperReports Server container
 - `jasperserver-pro:6.3.0`  is the image name and version tag.
 for your build. This image will be used to create containers.
+- Database settings should be modified for your setup.
 
 Note that docker containers do not have separate logs. All information is
 logged via the driver or application. In the case of the JasperReports
@@ -415,6 +428,8 @@ $ docker stop some-jasperserver
 $ docker run --name some-jasperserver-2 -v \
 some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
 -d jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
+-e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 Where:
 
@@ -424,6 +439,7 @@ container.
 - `some-jasperserver-data` is the name of a data volume.
 - `jasperserver-pro:6.3.0` is an image name and version tag that is used
 as a base for the new container.
+- Database settings should be modified for your setup.
 
 # Customizing JasperReports Server at runtime
 
@@ -432,6 +448,7 @@ via the `/usr/local/share/jasperreports-pro/customization` directory in the
 container. All zip files in this directory are applied to
 `/usr/local/tomcat/webapps/jasperserver-pro` in sorted order (natural sort).
 
+## Applying customizations
 
 For example:
 ```console
@@ -441,7 +458,8 @@ $ sudo cp custom.zip \
 $ docker run --name some-jasperserver -v \
 some-jasperserver-customization:\
 /usr/local/share/jasperreports-pro/customization \
--d jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
+-e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 Where:
 
@@ -457,6 +475,7 @@ to get the local path to the volume for your system.
 container.
 - `jasperserver-pro:6.3.0` is an image name and version tag that is used
 as a base for the new container.
+- Database settings should be modified for your setup.
 
 See `scripts/entrypoint.sh` for implementation details and
 `docker-compose.yml` for a sample setup of a customization volume via Compose.
@@ -465,11 +484,18 @@ This directory can be also mounted as a [Data Volume](
 https://docs.docker.com/engine/tutorials/dockervolumes/).
 You must mount the directory on Windows and Macintosh. 
 See also 
-[Paths to data volumes on Mac and Windows](
-#paths-to-data-volumes-on-Mac-and-Windows).
+[Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-Mac-and-Windows).
 For additional information about paths on Mac, see
- [`docker volume inspect` returns incorrect paths on MacOS X](
-#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
+ [`docker volume inspect` returns incorrect paths on MacOS X](#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
+
+## Applying customizations with Docker Compose
+
+To use customizations with `docker-compose`, run `docker volume inspect` 
+to determine the path of the volume you want and add the license. To reference an 
+existing volume, modify the YAML file appropriately.
+
+
+## Applying customizations manually
 
 You can also apply customizations manually, either via the `docker cp` command
 or by modifying files in the [web application](#web-application) data volume.
@@ -484,9 +510,37 @@ Where:
 - `some-jasperserver` is the name of the JasperReports Server
 container.
 
+## Restarting the container
+
 Note that independent of method, you need to restart the
 JasperReports Server container (`docker restart some-jasperserver`)
 if customizations are applied to a running container.
+
+Logging in
+
+To log into JasperReports Server on any operating system:
+
+1. Start JasperReports Server.
+2. Open a supported browser: Firefox, Internet Explorer, Chrome, or Safari.
+3. Log into JasperReports Server by entering the startup URL in your browser’s
+address field. 
+The URL depends upon your installation. The default configuration uses:
+
+```
+http://localhost:8080/jasperserver-pro
+```
+
+Where:
+
+- localhost is the name or IP address of the computer hosting JasperReports Server.
+- 8080 is the port number for the Apache Tomcat application server. 
+If you used a different port when installing your application server, 
+specify its port number instead of 8080.
+
+JasperReports Server ships with the following default credentials:
+
+- superuser/superuser - System-wide administrator
+- jasperadmin/jasperadmin - Administrator for the default organization
 
 # Troubleshooting
 ## Unable to download phantomjs
@@ -509,7 +563,7 @@ you do not need to re-download phantomjs on a subsequent build.
 The default Docker network may conflict with your VPN space.
 Change to a different CIDR for the Docker network using `--bip`.
 See the [Docker networking documentation](
-#https://docs.docker.com/v1.8/articles/networking/#docker0)
+https://docs.docker.com/v1.8/articles/networking/#docker0)
 for more information; for Mac, also see
 [Docker issue 25064](#https://github.com/docker/docker/issues/25064).
 
@@ -559,4 +613,4 @@ For additional questions regarding docker and docker-compose usage see:
 # Copyright
 Copyright &copy; 2005 - 2016. TIBCO Software Inc. All Rights Reserved.
 
-Document version number: 0916-JSP64-01
+Document version number: 1016-JSP64-01
