@@ -94,10 +94,11 @@ $ cp ~/Downloads/jasperreports-server-6.3.0-bin.zip resources/
 
 ## Cloning the repository
 
-Clone the JasperReports Server Docker github repository at TBD:
+Clone the JasperReports Server Docker github repository at 
+[https://github.com/TIBCOSoftware/JS-Docker](#https://github.com/TIBCOSoftware/JS-Docker):
 
 ```console
-$ git clone ...
+$ git clone https://github.com/TIBCOSoftware/JS-Docker
 $ cd jrs-docker
 ```
 
