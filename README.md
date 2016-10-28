@@ -28,11 +28,11 @@
 1. [Customizing JasperReports Server at runtime](
 #customizing-jasperreports-server-at-runtime)
   1. [Applying customizations](#applying-customizations)
-  2. [Applying customizations manually](
+  1. [Applying customizations manually](
 #applying-customizations-manually)
-  3. [Applying customizations with Docker Compose](
+  1. [Applying customizations with Docker Compose](
 #applying-customizations-with-docker-compose)
-  4. [Restarting JasperReports Server](
+  1. [Restarting JasperReports Server](
 #restarting-jasperreports-server)
 1. [Logging in](#logging-in)
 1. [Troubleshooting](#troubleshooting)
@@ -54,7 +54,7 @@ building, configuring, and running TIBCO JasperReports Server
 in a Docker container.  This sample can be used as is 
 or modified to meet the needs of your environment. 
 The distribution can be downloaded from 
-[https://github.com/TIBCOSoftware/JS-Docker](#https://github.com/TIBCOSoftware/JS-Docker).
+[https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker).
 
 This configuration has been certified using
 the PostgreSQL 9.4 database with JasperReports Server 6.3.0.
@@ -95,11 +95,11 @@ $ cp ~/Downloads/jasperreports-server-6.3.0-bin.zip resources/
 ## Cloning the repository
 
 Clone the JasperReports Server Docker github repository at 
-[https://github.com/TIBCOSoftware/JS-Docker](#https://github.com/TIBCOSoftware/JS-Docker):
+[https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker):
 
 ```console
-$ git clone https://github.com/TIBCOSoftware/JS-Docker
-$ cd jrs-docker
+$ git clone https://github.com/TIBCOSoftware/js-docker
+$ cd js-docker
 ```
 
 ## Repository structure
@@ -614,4 +614,4 @@ For additional questions regarding docker and docker-compose usage see:
 # Copyright
 Copyright &copy; 2005 - 2016. TIBCO Software Inc. All Rights Reserved.
 
-Document version number: 1016-JSP64-01
+Document version number: 1016-JSP63-01
