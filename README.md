@@ -612,8 +612,10 @@ For additional questions regarding docker and docker-compose usage see:
 - [docker-compose](https://docs.docker.com/compose/overview/) documentation
 
 # Copyright
-Copyright &copy; 2005 - 2016. TIBCO Software Inc.
+Copyright &copy; 2016. TIBCO Software Inc.
 You may not use this file except in compliance with the license
 terms contained in the TIBCO License.txt file provided with this file.
+
 version: 6.3.0-v1.0.2
+
 Document version number: 1016-JSP64-01
