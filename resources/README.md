@@ -8,7 +8,7 @@ the name, you must modify your `Dockerfile` to point to the new name.
 
 # Copyright
 Copyright &copy; 2016. TIBCO Software Inc.
-You may not use this file except in compliance with the license
-terms contained in the TIBCO License.txt file provided with this file.
+This file is subject to the license terms contained
+ in the license file that is distributed with this file.
 
 Software version: 6.3.0-v1.0.2
