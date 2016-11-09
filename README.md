@@ -1,4 +1,4 @@
-# TIBCO<sup>&reg;</sup>  JasperReports Server for Docker
+# TIBCO  JasperReports&reg; Server for Docker
 
 # Table of contents
 
@@ -50,8 +50,8 @@
 
 This distribution includes a sample `Dockerfile` and 
 supporting files for
-building, configuring, and running 
-TIBCO<sup>&reg;</sup>  JasperReports-Server
+building, configuring, and running
+TIBCO JasperReports&reg; Server
 in a Docker container.  This sample can be used as is 
 or modified to meet the needs of your environment. 
 The distribution can be downloaded from 
@@ -76,7 +76,7 @@ higher
 - (*recommended*) [docker-compose](https://docs.docker.com/compose/install)
 version 1.12 or higher
 - [git](https://git-scm.com/downloads)
-- (*optional*) TIBCO<sup>&reg;</sup>  Jaspersoft commercial license. 
+- (*optional*) TIBCO  Jaspersoft&reg; commercial license.
 - Contact your sales
 representative for information about licensing. If you do not specify a
 TIBCO Jaspersoft license, the evaluation license is used.
@@ -619,13 +619,12 @@ This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
 
-Software Version: 6.3.0-v1.0.2 &nbsp;
-Document version number: 1016-JSP64-01
+Software Version: 6.3.0-v1.0.3 &nbsp;
+Document version number: 1016-JSP63-01
 
-TIBCO, Jaspersoft, and JasperReports are trademarks or 
-registered trademarks of TIBCO Software Inc. 
+TIBCO, Jaspersoft, and JasperReports are trademarks or
+registered trademarks of TIBCO Software Inc.
 in the United States and/or other countries.
 
-Docker is a trademark or registered trademark of Docker, Inc. 
-in the United States and/or other countries. 
-
+Docker is a trademark or registered trademark of Docker, Inc.
+in the United States and/or other countries.
