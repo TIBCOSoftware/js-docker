@@ -1,0 +1,48 @@
+# Copyright (c) 2016. TIBCO Software Inc.
+# This file is subject to the license terms contained
+# in the license file that is distributed with this file.
+# version: 6.3.0-v1.0.4
+
+version: '2'
+
+# network used by both JasperReports Server and PostgreSQL containers
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: "192.168.5.1/24"
+
+services:
+  jasperserver:
+    build: .
+    # expose port 8080 and bind it to 8080 on host
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    # set depends on js_database service
+    depends_on:
+      - js_database
+    # point to env file with key=value entries 
+    env_file: .env
+    # setting following values here will override settings from env_file
+    environment:
+      - DB_HOST=js_database
+    volumes:
+      - jrs_webapp:/usr/local/tomcat/webapps/jasperserver-pro
+      - jrs_license:/usr/local/share/jasperreports-pro/license 
+      - jrs_customization:/usr/local/share/jasperreports-pro/customization
+      # for Mac OS you may want to define local path for volume mounts. 
+      # Note that defining path for a named volume is not supported 
+      # by Compose. For example:
+      # - /some-local-path:/usr/local/tomcat/webapps/jasperserver-pro
+      # - ~/jasperreports-pro/license:/usr/local/share/jasperreports-pro/license
+      # - /tmp/customization:/usr/local/share/jasperreports-pro/customization
+  js_database:
+    image: postgres:9.4
+    env_file: .env
+
+volumes:
+  jrs_webapp:
+    driver: local
+  jrs_license:
+  jrs_customization:
