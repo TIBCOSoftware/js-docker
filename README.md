@@ -60,6 +60,9 @@ The distribution can be downloaded from
 This configuration has been certified using
 the PostgreSQL 9.4 database with JasperReports Server 6.3.0.
 
+Note, this sample is provided for informational purposes only. 
+TIBCO Jaspersoft will not support any modifications to the sample.
+
 Basic knowledge of Docker and the underlying infrastructure is required.
 For more information about Docker see the
 [official documentation for Docker](https://docs.docker.com/).
