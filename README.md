@@ -60,9 +60,6 @@ The distribution can be downloaded from
 This configuration has been certified using
 the PostgreSQL 9.4 database with JasperReports Server 6.3.0.
 
-Note, this sample is provided for informational purposes only. 
-TIBCO Jaspersoft will not support any modifications to the sample.
-
 Basic knowledge of Docker and the underlying infrastructure is required.
 For more information about Docker see the
 [official documentation for Docker](https://docs.docker.com/).
@@ -285,9 +282,8 @@ generation time:
 $ docker volume create --name some-jasperserver-data
 $ docker run --name some-jasperserver \
 -v some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
-jasperserver-pro:6.3.0
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e \
-DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
+-e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 Where:
 
@@ -306,7 +302,7 @@ volumes. Instead, modify `docker run` like this:
 ```console
 $ docker run --name some-jasperserver -v \
 /some-path/some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
-jasperserver-pro:6.3.0
+-d jasperserver-pro:6.3.0
 ```
 Where:
 - `/some-path/some-jasperserver-data` is a local path that will be mounted.
@@ -433,7 +429,6 @@ the default web application:
 $ docker stop some-jasperserver
 $ docker run --name some-jasperserver-2 -v \
 some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
--d jasperserver-pro:6.3.0
 -p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
 -e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
