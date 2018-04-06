@@ -2,7 +2,7 @@
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 # version: 6.3.0-v1.0.4
-FROM tomcat:8.0-jre8
+FROM tomcat:9.0-jre8
 
 # Copy jasperreports-server-<ver> zip file from resources dir.
 # Build will fail if file not present.
