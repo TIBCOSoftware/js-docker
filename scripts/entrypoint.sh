@@ -120,7 +120,7 @@ run_jasperserver() {
   config_customization
 
   # Start tomcat.
-  catalina.sh run
+  exec catalina.sh run
 }
 
 init_database() {
