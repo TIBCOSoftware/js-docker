@@ -1,12 +1,21 @@
-# Copyright (c) 2016. TIBCO Software Inc.
+# Copyright (c) 2019. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
-# version: 6.3.0-v1.0.4
-FROM tomcat:8.0-jre8
+FROM tomcat:8.5-jre8
 
-# Copy jasperreports-server-<ver> zip file from resources dir.
-# Build will fail if file not present.
-COPY resources/jasperreports-server*zip /tmp/jasperserver.zip
+# This Dockerfile requires the JasperReports Server WAR file installer file 
+# in the resources directory below the Dockerfile.
+
+# COPY the JasperReports Server WAR file installer into the image 
+
+# JasperReports Server WAR file installer names for version 6.3 and prior
+# were named jasperreports-server-<version number>-bin.zip
+# COPY resources/jasperreports-server*zip /tmp/jasperserver.zip
+
+# JasperReports Server WAR file installer names for version 6.4 and beyond
+# are named TIB_js-jrs_<version number>_bin.zip
+
+COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 
 RUN apt-get update && apt-get install -y postgresql-client unzip xmlstarlet && \
     rm -rf /var/lib/apt/lists/* && \
@@ -76,6 +85,7 @@ ENV CATALINA_OPTS="${JAVA_OPTIONS:--Xmx2g -XX:+UseParNewGC \
 EXPOSE ${HTTP_PORT:-8080} ${HTTPS_PORT:-8443}
 
 COPY scripts/entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Default action executed by entrypoint script.

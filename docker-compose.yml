@@ -1,7 +1,6 @@
-# Copyright (c) 2016. TIBCO Software Inc.
+# Copyright (c) 2019. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
-# version: 6.3.0-v1.0.4
 
 version: '2'
 
@@ -14,6 +13,8 @@ networks:
 
 services:
   jasperserver:
+    #image: jasperserver-pro:7.2.0
+    
     build: .
     # expose port 8080 and bind it to 8080 on host
     ports:
@@ -38,7 +39,7 @@ services:
       # - ~/jasperreports-pro/license:/usr/local/share/jasperreports-pro/license
       # - /tmp/customization:/usr/local/share/jasperreports-pro/customization
   js_database:
-    image: postgres:9.4
+    image: postgres:9
     env_file: .env
 
 volumes:
