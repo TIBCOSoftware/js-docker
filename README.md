@@ -280,8 +280,8 @@ https://docs.docker.com/engine/extend/plugins/). See the Docker
 important-tips-on-using-shared-volumes) for more information.
 
 ### Paths to data volumes on Mac and Windows
-On Mac and Windows, you must mount a volume as a directory and reference the
-local path. For example, to access a license on a local directory on Mac:
+You can mount a volume to a directory on your local machine.
+For example, to access a license on a local directory on Mac:
 
 ```console
 docker run --name new-jrs
@@ -290,17 +290,17 @@ docker run --name new-jrs
 DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
 ```
 
-Windows paths need some help with a Docker setting:
-
-```console
-COMPOSE_CONVERT_WINDOWS_PATHS=1
-```
-
-Also volumes in Windows need to be under the logged in user's User area ie.
+Volumes in Docker for Windows need to be under the logged in user's User area ie.
 
 ```console
 volumes:
 	- /C/Users/<user>/Documents/License:/usr/local/share/jasperserver-pro/license 
+```
+
+Windows paths need some help with a Docker Compose environment setting:
+
+```console
+COMPOSE_CONVERT_WINDOWS_PATHS=1
 ```
 
 ## Web application
