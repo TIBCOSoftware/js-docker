@@ -4,10 +4,10 @@
 
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
-  1. [Downloading JasperReports Server WAR](
-#downloading-jasperreports-server-war)
   1. [Cloning the repository](#cloning-the-repository)
   1. [Repository structure](#repository-structure)
+  1. [Downloading JasperReports Server WAR](
+#downloading-jasperreports-server-war)
 1. [Build-time environment variables](#build-time-environment-variables)
 1. [Build and run](#build-and-run)
   1. [Building and running with docker-compose (recommended)](#compose)
@@ -58,7 +58,7 @@ The distribution can be downloaded from
 [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker).
 
 This configuration has been certified using
-the PostgreSQL 9.4 database with JasperReports Server 6.3.0.
+the PostgreSQL 9 database with JasperReports Server 6.4+.
 
 Basic knowledge of Docker and the underlying infrastructure is required.
 For more information about Docker see the
@@ -71,32 +71,32 @@ For more information about JasperReports Server, see the
 
 The following software is required or recommended:
 
-- [docker-engine](https://docs.docker.com/engine/installation) version 1.12 or
-higher
-- (*recommended*) [docker-compose](https://docs.docker.com/compose/install)
-version 1.12 or higher
-- [git](https://git-scm.com/downloads)
-- (*optional*) TIBCO  Jaspersoft&reg; commercial license.
+- [docker-engine](https://docs.docker.com/engine/installation) version 1.12 or higher
+- (*recommended*):
+  - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
+  - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
+- (*recommended*) [docker-compose](https://docs.docker.com/compose/install) version 1.12 or higher
+- (*optional*)[git](https://git-scm.com/downloads)
+- (*optional*) TIBCO Jaspersoft&reg; commercial license.
 - Contact your sales
 representative for information about licensing. If you do not specify a
 TIBCO Jaspersoft license, the evaluation license is used.
-- (*optional*) Preconfigured PostgreSQL 9.4 database. If you do not
+- (*optional*) Preconfigured PostgreSQL 9 database. If you do not
 currently have a PostgreSQL instance, you can create a PostgreSQL container
 at build time.
 
-## Downloading JasperReports Server WAR
+## Get the Dockerfile
 
-Download the JasperReports Server commercial zip archive from the Support
-Portal and copy it to the `resources` directory of your archive. For example,
-if you have downloaded the archive to your ~/Downloads directory:
+Download the js-docker repository as a zip or clone the repository from Github.
 
-```console
-$ cp ~/Downloads/jasperreports-server-6.3.0-bin.zip resources/
-```
+To download a zip:
+- Go to [https://github.com/TIBCOSoftware/js-docker](https://github.com/TIBCOSoftware/js-docker)
+- Select Download ZIP on the right hand side of the screen.
+![Download ZIP or Clone](js-docker-clone-download.png)
 
-## Cloning the repository
-
-Clone the JasperReports Server Docker github repository at 
+Select Open in Desktop if you have a Git Desktop installed. This will clone the repository for you.
+ 
+If you have the Git command line installed, you can clone the JasperReports Server Docker github repository at 
 [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker):
 
 ```console
@@ -104,9 +104,9 @@ $ git clone https://github.com/TIBCOSoftware/js-docker
 $ cd js-docker
 ```
 
-## Repository structure
+## Installed Repository structure
 
-When you clone the github repository, the following files are placed
+After getting the js-docker github repository, the following files are placed
 on your machine:
 
 - `Dockerfile` - container build commands
@@ -120,6 +120,19 @@ or other files you want to copy to the container
 - `scripts\`
   - `entrypoint.sh` - sample runtime configuration for starting and running
 JasperReports Server from the shell
+
+
+## Downloading JasperReports Server WAR
+
+Download the JasperReports Server WAR File installer zip archive from the TIBCO eDelivery
+or build it from a bundled installer [Jaspersoft Community Wiki article](https://community.jaspersoft.com/wiki/creating-jasperreports-server-war-file-installer-bundled-installer)
+
+Copy the installer zip file to the `resources` directory below where the Dockerfile is.
+For example, if you have downloaded the zip to your ~/Downloads directory:
+
+```console
+$ cp ~/Downloads/TIB_js-jrs_7.2.0_bin.zip resources/
+```
 
 # Build-time environment variables
 At build time, JasperReports Server uses the following environment variables.
@@ -146,8 +159,9 @@ Note that `JRS_HTTP_ONLY` must be set directly in the `Dockerfile`,
 because it requires additional configuration.
 
 [Compose](https://docs.docker.com/compose) requires
-the following additional variables to set up the generated PostgreSQL
-container.
+the following additional variables to set up if you are going to run the JasperReports Server
+PostgreSQL database in a Docker container.
+
 If these variables are not set, PostgreSQL will be generated with no access
 restrictions.
 
@@ -170,24 +184,24 @@ the root directory of your repository:
 
 ```console
 $ docker-compose build
-$ docker-compose up
+$ docker-compose up -d
 ```
 
 ## Building and running with a pre-existing PostgreSQL instance
 
 To build and run a JasperReports Server container with a pre-existing
-PostgreSQL 9.4 instance, execute these commands in your repository:
+PostgreSQL 9 instance, execute these commands in your repository:
 
 ```console
-$ docker build -t jasperserver-pro:6.3.0 .
+$ docker build -t jasperserver-pro:X.X.X .
 $ docker run --name some-jasperserver -p 8080:8080 \
 -e DB_HOST=some-external-postgres -e DB_USER=username \
--e DB_PASSWORD=password -d jasperserver-pro:6.3.0
+-e DB_PASSWORD=password -d jasperserver-pro:X.X.X
 ```
 
 Where:
 
-- `jasperserver-pro:6.3.0` is the image name and version tag
+- `jasperserver-pro:X.X.X` is the image name and version tag
 for your build. This image will be used to create containers.
 - `some-jasperserver` is the name of the new JasperReports Server container.
 - `some-external-postgres` is the hostname, fully qualified domain name
@@ -214,9 +228,9 @@ Where:
 - `some-postgres` is the name of your new PostgreSQL container.
 - `username` and `password` are the user credentials to use for the
 new PostgreSQL container and JasperReports Server container.
-- `postgres:9.4` [PostgreSQL 9.4](https://hub.docker.com/_/postgres/) is
+- `postgres:9` [PostgreSQL 9](https://hub.docker.com/_/postgres/) is
 the PostgreSQL image from Docker Hub.
-- `jasperserver-pro:6.3.0` is the image name and version tag
+- `jasperserver-pro:X.X.X` is the image name and version tag
 for your build. This image will be used to create containers.
 - `some-jasperserver` is the name of the new JasperReports Server container.
 -  `db_username` and `db_password` are the user credentials for accessing
