@@ -4,47 +4,48 @@
 
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
-  1. [Cloning the repository](#cloning-the-repository)
-  1. [Repository structure](#repository-structure)
-  1. [Downloading JasperReports Server WAR](
+1. [Installation](#installation)
+   1. [Cloning the repository](#cloning-the-repository)
+   1. [Repository structure](#repository-structure)
+   1. [Downloading JasperReports Server WAR](
 #downloading-jasperreports-server-war)
 1. [Build-time environment variables](#build-time-environment-variables)
 1. [Build and run](#build-and-run)
-  1. [Building and running with docker-compose (recommended)](#compose)
-  1. [Building and running with a pre-existing PostgreSQL instance](
+   1. [Building and running with docker-compose (recommended)](#compose)
+   1. [Building and running with a pre-existing PostgreSQL instance](
 #building-and-running-with-a-pre-existing-postgresql-instance)
-  1. [Creating a new PostgreSQL instance during build](
+   1. [Creating a new PostgreSQL instance during build](
 #creating-a-new-postgresql-instance-during-build)
-1. [Additional configurations](#additional-configurations)
-  1. [Runtime variables](#runtime-variables)
-  1. [SSL configuration](#ssl-configuration)
-  1. [Using data volumes](#using-data-volumes)
-    1. [Paths to data volumes on Mac and Windows](
+1. [Additional configuration](#additional-configurations)
+   1. [Runtime variables](#runtime-variables)
+   1. [SSL configuration](#ssl-configuration)
+   1. [Using data volumes](#using-data-volumes)
+   1. [Paths to data volumes on Mac and Windows](
 #paths-to-data-volumes-on-mac-and-windows)
-  1. [Web application](#web-application)
-  1. [License](#license)
-  1. [Logging](#logging)
+   1. [Web application](#web-application)
+   1. [License](#license)
+   1. [Logging](#logging)
 1. [Updating Tomcat](#updating-tomcat)
 1. [Customizing JasperReports Server at runtime](
 #customizing-jasperreports-server-at-runtime)
-  1. [Applying customizations](#applying-customizations)
-  1. [Applying customizations manually](
+   1. [Applying customizations](#applying-customizations)
+   1. [Applying customizations manually](
 #applying-customizations-manually)
-  1. [Applying customizations with Docker Compose](
+   1. [Applying customizations with Docker Compose](
 #applying-customizations-with-docker-compose)
-  1. [Restarting JasperReports Server](
+   1. [Restarting JasperReports Server](
 #restarting-jasperreports-server)
 1. [Logging in](#logging-in)
 1. [Troubleshooting](#troubleshooting)
-  1. [Unable to download phantomjs](
+   1. [Unable to download phantomjs](
 #unable-to-download-phantomjs)
-  1. ["No route to host" error on a VPN/network with mask](
+   1. ["No route to host" error on a VPN/network with mask](
 #-no-route-to-host-error-on-a-vpn-or-network-with-mask)
-  1. [`docker volume inspect` returns incorrect paths on MacOS X](
+   1. [`docker volume inspect` returns incorrect paths on MacOS X](
 #-docker-volume-inspect-returns-incorrect-paths-on-macos-x)
-  1. [`docker-compose up` fails with permissions error](
+   1. [`docker-compose up` fails with permissions error](
 #-docker-compose-up-fails-with-permissions-error)
-  1. [Docker documentation](#docker-documentation)
+   1. [Docker documentation](#docker-documentation)
 
 # Introduction
 
@@ -76,7 +77,7 @@ The following software is required or recommended:
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
 - (*recommended*) [docker-compose](https://docs.docker.com/compose/install) version 1.12 or higher
-- (*optional*)[git](https://git-scm.com/downloads)
+- (*optional*) [git](https://git-scm.com/downloads)
 - (*optional*) TIBCO Jaspersoft&reg; commercial license.
 - Contact your sales
 representative for information about licensing. If you do not specify a
@@ -85,11 +86,14 @@ TIBCO Jaspersoft license, the evaluation license is used.
 currently have a PostgreSQL instance, you can create a PostgreSQL container
 at build time.
 
-## Get the Dockerfile
+# Installation
 
-Download the js-docker repository as a zip or clone the repository from Github.
+## Get the js-docker Dockerfile and supporting resources
 
-To download a zip:
+Download the js-docker repository as a zip and unzip it, or clone the repository from Github,
+which will install the js-docker files on to your machine.
+
+To download a zip of js-docker:
 - Go to [https://github.com/TIBCOSoftware/js-docker](https://github.com/TIBCOSoftware/js-docker)
 - Select Download ZIP on the right hand side of the screen.
 ![Download ZIP or Clone](js-docker-clone-download.png)
@@ -104,7 +108,7 @@ $ git clone https://github.com/TIBCOSoftware/js-docker
 $ cd js-docker
 ```
 
-## Installed Repository structure
+## The installed Repository structure
 
 After getting the js-docker github repository, the following files are placed
 on your machine:
@@ -284,6 +288,19 @@ docker run --name new-jrs
 -v /<path>/resources/license:/usr/local/share/jasperreports-pro/license 
 -p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e 
 DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
+```
+
+Windows paths need some help with a Docker setting:
+
+```console
+COMPOSE_CONVERT_WINDOWS_PATHS=1
+```
+
+Also volumes in Windows need to be under the logged in user's User area ie.
+
+```console
+volumes:
+	- /C/Users/<user>/Documents/License:/usr/local/share/jasperserver-pro/license 
 ```
 
 ## Web application
