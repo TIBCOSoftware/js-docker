@@ -276,10 +276,11 @@ to be removed separately. Changing or sharing data in  the default
 data volume while the container is running is not recommended. To share a
 volume, use [volume plugins](
 https://docs.docker.com/engine/extend/plugins/). See the Docker
-[documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/
-important-tips-on-using-shared-volumes) for more information.
+[documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/important-tips-on-using-shared-volumes)
+for more information.
 
 ### Paths to data volumes on Mac and Windows
+
 You can mount a volume to a directory on your local machine.
 For example, to access a license on a local directory on Mac:
 
