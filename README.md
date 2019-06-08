@@ -178,13 +178,12 @@ Only used if a keystore is being overridden through customization.
 - `KS_PASSWORD` default keystore password. Defaults to "changeit"
 - `JRS_HTTPS_ONLY`  Enables HTTPS-only mode. Default to false.
 
-If you are running Postgresql in a container, the following additional variables 
-are required.
+If you are running Postgresql in a container via docker-compose:
 
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 
-If these variables are not set, PostgreSQL will be generated with no access restrictions.
+If these variables are not set, PostgreSQL will be launched with no access restrictions.
 
 # Configuring JasperReports Server with volumes
 
