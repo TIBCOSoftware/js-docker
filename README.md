@@ -203,6 +203,30 @@ https://docs.docker.com/engine/extend/plugins/). See the Docker
 [documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/important-tips-on-using-shared-volumes)
 for more information.
 
+## Volumes to use with JasperReports Server
+
+Description | Path to override in container | Notes |
+------------ | ------------- | ------------ |
+Complete JasperReports Server web application | `${CATALINA_HOME}/webapps/jasperserver-pro` | The complete JasperReport Server WAR structure in the external volume |
+License | `/usr/local/share/jasperreports-pro/license` | Path to contain jasperserver.license file to use. If not provided, a temporary license is used. |
+JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names can be overridden. | 
+Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names can be overridden. |
+New keystore file | `/usr/local/share/jasperserver-pro/keystore` | .keystore files in this volume loaded into /root. The keystore password must be set as the KS_PASSWORD environment variable.|
+ Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
+
+## Setting volumes
+
+`docker run -v external_volume:<path to override in container>`
+
+docker-compose:
+
+```
+   volumes:
+      - jrs_license:/usr/local/share/jasperreports-pro/license 
+```
+
+If you update the files in a volume listed above, you will need to restart the container.
+
 ### Paths to data volumes on Mac and Windows
 
 You can mount a volume to a directory on your local machine.
@@ -227,31 +251,6 @@ Windows paths need some help with a Docker Compose environment setting:
 ```console
 COMPOSE_CONVERT_WINDOWS_PATHS=1
 ```
-
-## Volumes to use with JasperReports Server
-
-Description | Path to override in container | Notes |
------------- | ------------- | ------------ |
-Complete JasperReports Server web application | `${CATALINA_HOME}/webapps/jasperserver-pro` | The complete JasperReport Server WAR structure in the external volume |
-License | `/usr/local/share/jasperreports-pro/license` | Path to contain jasperserver.license file to use.
-If not provided, a temporary license is used. |
-JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names can be overridden. | 
-Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names can be overridden. |
-New keystore file | `/usr/local/share/jasperserver-pro/keystore` | .keystore files in this volume loaded into /root. The keystore password must be set as the KS_PASSWORD environment variable.|
- Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
-
-## Overriding with volumes
-
-`docker run -v external_volume:<path to override in container>`
-
-docker-compose:
-
-```
-   volumes:
-      - jrs_license:/usr/local/share/jasperreports-pro/license 
-```
-
-If you update the files in a volume listed above, you will need to restart the container.
 
 # Build and run
 
@@ -441,13 +440,10 @@ For additional questions regarding docker and docker-compose usage see:
 - [docker-compose](https://docs.docker.com/compose/overview/) documentation
 
 # Copyright
-Copyright &copy; 2016. TIBCO Software Inc.
+Copyright &copy; 2019. TIBCO Software Inc.
 This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
-
-Software Version: X.X.X &nbsp;
-Document version number: 1016-JSP63-01
 
 TIBCO, Jaspersoft, and JasperReports are trademarks or
 registered trademarks of TIBCO Software Inc.
