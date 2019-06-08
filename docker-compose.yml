@@ -2,48 +2,70 @@
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 
-version: '2'
+# docker-compose.yml example for JasperReports Server
 
-# network used by both JasperReports Server and PostgreSQL containers
-networks:
-  default:
-    ipam:
-      config:
-        - subnet: "192.168.5.1/24"
+version: '3'
 
 services:
-  jasperserver:
-    #image: jasperserver-pro:7.2.0
+  jasperserver-pro:
+    image: jasperserver-pro:7.2.0
     
     build: .
-    # expose port 8080 and bind it to 8080 on host
+    
+    # expose port on the host
     ports:
       - "8080:8080"
       - "8443:8443"
-    # set depends on js_database service
+    
+    # set depends on js_database Postgresql service
     depends_on:
-      - js_database
+      - jasperserver_pro_repository
+    
     # point to env file with key=value entries 
     env_file: .env
+    
     # setting following values here will override settings from env_file
     environment:
-      - DB_HOST=js_database
-    volumes:
-      - jrs_webapp:/usr/local/tomcat/webapps/jasperserver-pro
-      - jrs_license:/usr/local/share/jasperreports-pro/license 
-      - jrs_customization:/usr/local/share/jasperreports-pro/customization
+      - DB_HOST=jasperserver_pro_repository
+      - JRS_LOAD_SAMPLES=true
+
+    #volumes:
+      # where jasperserver.license file is. Otherwise uses temporary license
+      #- jrs_license:/usr/local/share/jasperreports-pro/license 
+      
+      # zip files loaded in alphabetical order into webapps/jasperserver-pro
+      #- jrs_customization:/usr/local/share/jasperreports-pro/customization
+      
+      # zip files loaded in alphabetical order into $CATALINA_HOME
+      #- jrs_tomcat_customization:/usr/local/share/jasperserver-pro/tomcat-customization
+      
+      # .keystore files in this volume loaded into /root.
+      # needs KS_PASSWORD environment variable set
+      #- jrs_keystore:/usr/local/share/jasperserver-pro/keystore
+      
+      # default_master_additional.properties file added to default_master.properties
+      # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
+      #- jrs_deploy_customization:/usr/local/share/jasperserver-pro/deploy-customization
+      
       # for Mac OS you may want to define local path for volume mounts. 
       # Note that defining path for a named volume is not supported 
       # by Compose. For example:
       # - /some-local-path:/usr/local/tomcat/webapps/jasperserver-pro
       # - ~/jasperreports-pro/license:/usr/local/share/jasperreports-pro/license
       # - /tmp/customization:/usr/local/share/jasperreports-pro/customization
-  js_database:
+      #
+      # Under Docker for Windows, volumes have to be under the logged in user's User area
+      #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license 
+ 
+ # sample databases too if configured
+  jasperserver_pro_repository:
     image: postgres:9
     env_file: .env
+    
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
 volumes:
-  jrs_webapp:
-    driver: local
-  jrs_license:
-  jrs_customization:
+  db-data:
+  #jrs_license:
+  #jrs_customization:
