@@ -135,42 +135,124 @@ Copy the installer zip file to the `resources` directory below where the Dockerf
 For example, if you have downloaded the zip to your ~/Downloads directory:
 
 ```console
-$ cp ~/Downloads/TIB_js-jrs_7.2.0_bin.zip resources/
+$ cp ~/Downloads/TIB_js-jrs_X.X.X_bin.zip resources/
 ```
 
-# Build-time environment variables
-At build time, JasperReports Server uses the following environment variables.
-These variables can be set directly in the `Dockerfile`.
-In addition, if you are using docker-compose, many of these variables
-can be set in the `docker-compose.yml` or the `.env` file.
-See the
-[Compose file reference](https://docs.docker.com/compose/compose-file/#/args)
-for more information:
+# docker build time environment variables
+At docker build time, the JasperReports Server Dockerfile uses the following environment variables.
+These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
 
-- `DB_USER` - database username
-- `DB_PASSWORD` - database password
-- `DB_HOST` - database host
-- `DB_PORT` - database port
-- `DB_NAME` - JasperReports Server database name
-- `JRS_DBCONFIG_REGEN` - When true, forces database configuration regeneration
-on container run. This variable can be used to point an already existing
-JasperReports Server container to a new PostgreSQL server.
-- `JRS_HTTPS_ONLY` - When true, enables HTTPS-only mode.
-HTTPS-only requires modifications to the
-`Dockerfile`; see [SSL configuration](ssl-configuration)
-and the comments in the `Dockerfile` for details.
-Note that `JRS_HTTP_ONLY` must be set directly in the `Dockerfile`,
-because it requires additional configuration.
+- `HTTPS_PORT` Defaults to 8443
+- `HTTP_PORT` Defaults to 8080
+- `JAVA_OPTS` command line options passed to OpenJDK 8 / Tomcat 9
 
-[Compose](https://docs.docker.com/compose) requires
-the following additional variables to set up if you are going to run the JasperReports Server
-PostgreSQL database in a Docker container.
+A self signed SSL certificate is configured for the Tomcat environment.
 
-If these variables are not set, PostgreSQL will be generated with no access
-restrictions.
+- `DN_HOSTNAME` self signed certificate host name. Defaults to "localhost.localdomain"
+- `KS_PASSWORD` default keystore password. Defaults to "changeit"
+- `JRS_HTTPS_ONLY`  Enables HTTPS-only mode. Default to false.
+
+# docker run time environment variables
+At docker run time, the JasperReports Server Dockerfile uses the following environment variables.
+These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
+
+If the repository database does not exist in the configured Postgresql database, entrypoint.sh will create it.
+
+- `DB_USER` - database username. defaults to postgres
+- `DB_PASSWORD` - database password. defaults to postgres
+- `DB_HOST` - database host IP or domain name. defaults to postgres
+- `DB_PORT` - database port. defaults to 5432
+- `DB_NAME` - JasperReports Server repository schema name in Postgresql. defaults to jasperserver
+
+- `HTTPS_PORT` Defaults to 8443
+- `HTTP_PORT` Defaults to 8080
+- `JAVA_OPTS` command line options passed to OpenJDK 8 / Tomcat 9
+
+- `FOODMART_DB_NAME` sample database schema name, defaults to foodmart
+- `SUGARCRM_DB_NAME` sample database schema name, defaults to sugarcrm
+
+- `JRS_DBCONFIG_REGEN` - Forces updates to the repository JNDI database configuration
+plus the JDBC driver in tomcat/lib. Defaults to false. 
+
+Only used if a keystore is being overridden through customization.
+- `KS_PASSWORD` default keystore password. Defaults to "changeit"
+- `JRS_HTTPS_ONLY`  Enables HTTPS-only mode. Default to false.
+
+If you are running Postgresql in a container, the following additional variables 
+are required.
 
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
+
+If these variables are not set, PostgreSQL will be generated with no access restrictions.
+
+# Configuring JasperReports Server with volumes
+
+## Using data volumes
+
+Docker, Kubernetes and Docker compose best practices recommend the use of
+[data volumes](https://docs.docker.com/engine/tutorials/dockervolumes/) for managing
+persistent data and configurations. The type and setup of data volumes depend
+on your infrastructure. We provide sensible defaults for a basic
+docker installation.
+
+Note that the data in data volumes is not removed with the container and needs
+to be removed separately. Changing or sharing data in  the default
+data volume while the container is running is not recommended. To share a
+volume, use [volume plugins](
+https://docs.docker.com/engine/extend/plugins/). See the Docker
+[documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/important-tips-on-using-shared-volumes)
+for more information.
+
+### Paths to data volumes on Mac and Windows
+
+You can mount a volume to a directory on your local machine.
+For example, to access a license on a local directory on Mac:
+
+```console
+docker run --name new-jrs
+-v /<path>/resources/license:/usr/local/share/jasperreports-pro/license 
+-p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e 
+DB_PASSWORD=postgres -d jasperserver-pro:X.X.X
+```
+
+Volumes in Docker for Windows need to be under the logged in user's User area ie.
+
+```console
+volumes:
+	- /C/Users/<user>/Documents/License:/usr/local/share/jasperserver-pro/license 
+```
+
+Windows paths need some help with a Docker Compose environment setting:
+
+```console
+COMPOSE_CONVERT_WINDOWS_PATHS=1
+```
+
+## Volumes to use with JasperReports Server
+
+Description | Path to override in container | Notes |
+------------ | ------------- | ------------ |
+Complete JasperReports Server web application | `${CATALINA_HOME}/webapps/jasperserver-pro` | The complete JasperReport Server WAR structure in the external volume |
+License | `/usr/local/share/jasperreports-pro/license` | Path to contain jasperserver.license file to use.
+If not provided, a temporary license is used. |
+JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names can be overridden. | 
+Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names can be overridden. |
+New keystore file | `/usr/local/share/jasperserver-pro/keystore` | .keystore files in this volume loaded into /root. The keystore password must be set as the KS_PASSWORD environment variable.|
+ Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
+
+## Overriding with volumes
+
+`docker run -v external_volume:<path to override in container>`
+
+docker-compose:
+
+```
+   volumes:
+      - jrs_license:/usr/local/share/jasperreports-pro/license 
+```
+
+If you update the files in a volume listed above, you will need to restart the container.
 
 # Build and run
 
@@ -220,11 +302,11 @@ you can use linking:
 
 ```console
 $ docker run --name some-postgres -e POSTGRES_USER=username \
--e POSTGRES_PASSWORD=password -d postgres:9.4
-$ docker build -t jasperserver-pro:6.3.0 .
+-e POSTGRES_PASSWORD=password -d postgres:9
+$ docker build -t jasperserver-pro:X.X.X .
 $ docker run --name some-jasperserver --link some-postgres:postgres \
 -p 8080:8080 -e DB_HOST=some-postgres -e DB_USER=db_username \
--e DB_PASSWORD=db_password -d jasperserver-pro:6.3.0
+-e DB_PASSWORD=db_password -d jasperserver-pro:X.X.X
 ```
 
 Where:
@@ -242,163 +324,12 @@ the PostgreSQL server. Database settings should be modified for your setup.
 
 # Additional configurations
 
-## Runtime variables
-Runtime variables are set to sensible defaults and in general do not
-require changes. However you can change them, for example,  to adjust
-Java options for running the JasperReports Server container.
-See the `Dockerfile` for pre-defined environment variables.
-
-## SSL configuration
-To enable generation and configuration of a self-signed certificate for the
-JasperReports Server container at build time:
-
-- Locate and uncomment the SSL section in the `Dockerfile`.
-This commented section
-contains `ENV` and `RUN` commands to set up variables for
-key dname, keystore password, `HTTPS_PORT` and HTTPS-only mode
-for JasperReports Server.
-- Run `keytool` to generate a new key and keystore.
-- Edit your Tomcat configuration to use the new keystore by default.
-
-## Using data volumes
-
-Docker recommends the use of [data volumes](
-https://docs.docker.com/engine/tutorials/dockervolumes/) for managing
-persistent data and configurations. The type and setup of data volumes depend
-on your infrastructure. We provide sensible defaults for a basic
-docker installation.
-Data volumes are also enabled by default in `docker-compose.yml`, see
-[Building and running with docker-compose](#compose)
-for more information.
-
-Note that the data in data volumes is not removed with the container and needs
-to be removed separately. Changing or sharing data in  the default
-data volume while the container is running is not recommended. To share a
-volume, use [volume plugins](
-https://docs.docker.com/engine/extend/plugins/). See the Docker
-[documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/important-tips-on-using-shared-volumes)
-for more information.
-
-### Paths to data volumes on Mac and Windows
-
-You can mount a volume to a directory on your local machine.
-For example, to access a license on a local directory on Mac:
-
-```console
-docker run --name new-jrs
--v /<path>/resources/license:/usr/local/share/jasperreports-pro/license 
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e 
-DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
-```
-
-Volumes in Docker for Windows need to be under the logged in user's User area ie.
-
-```console
-volumes:
-	- /C/Users/<user>/Documents/License:/usr/local/share/jasperserver-pro/license 
-```
-
-Windows paths need some help with a Docker Compose environment setting:
-
-```console
-COMPOSE_CONVERT_WINDOWS_PATHS=1
-```
-
-## Web application
-
-By default, the JasperReports Server Docker container stores the web
-application data in `/usr/local/tomcat/webapps/jasperserver-pro`. To create a
-locally-accessible named volume, run the following commands at container
-generation time:
-```console
-$ docker volume create --name some-jasperserver-data
-$ docker run --name some-jasperserver \
--v some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
--e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
-```
-Where:
-
-- `some-jasperserver-data` is the name of the new data volume.
-- `some-jasperserver` is the name of the new JasperReports Server container.
-- `jasperserver-pro:6.3.0`  is the image name and version tag
-for your build. This image will be used to create containers.
-- Database settings should be modified for your setup.
-
-Now you can access the JasperReports Server web application
-locally. Run `docker volume inspect jasperserver-data` to determine the storage
-path and additional details about the new volume.
-
-If you want to define the local volume path manually, you cannot use named
-volumes. Instead, modify `docker run` like this:
-```console
-$ docker run --name some-jasperserver -v \
-/some-path/some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
--d jasperserver-pro:6.3.0
-```
-Where:
-- `/some-path/some-jasperserver-data` is a local path that will be mounted.
-
-## License
-
-By default, the JasperReports Server Docker container expects to find the
-license in the
-`/usr/local/share/jasperreports-pro/license` directory on your system.
-If a license file
-is not present at this location, then the 30-day evaluation license is used.
-
-On Linux systems, you can add a license volume and store your commercial
-license there, for example:
-
-```console
-$ docker volume create --name some-jasperserver-license
-$ sudo cp jasperserver.license \
-/var/lib/docker/volumes/some-jasperserver-license/_data
-$ docker run --name some-jasperserver \
--v some-jasperserver-license:/usr/local/share/jasperreports-pro/license \
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
--e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
-
-```
-Where:
-
-- `some-jasperserver-license` is the name of the new data volume.
-- `/var/lib/docker/volumes/some-jasperserver-license/_data` is an example path.
-It may differ on your system, use `docker volume inspect` to get
-local path to volume.
-- `some-jasperserver` is the name of the new JasperReports Server container
-- `jasperserver-pro:6.3.0`  is the image name and version tag
-for your build. This image will be used to create containers.
-- Database settings should be modified for your setup.
-
-See `Dockerfile` and `scripts/entrypoint.sh` for details.
-
-On Windows and Macintosh, you can mount a directory 
-with the license resource. 
-See the Docker documentation for more information. 
-See also 
-[Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-mac-and-windows).
-For additional information about paths on Mac, see
- [`docker volume inspect` returns incorrect paths on MacOS X](#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
-
-
-To update your license without data volumes on an existing container:
-
-```console
-$ docker cp jasperserver.license \
-some-jasperserver:/usr/local/share/jasperreports-pro/license/
-$ docker restart some-jasperserver
-```
-Where:
-
-- `some-jasperserver` is the name of the new JasperReports Server container.
-
-Note that you need to stop the JasperReports Server container
-prior to license update and restart it after.
-
 # Logging
 
-There are multiple options for log access, aggregation, and management
+By default, the JasperReports Server log is streamed to the console,
+so default Docker loggin can pick that up.
+
+Beyoind the console. there are multiple options for log access, aggregation, and management
 in the Docker ecosystem. The most common options are:
 
 - volumizing log files
@@ -422,13 +353,13 @@ $ docker volume create --name some-jasperserver-log
 $ docker run --name some-jasperserver -v \
 some-jasperserver-log:/usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/logs \
 -p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
--e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
+-e DB_PASSWORD=postgres -d jasperserver-pro:X.X.X
 ```
 Where:
 
 - `some-jasperserver-log` is the name of the new data volume for log storage.
 - `some-jasperserver` is the name of the new JasperReports Server container
-- `jasperserver-pro:6.3.0`  is the image name and version tag.
+- `jasperserver-pro:X.X.X`  is the image name and version tag.
 for your build. This image will be used to create containers.
 - Database settings should be modified for your setup.
 
@@ -439,124 +370,16 @@ via the logging driver, and the application log specific to
 JasperReports Server is output to
 `some-jasperserver-log:/usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/logs`
 
-# Updating Tomcat
 
-The JasperReports Server container is based on the
-[tomcat:8.0-jre8](tomcat:8.0-jre8) (Apache Tomcat) image from
-[Docker Hub](https://hub.docker.com).
-To upgrade your JasperReports Server base image, you
-must rebuild the JasperReports Server image with the newer Tomcat. See
-[Build and run](#build-and-run) for building instructions.
-
-To update an already existing JasperReports Server container to
-a newer base image, you have to re-create it. If you are using volumes
-for JasperReports Server, you can preserve web application data between
-upgrades.
-This can be useful if you have
-[customizations or configuration](#customizing-jasperreports-server-at-runtime)
-changes applied to
-the default web application:
-
-```console
-$ docker stop some-jasperserver
-$ docker run --name some-jasperserver-2 -v \
-some-jasperserver-data:/usr/local/tomcat/webapps/jasperserver-pro \
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
--e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
-```
-Where:
-
-- `some-jasperserver` is the name of the existing JasperReports Server
-container.
-- `some-jasperserver-2` is the name of the new JasperReports Server container.
-- `some-jasperserver-data` is the name of a data volume.
-- `jasperserver-pro:6.3.0` is an image name and version tag that is used
-as a base for the new container.
-- Database settings should be modified for your setup.
-
-# Customizing JasperReports Server at runtime
-
-Customizations can be added to JasperReports Server container at runtime
-via the `/usr/local/share/jasperreports-pro/customization` directory in the
-container. All zip files in this directory are applied to
-`/usr/local/tomcat/webapps/jasperserver-pro` in sorted order (natural sort).
-
-## Applying customizations
-
-For example:
-```console
-$ docker volume create --name some-jasperserver-customization
-$ sudo cp custom.zip \
-/var/lib/docker/volumes/some-jasperserver-customization/_data
-$ docker run --name some-jasperserver -v \
-some-jasperserver-customization:\
-/usr/local/share/jasperreports-pro/customization \
--p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres \
--e DB_PASSWORD=postgres -d jasperserver-pro:6.3.0
-```
-Where:
-
-- `some-jasperserver-customization` is the name of the customization
-data volume.
-- `custom.zip` is an archive containing customizations, for example:
-`WEB-INF/log4j.properties`. The archive will be unpacked as-is to the path
-`/usr/local/tomcat/webapps/jasperserver-pro`
-- `/var/lib/docker/volumes/some-jasperserver-customization/_data` is an
-example path. Use `docker volume inspect`
-to get the local path to the volume for your system.
-- `some-jasperserver` is the name of the JasperReports Server
-container.
-- `jasperserver-pro:6.3.0` is an image name and version tag that is used
-as a base for the new container.
-- Database settings should be modified for your setup.
+## Other Customizations
 
 See `scripts/entrypoint.sh` for implementation details and
 `docker-compose.yml` for a sample setup of a customization volume via Compose.
 
-This directory can be also mounted as a [Data Volume](
-https://docs.docker.com/engine/tutorials/dockervolumes/).
-You must mount the directory on Windows and Macintosh. 
-See also 
-[Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-Mac-and-Windows).
-For additional information about paths on Mac, see
- [`docker volume inspect` returns incorrect paths on MacOS X](#-docker-volume-inspect-returns-incorrect-paths-on-macos-x).
 
-## Applying customizations with Docker Compose
+## Logging in
 
-To use customizations with `docker-compose`, run `docker volume inspect` 
-to determine the path of the volume you want and add the license. To reference an 
-existing volume, modify the YAML file appropriately.
-
-
-## Applying customizations manually
-
-You can also apply customizations manually, either via the `docker cp` command
-or by modifying files in the [web application](#web-application) data volume.
-For example:
-```console
-$ docker cp log4j.properties some-jasperserver:\
-/usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/
-$ docker restart some-jasperserver
-```
-Where:
-
-- `some-jasperserver` is the name of the JasperReports Server
-container.
-
-## Restarting the container
-
-Note that independent of method, you need to restart the
-JasperReports Server container (`docker restart some-jasperserver`)
-if customizations are applied to a running container.
-
-Logging in
-
-To log into JasperReports Server on any operating system:
-
-1. Start JasperReports Server.
-2. Open a supported browser: Firefox, Internet Explorer, Chrome, or Safari.
-3. Log into JasperReports Server by entering the startup URL in your
-browser's address field.
+After the JasperReports Server container is up, log into it via URL.
 The URL depends upon your installation. The default configuration uses:
 
 ```
@@ -584,7 +407,7 @@ phantomjs:
 2016-09-19 20:54:50 ERROR 403: Forbidden.
 ```
 
-This occurs when the phantomjs binary is temporarily  unavailable for download.
+This occurs when the phantomjs binary is temporarily unavailable for download.
 You can do one of the following: disable the phantomjs download, change the
 URL, or use a locally-downloaded phantomjs archive. See `Dockerfile` for
 details. Note that if you had a successful build and the Docker cache has not
@@ -613,31 +436,6 @@ See [Using data volumes](#using-data-volumes) for defining a local path.
 For more information see Docker Community Forums: [Host path of volume](
 https://forums.docker.com/t/host-path-of-volume/12277/6)
 
-## `docker-compose up` fails with permissions error
-For example:
-
-```
-ERROR: for jasperserver Cannot start service jasperserver: 
-oci runtime error: exec: "/entrypoint.sh": permission denied
-```
-
-This error can occur even if permissions are properly set for
-entrypoint.sh. To fix this issue:
-
-
-First, locate the `COPY` line
-for entrypoint.sh in the Dockerfile:
-
-```
-COPY scripts/entrypoint.sh /
-```
-
-Then, add the following command immediately after the COPY line:
-
-```
-RUN chmod +x /entrypoint.sh
-```
-
 ## Docker documentation
 For additional questions regarding docker and docker-compose usage see:
 - [docker-engine](https://docs.docker.com/engine/installation) documentation
@@ -649,7 +447,7 @@ This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
 
-Software Version: 6.3.0-v1.0.4 &nbsp;
+Software Version: X.X.X &nbsp;
 Document version number: 1016-JSP63-01
 
 TIBCO, Jaspersoft, and JasperReports are trademarks or
