@@ -5,47 +5,29 @@
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
-   1. [Cloning the repository](#cloning-the-repository)
-   1. [Repository structure](#repository-structure)
-   1. [Downloading JasperReports Server WAR](
-#downloading-jasperreports-server-war)
-1. [Build-time environment variables](#build-time-environment-variables)
-1. [Build and run](#build-and-run)
-   1. [Building and running with docker-compose (recommended)](#compose)
-   1. [Building and running with a pre-existing PostgreSQL instance](
-#building-and-running-with-a-pre-existing-postgresql-instance)
-   1. [Creating a new PostgreSQL instance during build](
-#creating-a-new-postgresql-instance-during-build)
-1. [Additional configuration](#additional-configurations)
-   1. [Runtime variables](#runtime-variables)
-   1. [SSL configuration](#ssl-configuration)
+   1. [Get the JaspeReports Server Docker configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
+   1. [Repository structure](#the-installed-repository-structure)
+   1. [Get the JasperReports Server WAR file installer](#get-the-jasperreports-server-war-file-installer)
+1. [docker build time environment variables](#docker-build-time-environment-variables)
+1. [docker run time environment variables](#docker-run-time-environment-variables)
+1. [Configuring JasperReports Server with volumes](#configuring-jasperreports-server-with-volumes)
    1. [Using data volumes](#using-data-volumes)
-   1. [Paths to data volumes on Mac and Windows](
-#paths-to-data-volumes-on-mac-and-windows)
-   1. [Web application](#web-application)
-   1. [License](#license)
-   1. [Logging](#logging)
-1. [Updating Tomcat](#updating-tomcat)
-1. [Customizing JasperReports Server at runtime](
-#customizing-jasperreports-server-at-runtime)
-   1. [Applying customizations](#applying-customizations)
-   1. [Applying customizations manually](
-#applying-customizations-manually)
-   1. [Applying customizations with Docker Compose](
-#applying-customizations-with-docker-compose)
-   1. [Restarting JasperReports Server](
-#restarting-jasperreports-server)
-1. [Logging in](#logging-in)
+   1. [JasperReports Server use of volumes](#jasperreports-server-use-of-volumes)
+   1. [Setting volumes](#setting-volumes)
+   1. [Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-mac-and-windows)
+1. [Build and run](#build-and-run)
+   1. [Building and running with docker-compose](#building-and-running-with-docker-compose)
+   1. [Using a pre-existing PostgreSQL database in Docker](#using-a-pre-existing-postgresql-instance-in-docker)
+   1. [Creating a new PostgreSQL database](#creating-a-new-postgresql-database)
+1. [JasperReports Server logs](#jasperreports-server-logs)
+1. [Logging in to JasperReports Server](#logging-in-to-jasperreports-server)
 1. [Troubleshooting](#troubleshooting)
-   1. [Unable to download phantomjs](
-#unable-to-download-phantomjs)
-   1. ["No route to host" error on a VPN/network with mask](
-#-no-route-to-host-error-on-a-vpn-or-network-with-mask)
-   1. [`docker volume inspect` returns incorrect paths on MacOS X](
-#-docker-volume-inspect-returns-incorrect-paths-on-macos-x)
-   1. [`docker-compose up` fails with permissions error](
-#-docker-compose-up-fails-with-permissions-error)
-   1. [Docker documentation](#docker-documentation)
+   1. [Unable to download phantomjs](#unable-to-download-phantomjs)
+   1. ["No route to host" error on a VPN/network with mask](#-no-route-to-host-error-on-a-vpn-or-network-with-mask)
+   1. [`docker volume inspect` returns incorrect paths on MacOS X](#-docker-volume-inspect-returns-incorrect-paths-on-macos-x)
+   1. [`docker-compose up` fails with permissions error](#-docker-compose-up-fails-with-permissions-error)
+   1. [Connection to repository database fails](#connection-to-repository-database-fails)
+1. [Docker documentation](#docker-documentation)
 
 # Introduction
 
@@ -59,7 +41,8 @@ The distribution can be downloaded from
 [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker).
 
 This configuration has been certified using
-the PostgreSQL 9 database with JasperReports Server 6.4+.
+the PostgreSQL 9 database with JasperReports Server 6.4+
+and with PostgreSQL 10 for JasperReports Server 7.2+
 
 Basic knowledge of Docker and the underlying infrastructure is required.
 For more information about Docker see the
@@ -90,8 +73,7 @@ at build time.
 
 ## Get the js-docker Dockerfile and supporting resources
 
-Download the js-docker repository as a zip and unzip it, or clone the repository from Github,
-which will install the js-docker files on to your machine.
+Download the js-docker repository as a zip and unzip it, or clone the repository from Github.
 
 To download a zip of js-docker:
 - Go to [https://github.com/TIBCOSoftware/js-docker](https://github.com/TIBCOSoftware/js-docker)
@@ -110,8 +92,7 @@ $ cd js-docker
 
 ## The installed Repository structure
 
-After getting the js-docker github repository, the following files are placed
-on your machine:
+The js-docker github repository contains:
 
 - `Dockerfile` - container build commands
 - `docker-compose.yml` - sample configuration for building and running via
@@ -124,14 +105,15 @@ or other files you want to copy to the container
 - `scripts\`
   - `entrypoint.sh` - sample runtime configuration for starting and running
 JasperReports Server from the shell
+- `kubernetes` - directory of JasperReports Server Kubernetes configuration [https://github.com/TIBCOSoftware/js-docker/kubernetes](https://github.com/TIBCOSoftware/js-docker/kubernetes)
 
 
-## Downloading JasperReports Server WAR
+## Get the JasperReports Server WAR file installer
 
 Download the JasperReports Server WAR File installer zip archive from the TIBCO eDelivery
 or build it from a bundled installer [Jaspersoft Community Wiki article](https://community.jaspersoft.com/wiki/creating-jasperreports-server-war-file-installer-bundled-installer)
 
-Copy the installer zip file to the `resources` directory below where the Dockerfile is.
+Copy the installer zip file to the `resources` directory in the repository structure.
 For example, if you have downloaded the zip to your ~/Downloads directory:
 
 ```console
@@ -139,51 +121,49 @@ $ cp ~/Downloads/TIB_js-jrs_X.X.X_bin.zip resources/
 ```
 
 # docker build time environment variables
-At docker build time, the JasperReports Server Dockerfile uses the following environment variables.
 These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
 
-- `HTTPS_PORT` Defaults to 8443
-- `HTTP_PORT` Defaults to 8080
-- `JAVA_OPTS` command line options passed to OpenJDK 8 / Tomcat 9
-
-A self signed SSL certificate is configured for the Tomcat environment.
-
-- `DN_HOSTNAME` self signed certificate host name. Defaults to "localhost.localdomain"
-- `KS_PASSWORD` default keystore password. Defaults to "changeit"
-- `JRS_HTTPS_ONLY`  Enables HTTPS-only mode. Default to false.
+Environment Variable Name | Notes |
+------------ | ------------- |
+`HTTPS_PORT` | Defaults to 8443 |
+`HTTP_PORT` | Defaults to 8080. Cannot be overridden |
+`JAVA_OPTS` | command line options passed to OpenJDK 8 / Tomcat 9 |
+`POSTGRES_JDBC_DRIVER_VERSION` | defaults to 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html |
+ | |
+ | A self signed SSL certificate is configured for the Tomcat environment. |
+`DN_HOSTNAME` | self signed certificate host name. Defaults to "localhost.localdomain" |
+`KS_PASSWORD` | default keystore password. Defaults to "changeit" |
+`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. | 
 
 # docker run time environment variables
-At docker run time, the JasperReports Server Dockerfile uses the following environment variables.
 These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
 
-If the repository database does not exist in the configured Postgresql database, entrypoint.sh will create it.
+If the `DB_NAME` repository database does not exist in the configured Postgresql database, entrypoint.sh will create it.
 
-- `DB_USER` - database username. defaults to postgres
-- `DB_PASSWORD` - database password. defaults to postgres
-- `DB_HOST` - database host IP or domain name. defaults to postgres
-- `DB_PORT` - database port. defaults to 5432
-- `DB_NAME` - JasperReports Server repository schema name in Postgresql. defaults to jasperserver
+Environment Variable Name | Notes |
+------------ | ------------- |
+`DB_HOST` | database host IP or domain name. defaults to postgres |
+`DB_PORT` | database port. defaults to 5432 |
+`DB_USER` | database username. defaults to postgres |
+`DB_PASSWORD` | database password. defaults to postgres |
+`DB_NAME` | JasperReports Server repository schema name in Postgresql. defaults to jasperserver |
+`POSTGRES_JDBC_DRIVER_VERSION` | defaults to 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html |
+`JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. defaults to false | 
+ | |
+`HTTPS_PORT` | Defaults to 8443 | 
+`HTTP_PORT` | Defaults to 8080. Cannot be overridden | 
+`JAVA_OPTS` | command line options passed to OpenJDK 8 / Tomcat 9 | 
+`JRS_DBCONFIG_REGEN` | Forces updates to the repository JNDI database configuration plus the JDBC driver in tomcat/lib. Defaults to false. |
+ | |
+ | Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. |
+`KS_PASSWORD` | default keystore password. Defaults to "changeit" |
+`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. |
+ | |
+ If you are running Postgresql in a container via docker-compose: | If these variables are not set, PostgreSQL will be launched with no access restrictions. |
+`POSTGRES_PASSWORD` | |
+`POSTGRES_USER` | |
 
-- `HTTPS_PORT` Defaults to 8443
-- `HTTP_PORT` Defaults to 8080
-- `JAVA_OPTS` command line options passed to OpenJDK 8 / Tomcat 9
 
-- `FOODMART_DB_NAME` sample database schema name, defaults to foodmart
-- `SUGARCRM_DB_NAME` sample database schema name, defaults to sugarcrm
-
-- `JRS_DBCONFIG_REGEN` - Forces updates to the repository JNDI database configuration
-plus the JDBC driver in tomcat/lib. Defaults to false. 
-
-Only used if a keystore is being overridden through customization.
-- `KS_PASSWORD` default keystore password. Defaults to "changeit"
-- `JRS_HTTPS_ONLY`  Enables HTTPS-only mode. Default to false.
-
-If you are running Postgresql in a container via docker-compose:
-
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-
-If these variables are not set, PostgreSQL will be launched with no access restrictions.
 
 # Configuring JasperReports Server with volumes
 
@@ -203,7 +183,7 @@ https://docs.docker.com/engine/extend/plugins/). See the Docker
 [documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/important-tips-on-using-shared-volumes)
 for more information.
 
-## Volumes to use with JasperReports Server
+## JasperReports Server use of volumes
 
 Description | Path to override in container | Notes |
 ------------ | ------------- | ------------ |
@@ -225,7 +205,7 @@ docker-compose:
       - jrs_license:/usr/local/share/jasperreports-pro/license 
 ```
 
-If you update the files in a volume listed above, you will need to restart the container.
+If you update the files in a volume listed above, you will need to restart the container, as these are only processed at container start time.
 
 ### Paths to data volumes on Mac and Windows
 
@@ -254,7 +234,7 @@ COMPOSE_CONVERT_WINDOWS_PATHS=1
 
 # Build and run
 
-## <a name="compose"></a>Building and running with docker-compose (recommended)
+## Building and running with docker-compose
 
 `docker-compose.yml` provides a sample
 [Compose](https://docs.docker.com/compose/compose-file/) implementation of
@@ -271,10 +251,10 @@ $ docker-compose build
 $ docker-compose up -d
 ```
 
-## Building and running with a pre-existing PostgreSQL instance
+## Using a pre-existing PostgreSQL database
 
 To build and run a JasperReports Server container with a pre-existing
-PostgreSQL 9 instance, execute these commands in your repository:
+PostgreSQL instance, execute these commands in your repository:
 
 ```console
 $ docker build -t jasperserver-pro:X.X.X .
@@ -293,14 +273,14 @@ for your build. This image will be used to create containers.
 -  `username` and `password` are the user credentials for your PostgreSQL
 server.
 
-## Creating a new PostgreSQL instance during build
+## Creating a new PostgreSQL database in Docker
 
 To build and run JasperReports Server with a new PostgreSQL container
 you can use linking:
 
 ```console
 $ docker run --name some-postgres -e POSTGRES_USER=username \
--e POSTGRES_PASSWORD=password -d postgres:9
+-e POSTGRES_PASSWORD=password -d postgres:10
 $ docker build -t jasperserver-pro:X.X.X .
 $ docker run --name some-jasperserver --link some-postgres:postgres \
 -p 8080:8080 -e DB_HOST=some-postgres -e DB_USER=db_username \
@@ -312,7 +292,7 @@ Where:
 - `some-postgres` is the name of your new PostgreSQL container.
 - `username` and `password` are the user credentials to use for the
 new PostgreSQL container and JasperReports Server container.
-- `postgres:9` [PostgreSQL 9](https://hub.docker.com/_/postgres/) is
+- `postgres:10` [PostgreSQL 10](https://hub.docker.com/_/postgres/) is
 the PostgreSQL image from Docker Hub.
 - `jasperserver-pro:X.X.X` is the image name and version tag
 for your build. This image will be used to create containers.
@@ -320,14 +300,14 @@ for your build. This image will be used to create containers.
 -  `db_username` and `db_password` are the user credentials for accessing
 the PostgreSQL server. Database settings should be modified for your setup.
 
-# Additional configurations
+The `docker-compose.yml` shows how to launch a PostgreSQL repository automatically.
 
-# Logging
+# JasperReports Server logs
 
 By default, the JasperReports Server log is streamed to the console,
-so default Docker loggin can pick that up.
+so default Docker logging can pick that up.
 
-Beyoind the console. there are multiple options for log access, aggregation, and management
+Beyond the console. there are multiple options for log access, aggregation, and management
 in the Docker ecosystem. The most common options are:
 
 - volumizing log files
@@ -368,14 +348,7 @@ via the logging driver, and the application log specific to
 JasperReports Server is output to
 `some-jasperserver-log:/usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/logs`
 
-
-## Other Customizations
-
-See `scripts/entrypoint.sh` for implementation details and
-`docker-compose.yml` for a sample setup of a customization volume via Compose.
-
-
-## Logging in
+## Logging in to JasperReports Server 
 
 After the JasperReports Server container is up, log into it via URL.
 The URL depends upon your installation. The default configuration uses:
@@ -397,6 +370,7 @@ JasperReports Server ships with the following default credentials:
 - jasperadmin/jasperadmin - Administrator for the default organization
 
 # Troubleshooting
+
 ## Unable to download phantomjs
 At build-time Docker fails with an error "403: Forbidden" when downloading
 phantomjs:
@@ -434,7 +408,31 @@ See [Using data volumes](#using-data-volumes) for defining a local path.
 For more information see Docker Community Forums: [Host path of volume](
 https://forums.docker.com/t/host-path-of-volume/12277/6)
 
-## Docker documentation
+## Connection to repository database fails
+
+The entrypoint.sh tries to connect to the repository database before starting
+the Server. If there are problems, there will be 5 retries to connect before
+stopping the process. You can see the problem in the JasperReports Server
+container log.
+
+```
+psql: FATAL:  password authentication failed for user "postgres"
+Waiting for PostgreSQL...
+psql: FATAL:  password authentication failed for user "postgres"
+Waiting for PostgreSQL...
+psql: FATAL:  password authentication failed for user "postgres"
+Waiting for PostgreSQL...
+psql: FATAL:  password authentication failed for user "postgres"
+Waiting for PostgreSQL...
+psql: FATAL:  password authentication failed for user "postgres"
+Waiting for PostgreSQL...
+Error: Connection to PostgreSQL on host: jasperserver_pro_repository not available!
+```
+
+You will need to review the network connection between the Server and the PostgreSQL
+instance and DB_\* environment settings.
+
+# Docker documentation
 For additional questions regarding docker and docker-compose usage see:
 - [docker-engine](https://docs.docker.com/engine/installation) documentation
 - [docker-compose](https://docs.docker.com/compose/overview/) documentation
