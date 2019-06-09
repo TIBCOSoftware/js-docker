@@ -140,6 +140,8 @@ These can be passed on the command line with -e, in an env-file, docker-compose.
 
 If the `DB_NAME` repository database does not exist in the configured Postgresql database, entrypoint.sh will create it.
 
+Environment Variable Name | Notes |
+------------ | ------------- |
 `DB_HOST` | database host IP or domain name. defaults to postgres |
 `DB_PORT` | database port. defaults to 5432 |
 `DB_USER` | database username. defaults to postgres |
@@ -156,9 +158,8 @@ If the `DB_NAME` repository database does not exist in the configured Postgresql
  | Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. |
 `KS_PASSWORD` | default keystore password. Defaults to "changeit" |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. |
-
+ | |
  | If you are running Postgresql in a container via docker-compose: |
-
 `POSTGRES_PASSWORD` | |
 `POSTGRES_USER` | |
 
