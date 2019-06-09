@@ -159,11 +159,11 @@ Environment Variable Name | Notes |
 `KS_PASSWORD` | default keystore password. Defaults to "changeit" |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. |
  | |
- | If you are running Postgresql in a container via docker-compose: |
+ If you are running Postgresql in a container via docker-compose: | If these variables are not set, PostgreSQL will be launched with no access restrictions. |
 `POSTGRES_PASSWORD` | |
 `POSTGRES_USER` | |
 
-If these variables are not set, PostgreSQL will be launched with no access restrictions.
+
 
 # Configuring JasperReports Server with volumes
 
