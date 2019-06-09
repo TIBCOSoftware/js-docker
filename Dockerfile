@@ -56,9 +56,15 @@ phantomjs-2.1.1-linux-x86_64.tar.bz2" \
 #    mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
 #    ln -sf /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin && \
 #    rm -rf /tmp/*
-	
+
+ENV POSTGRES_JDBC_DRIVER_VERSION 42.2.5
+
+RUN wget \
+    "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
+    -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
+
 # Set default Java options for Tomcat.
-# using XX:+UseG1GC - default Java
+# using XX:+UseG1GC - default Java GC in later versions of Java 8
 # use cool Java docker optimizations
 ENV JAVA_OPTS="-XX:MaxMetaspaceSize=378m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 
@@ -96,7 +102,7 @@ RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"
 # or use dynamic ports.
-EXPOSE ${HTTP_PORT:-8080} ${HTTPS_PORT:-8443}
+EXPOSE 8080 ${HTTPS_PORT:-8443}
 
 COPY scripts/entrypoint.sh /
 RUN chmod +x /entrypoint.sh

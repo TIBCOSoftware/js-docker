@@ -59,13 +59,13 @@ services:
  
  # sample databases too if configured
   jasperserver_pro_repository:
-    image: postgres:9
+    image: postgres:10
     env_file: .env
     
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - postgres-10-data:/var/lib/postgresql/data
 
 volumes:
-  db-data:
+  postgres-10-data:
   #jrs_license:
   #jrs_customization:

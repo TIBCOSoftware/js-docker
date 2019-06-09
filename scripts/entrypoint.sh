@@ -24,8 +24,9 @@ initialize_deploy_properties() {
   DB_NAME=${DB_NAME:-jasperserver}
   FOODMART_DB_NAME=${FOODMART_DB_NAME:-foodmart}
   SUGARCRM_DB_NAME=${SUGARCRM_DB_NAME:-sugarcrm}
+  POSTGRES_JDBC_DRIVER_VERSION=${POSTGRES_JDBC_DRIVER_VERSION-42.2.5}
 
-  # Simple default_master.properties. Modify according to
+  # Default_master.properties. Modify according to
   # JasperReports Server documentation.
   cat >/usr/src/jasperreports-server/buildomatic/default_master.properties\
 <<-_EOL_
@@ -40,12 +41,21 @@ js.dbName=$DB_NAME
 foodmart.dbName=$FOODMART_DB_NAME
 sugarcrm.dbName=$SUGARCRM_DB_NAME
 webAppName=jasperserver-pro
+maven.jdbc.version=$POSTGRES_JDBC_DRIVER_VERSION
 _EOL_
 
   JRS_DEPLOY_CUSTOMIZATION=${JRS_DEPLOY_CUSTOMIZATION:-/usr/local/share/jasperserver-pro/deploy-customization}
 
   if [[ -f "$JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties" ]]; then
     cat $JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties >> /usr/src/jasperreports-server/buildomatic/default_master.properties
+  fi
+  
+  # Get the desired version of the PostgreSQL JDBC driver if we don't have it
+  
+  if [ ! "$(ls -A $CATALINA_HOME/lib/postgresql-$POSTGRES_JDBC_DRIVER_VERSION.jar)" ]; then
+    wget \
+      "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
+      -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
   fi
 }
 
@@ -80,25 +90,20 @@ setup_jasperserver() {
 run_jasperserver() {
   initialize_deploy_properties
   
-  # If the JDBC driver is not present, do deploy-webapp-pro.
-  # We start with webapp deployment as database may still be initializing.
-  # This way we speed up overall startup as deploy-webapp-pro does
-  # not depend on database
+  # If the JDBC driver is not present in Tomcat or not the right version,
+  # do deploy-webapp-pro.
 
-  if [ ! "$(ls -A $CATALINA_HOME/lib/postgresql*.jar)" ]; then
+  if [ ! "$(ls -A $CATALINA_HOME/lib/postgresql-$POSTGRES_JDBC_DRIVER_VERSION.jar)" ]; then
+    # clean out any old driver
+    rm -f $CATALINA_HOME/lib/postgresql-*.jar
     setup_jasperserver deploy-webapp-pro
-  else
+  elif [[ ${JRS_DBCONFIG_REGEN} = "true" ]]; then
 
-	# force regeneration of database configuration if variable is set.
-	# This will allow to change DB configuration for already created
-	# container.
-
-	if [[ ${JRS_DBCONFIG_REGEN} = "true" ]]; then
-	  setup_jasperserver deploy-webapp-datasource-configs deploy-jdbc-jar
-	else 
-      # run deploy-jdbc-jar in case tomcat container was updated
-      setup_jasperserver deploy-jdbc-jar
-    fi
+	# force regeneration of database configuration within the WAR and Tomcat.
+	# This will allow to change DB configuration for an existing container.
+	
+    rm $CATALINA_HOME/lib/postgresql-*.jar
+	setup_jasperserver deploy-webapp-datasource-configs deploy-jdbc-jar
   fi
     
   # Wait for PostgreSQL.
@@ -184,8 +189,10 @@ retry_postgresql() {
   done
 
   # Fail if PostgreSQL is not accessible
-  test_postgresql || \
+  if [[ test_postgresql != "0" ]]; then
     echo "Error: PostgreSQL on ${DB_HOST:-postgres} not accessible!"
+	exit 1
+  fi
 }
 
 config_phantomjs() {
@@ -221,7 +228,7 @@ config_ssl() {
       "//x:security-constraint/x:user-data-constraint/x:transport-guarantee"\
       -v "CONFIDENTIAL" web.xml
     sed -i "s/=http:\/\//=https:\/\//g" js.quartz.properties
-    sed -i "s/${HTTP_PORT:-8080}/${HTTPS_PORT:-8443}/g" js.quartz.properties
+    sed -i "s/8080/${HTTPS_PORT:-8443}/g" js.quartz.properties
   else
     echo "NOT! Setting HTTPS only within JasperReports Server. Should actually turn it off, but cannot."
   fi
