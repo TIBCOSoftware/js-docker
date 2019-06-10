@@ -182,21 +182,23 @@ test_postgresql() {
 }
 
 retry_postgresql() {
-  # Retry 5 times to check PostgreSQL is accessible.
-  for retry in {1..5}; do
-    test_postgresql && echo "PostgreSQL accepting connections" && break || \
-      echo "Waiting for PostgreSQL..." && sleep 10;
-  done
-
-  # Fail if PostgreSQL is not accessible
-  if [[ test_postgresql != "0" ]]; then
-    echo "Error: PostgreSQL on ${DB_HOST:-postgres} not accessible!"
-	exit 1
-  fi
+	# Retry 5 times to check PostgreSQL is accessible.
+	for retry in {1..5}; do
+	  if test_postgresql; then
+		echo "PostgreSQL accepting connections and logging in to host ${DB_HOST:-postgres}"
+		break
+	  elif [[ $retry = 5 ]]; then
+		echo "PostgreSQL at host ${DB_HOST:-postgres} not accessible or cannot log in!"
+		echo "##### Exiting #####"
+		exit 1
+	  else
+		echo "Sleeping to try PostgreSQL connection again..." && sleep 15
+	  fi
+	done
 }
 
 config_phantomjs() {
-  # if phantomjs binary is present, update JaseperReports Server config.
+  # if phantomjs binary is present, update JasperReports Server config.
   if [[ -x "/usr/local/bin/phantomjs" ]]; then
     PATH_PHANTOM='\/usr\/local\/bin\/phantomjs'
     PATTERN1='com.jaspersoft.jasperreports'
@@ -264,7 +266,7 @@ config_ssl() {
 		  #		--update '$connector-ssl' --type attr -n keystorePass  -v "${KS_PASSWORD}" \
 		  #		--update '$connector-ssl' --type attr -n keystoreFile  -v "/root/.keystore.p12" \
 		  #		${CATALINA_HOME}/conf/server.xml
-		  echo "Did not update SSL"
+		  echo "No .keystore files. Did not update SSL"
 	  fi
 
   # end if $KEYSTORE_PATH exists.
