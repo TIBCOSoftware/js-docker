@@ -8,7 +8,7 @@ version: '3'
 
 services:
   jasperserver-pro:
-    image: jasperserver-pro:7.2.0
+    image: jasperserver-pro:init-test
     
     build: .
     
@@ -33,10 +33,10 @@ services:
       # where jasperserver.license file is. Otherwise uses temporary license
       #- jrs_license:/usr/local/share/jasperreports-pro/license 
       
-      # zip files loaded in alphabetical order into webapps/jasperserver-pro
+      # zip files in alphabetical order exploded into webapps/jasperserver-pro
       #- jrs_customization:/usr/local/share/jasperreports-pro/customization
       
-      # zip files loaded in alphabetical order into $CATALINA_HOME
+      # zip files in alphabetical order exploded into $CATALINA_HOME
       #- jrs_tomcat_customization:/usr/local/share/jasperserver-pro/tomcat-customization
       
       # .keystore files in this volume loaded into /root.
@@ -46,6 +46,14 @@ services:
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
       #- jrs_deploy_customization:/usr/local/share/jasperserver-pro/deploy-customization
+      
+      # include a new version of a JDBC driver for repository databases supported by 
+      # JasperReports Server.
+      # valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2
+      #- /path/to/JDBC/driver:/usr/src/jasperreports-server/buildomatic/conf_source/db/<dbType>/jdbc
+      # set environment property:
+      # maven.jdbc.version=<version # of JDBC driver>
+      # have a look at buildomatic/conf_source/db/<dbType> for db.properties for a dbType
       
       # for Mac OS you may want to define local path for volume mounts. 
       # Note that defining path for a named volume is not supported 

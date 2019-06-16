@@ -17,22 +17,31 @@ FROM tomcat:9.0-jre8
 
 COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && \
-	apt-get install -y postgresql-client unzip xmlstarlet && \
+RUN echo "apt-get" && \
+    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
+	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
 	rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
-    unzip /tmp/jasperserver.zip -d /usr/src/jasperreports-server && \
+    echo "unzip WAR File installer" && \
+    unzip /tmp/jasperserver.zip -d /usr/src/jasperreports-server > /dev/null && \
     rm -rf /tmp/* && \
     mv /usr/src/jasperreports-server/jasperreports-server-*/* /usr/src/jasperreports-server && \
+    echo "unzip JasperReports Server WAR to Tomcat" && \
 	unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
-		-d $CATALINA_HOME/webapps/jasperserver-pro && \
+		-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
 	rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
-	chmod +x /usr/src/jasperreports-server/buildomatic/js-ant && \
-	chmod +x /usr/src/jasperreports-server/apache-ant/bin/*
+	# java shouldn't be there - just to make sure
+	rm -rf /usr/src/jasperreports-server/java && \
+	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
+	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
+	echo "Check JAVA environment" && \
+    env | grep JAVA && \
+    java -version
+
 
 ENV PHANTOMJS_VERSION 2.1.1
 
