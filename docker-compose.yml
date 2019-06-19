@@ -8,7 +8,7 @@ version: '3'
 
 services:
   jasperserver-pro:
-    image: jasperserver-pro:init-test
+    image: jasperserver-pro:7.2.0
     
     build: .
     
