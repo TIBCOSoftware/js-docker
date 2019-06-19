@@ -17,7 +17,7 @@ FROM tomcat:9.0-jre8
 
 COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 
-RUN echo "apt-get" && \
+RUN echo "apt-get" && echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
 	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
@@ -47,9 +47,8 @@ ENV PHANTOMJS_VERSION 2.1.1
 
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
-RUN wget \
-    "https://bitbucket.org/ariya/phantomjs/downloads/\
-phantomjs-2.1.1-linux-x86_64.tar.bz2" \
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+     wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
     -O /tmp/phantomjs.tar.bz2 --no-verbose && \
     tar -xjf /tmp/phantomjs.tar.bz2 -C /tmp && \
     rm -f /tmp/phantomjs.tar.bz2 && \
@@ -68,8 +67,8 @@ phantomjs-2.1.1-linux-x86_64.tar.bz2" \
 
 ENV POSTGRES_JDBC_DRIVER_VERSION 42.2.5
 
-RUN wget \
-    "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
     -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
 # Set default Java options for Tomcat.
@@ -113,8 +112,15 @@ RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 # or use dynamic ports.
 EXPOSE 8080 ${HTTPS_PORT:-8443}
 
+# bundled installer for Linux changes these scripts badly: fix them
+
+COPY scripts/ant /usr/src/jasperreports-server/apache-ant/bin
+COPY scripts/js-import-export.sh /usr/src/jasperreports-server/buildomatic/bin
 COPY scripts/entrypoint.sh /
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh && \
+	chmod +x /usr/src/jasperreports-server/apache-ant/bin/ant && \
+	chmod +x /usr/src/jasperreports-server/buildomatic/bin/js-import-export.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Default action executed by entrypoint script.
