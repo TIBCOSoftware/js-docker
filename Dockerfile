@@ -37,6 +37,7 @@ RUN echo "apt-get" && echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/nu
 	# java shouldn't be there - just to make sure
 	rm -rf /usr/src/jasperreports-server/java && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
+	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
 	echo "Check JAVA environment" && \
     env | grep JAVA && \
@@ -112,14 +113,8 @@ RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 # or use dynamic ports.
 EXPOSE 8080 ${HTTPS_PORT:-8443}
 
-# bundled installer for Linux changes these scripts badly: fix them
-
-COPY scripts/ant /usr/src/jasperreports-server/apache-ant/bin
-COPY scripts/js-import-export.sh /usr/src/jasperreports-server/buildomatic/bin
 COPY scripts/entrypoint.sh /
-RUN chmod +x /entrypoint.sh && \
-	chmod +x /usr/src/jasperreports-server/apache-ant/bin/ant && \
-	chmod +x /usr/src/jasperreports-server/buildomatic/bin/js-import-export.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 

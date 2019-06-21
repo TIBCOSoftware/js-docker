@@ -86,7 +86,7 @@ To download a zip of js-docker:
 Select Open in Desktop if you have a Git Desktop installed. This will clone the repository for you.
  
 If you have the Git command line installed, you can clone the JasperReports Server Docker github repository at 
-[https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker):
+[https://github.com/TIBCOSoftware/js-docker](https://github.com/TIBCOSoftware/js-docker):
 
 ```console
 $ git clone https://github.com/TIBCOSoftware/js-docker
@@ -114,7 +114,7 @@ JasperReports Server from the shell
 ## Get the JasperReports Server WAR file installer
 
 Download the JasperReports Server WAR File installer zip archive from the TIBCO eDelivery
-or build it from a bundled installer [Jaspersoft Community Wiki article](https://community.jaspersoft.com/wiki/creating-jasperreports-server-war-file-installer-bundled-installer)
+or build it from a bundled installer [Jaspersoft WAR File Installer builder](buildWARFileInstaller)
 
 Copy the installer zip file to the `resources` directory in the repository structure.
 For example, if you have downloaded the zip to your ~/Downloads directory:

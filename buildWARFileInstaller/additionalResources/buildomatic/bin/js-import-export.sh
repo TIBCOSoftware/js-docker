@@ -41,14 +41,15 @@ export ADDITIONAL_CONFIG_DIR=$BASEDIR/build_conf/default
 #
 # If "../java/bin/java" exists, use it
 
+JAVA_EXEC=java
+
 if test -f $BASEDIR/../java/bin/java
 then
     echo "Using Bundled version of Java" 
     JAVA_HOME=$BASEDIR/../java
     PATH=$JAVA_HOME/bin:$PATH
+    JAVA_EXEC=$JAVA_HOME/bin/java
 fi
-
-JAVA_EXEC=$JAVA_HOME/bin/java
 
 # Add the java memory options to JAVA_OPTS
 
