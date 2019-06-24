@@ -106,7 +106,7 @@ docker-compose
   - `README.md` - short description of `resources` structure
 - `scripts\`
   - `entrypoint.sh` - sample runtime configuration for starting and running JasperReports Server from the shell
-- `kubernetes` - directory of JasperReports Server Kubernetes configuration [https://github.com/TIBCOSoftware/js-docker/kubernetes](https://github.com/TIBCOSoftware/js-docker/kubernetes)
+- `kubernetes` - directory of JasperReports Server Kubernetes configuration [https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
 
 
 ## Get the JasperReports Server WAR file installer
