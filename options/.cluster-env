@@ -1,0 +1,34 @@
+
+JAVA_OPTS=-Djasperserver.cache.jms.provider=tcp://activemq:61616
+
+# if using repository database in a container, See cluster-docker-compose.yml
+#DB_HOST=jrs-database
+
+# point to the outside world for postgres instance
+#DB_HOST=10.97.22.80
+
+# point postgres on localhost: Docker Desktop for Windows and Amc
+DB_HOST=host.docker.internal
+
+# change JasperReports Server repository database name, for example:
+# DB_NAME=jasperserver
+
+# override default port for repository database
+#DB_PORT=5432
+
+# database access
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+# regenerate JasperReports Server database configuration
+#JRS_DBCONFIG_REGEN=false
+
+#if you want the samples loaded when the repository database is created/updated
+#JRS_LOAD_SAMPLES=true
+
+# If running docker-compose on windows and using volumes
+COMPOSE_CONVERT_WINDOWS_PATHS=1
+
+# these variables if you are creating PostgreSQL in a container via docker-compose
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
