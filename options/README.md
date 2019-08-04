@@ -30,7 +30,7 @@ A JasperReports Server cluster running in containers is made up of:
 
 Note that this configuration does not implement partial session replication. as outlined in the JasperReports Server Ultimate Guide.
 
-*cluster-docker-compose.yml*
+**cluster-docker-compose.yml**
 
 _ActiveMQ_
 
@@ -53,7 +53,7 @@ _HAProxy_
         - /path/to/haproxy:/usr/local/etc/haproxy
 ```
 
-*haproxy.cfg*
+**haproxy.cfg**
 
 Refer to the directory this file is in, in the `/path/to/haproxy` volume mount.
 
@@ -71,13 +71,13 @@ backend jasperserver-pro
 
 This section in the haproxy.cfg presents a single URL on port 80 and load balances across 2 JasperReports Servers, launched via the `cluster-docker-compose.yml`.
 
-*jms-cluster-cache.zip*
+**jms-cluster-cache.zip**
 
 To be put in `/path/to/jasperserver-pro/customization/directory` to be loaded into the JasperReports Server containers, within the JasperReports Server WAR.
 
 Contains ehcache configuration files that point to a JMS provider.
 
-*.cluster_env*
+**.cluster_env**
 
 Usual environment variables, with one addition for caching.
 
