@@ -72,11 +72,6 @@ RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
      wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
     -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
-# Set default Java options for Tomcat.
-# using XX:+UseG1GC - default Java GC in later versions of Java 8
-# use cool Java docker optimizations
-ENV JAVA_OPTS="-XX:MaxMetaspaceSize=378m -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
-
 # Configure tomcat for SSL by default with a self-signed certificate.
 # Option to set up JasperReports Server to use HTTPS only.
 #

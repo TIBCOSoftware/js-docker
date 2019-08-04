@@ -14,8 +14,8 @@ services:
     
     # expose port on the host
     ports:
-      - "8080:8080"
-      - "8443:8443"
+      - 8080:8080
+      - 8443:8443
     
     # set depends on js_database Postgresql service
     depends_on:
@@ -64,6 +64,10 @@ services:
       #
       # Under Docker for Windows, volumes have to be under the logged in user's User area
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license 
+
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpu_shares: 256
  
  # sample databases too if configured
   jasperserver_pro_repository:

@@ -106,7 +106,10 @@ docker-compose
   - `README.md` - short description of `resources` structure
 - `scripts\`
   - `entrypoint.sh` - sample runtime configuration for starting and running JasperReports Server from the shell
-- `kubernetes` - directory of JasperReports Server Kubernetes configuration [https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
+- `kubernetes` - directory of JasperReports Server Kubernetes configuration [https://github.com/TIBCOSoftware/js-docker/kubernetes](https://github.com/TIBCOSoftware/js-docker/kubernetes)
+  - `README.md` - JasperReports Server Kubernetes documentation
+- `options\` - directory of optional configurations and customizations for JasperReports Server containers
+  - `README.md` - options documentation
 
 
 ## Get the JasperReports Server WAR file installer
@@ -126,15 +129,14 @@ These can be passed on the command line with -e, in an env-file, docker-compose.
 
 Environment Variable Name | Notes |
 ------------ | ------------- |
-`HTTPS_PORT` | Defaults to 8443 |
-`HTTP_PORT` | Defaults to 8080. Cannot be overridden |
-`JAVA_OPTS` | command line options passed to OpenJDK 8 / Tomcat 9 |
-`POSTGRES_JDBC_DRIVER_VERSION` | defaults to 42.2.5. If you change this in the Dockerfile, the new version will be downloaded from https://jdbc.postgresql.org/download.html |
+`HTTP_PORT` | 8080. Cannot be overridden |
+`HTTPS_PORT` | Default: 8443 |
  | |
- | A self signed SSL certificate is configured for the Tomcat environment. |
-`DN_HOSTNAME` | self signed certificate host name. Defaults to "localhost.localdomain" |
-`KS_PASSWORD` | default keystore password. Defaults to "changeit" |
-`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. | 
+`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. | 
+ | A self signed SSL certificate is defined for Tomcat. |
+`DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
+`KS_PASSWORD` | Keystore password. Default: "changeit" |
+`POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this in the Dockerfile, the new version will be downloaded from https://jdbc.postgresql.org/download.html |
 
 # docker run time environment variables
 These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
@@ -143,29 +145,29 @@ If the `DB_NAME` repository database does not exist in the configured Postgresql
 
 Environment Variable Name | Notes |
 ------------ | ------------- |
-`DB_TYPE` | valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. default to postgresql. |
-`DB_HOST` | database host IP or domain name. defaults to postgres |
-`DB_PORT` | database port. if not set, JasperReports Server will use the default port for the dbType |
-`DB_USER` | database username. defaults to postgres |
-`DB_PASSWORD` | database password. defaults to postgres |
-`DB_NAME` | JasperReports Server repository schema name in the database. defaults to jasperserver |
-`JDBC_DRIVER_VERSION` | optional. for non-PostgreSQL databases. Requires a JDBC driver with the required version accessible through a volume. See [Use of Volumes](#jasperreports-server-use-of-volumes)  |
-`POSTGRES_JDBC_DRIVER_VERSION` | optional, defaults to 42.2.5. If you change this, the new version will need to be installed by volume as above. See [Use of Volumes](#jasperreports-server-use-of-volumes) |
-`JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. defaults to false | 
+`DB_TYPE` | valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Default: postgresql. |
+`DB_HOST` | database host IP or domain name. Default: postgres |
+`DB_PORT` | database port. Default: default port for the dbType |
+`DB_USER` | database username. Default: postgres |
+`DB_PASSWORD` | database password. Default: postgres |
+`DB_NAME` | JasperReports Server repository schema name in the database. Default: "jasperserver" |
  | |
-`HTTPS_PORT` | Defaults to 8443 | 
-`HTTP_PORT` | Defaults to 8080. Cannot be overridden | 
-`JAVA_OPTS` | command line options passed to OpenJDK 8 / Tomcat 9 | 
-`JRS_DBCONFIG_REGEN` | Forces updates to the repository JNDI database configuration plus the JDBC driver in tomcat/lib. Defaults to false. |
+`HTTP_PORT` | 8080. Cannot be overridden | 
+`HTTPS_PORT` | Default: 8443 | 
+ | |
+`JAVA_OPTS` | Command line options passed to OpenJDK 8 / Tomcat 9. Optional |
+ | The Java heap size of JasperReports Server is automatically managed to conform to the container size. |
+`JAVA_MIN_RAM_PERCENTAGE` | Java heap minimum percentage in the container. Default: 33.3% |
+`JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
+`JDBC_DRIVER_VERSION` | optional. for non-PostgreSQL databases. Requires a JDBC driver with the required version accessible through a volume. See [Use of Volumes](#jasperreports-server-use-of-volumes)  |
+`POSTGRES_JDBC_DRIVER_VERSION` | optional, Default: 42.2.5. If you change this, the new version will need to be installed by volume as above. See [Use of Volumes](#jasperreports-server-use-of-volumes) |
+ | |
+`JRS_DBCONFIG_REGEN` | Forces updates to the repository JNDI database configuration plus the JDBC driver in tomcat/lib. Default: false. |
+`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
+`JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. Default: false | 
  | |
  | Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. |
-`KS_PASSWORD` | default keystore password. Defaults to "changeit" |
-`JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default to false. |
- | |
- If you are running Postgresql in a container via docker-compose: | If these variables are not set, PostgreSQL will be launched with no access restrictions. |
-`POSTGRES_PASSWORD` | |
-`POSTGRES_USER` | |
-
+`KS_PASSWORD` | Keystore password. Default: "changeit" |
 
 
 # Configuring JasperReports Server with volumes
@@ -255,6 +257,14 @@ $ docker-compose build
 $ docker-compose up -d
 ```
 
+Note that you should set the amount of memory and CPU that each JasperReports Server container uses. The options below in the `docker-compose.yml` are recommended as starting points, and may need to be increased if the container is under heavy load. The `entrypoint.sh` configures the underlying Java memory settings according to the container memory settings.
+
+```console
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpu_shares: 256
+```
+
 ## Using a pre-existing database
 
 To build and run a JasperReports Server container with a pre-existing
@@ -274,7 +284,7 @@ for your build. This image will be used to create containers.
 - `some-jasperserver` is the name of the new JasperReports Server container.
 - `some-external-host` is the hostname, fully qualified domain name
 (FQDN), or IP address of your database server.
--  `username` and `password` are the user credentials for your PostgreSQL
+-  `username` and `password` are the user credentials for your repository database
 server.
 
 ## Creating a new PostgreSQL database in Docker

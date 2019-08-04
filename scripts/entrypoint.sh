@@ -120,8 +120,41 @@ run_jasperserver() {
   # run only in HTTPS. Update keystore and password if given
   config_ssl
 
+  # Set Java options for Tomcat.
+  # using G1GC - default Java GC in later versions of Java 8
+  
+  # setting heap based on info:
+  # https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e 
+  # https://stackoverflow.com/questions/49854237/is-xxmaxramfraction-1-safe-for-production-in-a-containered-environment
+  # https://www.oracle.com/technetwork/java/javase/8u191-relnotes-5032181.html
+  
+  # Assuming we are using a Java 8 version beyond 8u191, we can use the Java 10+ JAVA_OPTS
+  # for containers
+  
+  # so not using automated Java docker optimizations
+  # ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+  
+  # instead, explicitly setting heap based on container 
+  
+  CONTAINER_MEMORY_BYTES=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
+  echo "Container memory allocation: $CONTAINER_MEMORY_BYTES bytes"
+  
+  # set java heap to container memory size - 200 MB
+  #(( OS_MEMORY_ALLOCATION = 200 * 1024 * 1024 ))
+  #(( MAX_HEAP_IN_BYTES = CONTAINER_MEMORY_BYTES - OS_MEMORY_ALLOCATION ))
+  #echo "Heap allocation: $MAX_HEAP_IN_BYTES bytes."
+  #JAVA_OPTS="$JAVA_OPTS -XX:MaxRAMFraction=1 -XX:MaxRAM=$MAX_HEAP_IN_BYTES"
+  
+  # Better to use % of allocated memory.
+  # Assuming a minimum of 3GB for the container => a max of 2.4GB for heap
+  # defaults to 33/3% Min, 80% Max
+  
+  JAVA_MIN_RAM_PCT=${JAVA_MIN_RAM_PERCENTAGE:-33.3}
+  JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
+  JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT"
+  
   # start tomcat
-  catalina.sh run
+  exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
 }
 
 config_license() {
@@ -409,16 +442,6 @@ apply_customizations() {
 		fi
 	  done
 	fi
-  
-  CLUSTERED=${CLUSTERED:-false}
-  
-  # because context.xml is updated by setup_jasperserver above for the JNDI settings,
-  # we need to delete the Manager tag here
-  # other clustering settings will need to be in customizations and tomcat-customizations
-  if "$CLUSTERED" = "true" ; then
-    xmlstarlet ed --inplace -d "/Context/Manager" \
-	  $CATALINA_HOME/webapps/jasperserver-pro/META-INF/context.xml
-  fi  
 }
 
 import() {
