@@ -31,10 +31,10 @@ services:
 
     #volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      #- jrs_license:/usr/local/share/jasperreports-pro/license 
+      #- jrs_license:/usr/local/share/jasperserver-pro/license 
       
       # zip files in alphabetical order exploded into webapps/jasperserver-pro
-      #- jrs_customization:/usr/local/share/jasperreports-pro/customization
+      #- jrs_customization:/usr/local/share/jasperserver-pro/customization
       
       # zip files in alphabetical order exploded into $CATALINA_HOME
       #- jrs_tomcat_customization:/usr/local/share/jasperserver-pro/tomcat-customization
@@ -59,8 +59,8 @@ services:
       # Note that defining path for a named volume is not supported 
       # by Compose. For example:
       # - /some-local-path:/usr/local/tomcat/webapps/jasperserver-pro
-      # - ~/jasperreports-pro/license:/usr/local/share/jasperreports-pro/license
-      # - /tmp/customization:/usr/local/share/jasperreports-pro/customization
+      # - ~/jasperserver-pro/license:/usr/local/share/jasperserver-pro/license
+      # - /tmp/customization:/usr/local/share/jasperserver-pro/customization
       #
       # Under Docker for Windows, volumes have to be under the logged in user's User area
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license 
@@ -69,7 +69,7 @@ services:
     mem_reservation: 1g
     cpu_shares: 256
  
- # sample databases too if configured
+ # repository and sample databases too if configured
   jasperserver_pro_repository:
     image: postgres:10
     env_file: .env
