@@ -4,7 +4,7 @@
 
 # docker-compose.yml example for JasperReports Server
 
-version: '3'
+version: '2'
 
 services:
   jasperserver-pro:
