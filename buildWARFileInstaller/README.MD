@@ -1,12 +1,12 @@
-# JasperReports Server
+# JasperReports Server WAR File Installer
 
 When evaluating JasperReports® Server, the downloads from jaspersoft.com are "bundled installers" that deploy a complete installation with Tomcat and Postgres.
 
 The WAR file installer referred to in the JasperReports Server Installation Guide is more flexible, with repository deployments into Oracle, SQL Server, DB2 and MySQL, and app server installs into Websphere and Weblogic. Also the WAR file installer is needed to do a Docker/Kubernetes deployment - see (https://github.com/TIBCOSoftware/js-docker)
 
-The attached Window bat and Linux/Unix sh scripts build a JasperReports Server WAR file installer based on a previously installed bundled installation.
+The WAR File Installer for JasperReports Server commercial editions can be downloaded by Jaspersoft customers from edelivery.tibco.com. Or a bundled installer can be used to create a WAR FIle Installer using the process below.
 
-1. Install JasperReports Server onto a machine.
+1. Install JasperReports Server using a bundled installer.
 2. Include the files and directory in this buildWARFileInstaller directory of the js-docker repository into the JasperReports Server install directory you set during the installation.
     * \Jaspersoft\jasperreports-server-VERSION by default on Windows.
 3. Open a command line and cd into the install directory.
