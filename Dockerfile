@@ -1,7 +1,12 @@
 # Copyright (c) 2019. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
-FROM tomcat:9.0-jre8
+
+# Tomcat official Docker Hub images are not using Oracle anymore, hence the rename
+#FROM tomcat:9.0-jre8
+
+FROM tomcat:9.0-jdk8-openjdk
+
 
 # This Dockerfile requires the JasperReports Server WAR file installer file 
 # in the resources directory below the Dockerfile.
