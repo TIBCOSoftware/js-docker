@@ -97,20 +97,25 @@ $ cd js-docker
 
 The js-docker github repository contains:
 
-- `Dockerfile` - container build commands
-- `docker-compose.yml` - sample configuration for building and running via
-docker-compose
+- `Dockerfile` - for base Tomcat based image on ports 8080 and 8443
+- `Dockerfile-port80` - runs on ports 80 and 443
+- `Dockerfile-exploded-port80` - as above and gets resources for image build from exploded WAR file installer
+- `Dockerfile-s3-config` - builds an image based on a JasperReports Server image to load config files from S3 before launching app
+
+- `docker-compose.yml` - sample configuration for building and running via docker-compose
 - `.env` - sample file with environment variables for docker-compose
 - `README.md` - this document
-- `resources\` - directory where you put your JasperReports Server zip file or other files you want to copy to the container
-  - `README.md` - short description of `resources` structure
-- `scripts\`
-  - `entrypoint.sh` - sample runtime configuration for starting and running JasperReports Server from the shell
+- `resources\` - directory where you put your JasperReports Server zip file copied into the image at build time
+- `scripts\` - entrypoints for image
+  - `entrypoint.sh` - base runtime configuration for a JasperReports Server container
+  - `entrypoint-port80.sh` - as above running on ports 80 and 443
+  - `entrypoint-aws.sh` - 
 - `kubernetes` - directory of JasperReports Server Kubernetes configuration
   - `README.md` - JasperReports Server Kubernetes documentation
 - `options\` - directory of optional configurations and customizations for JasperReports Server containers
   - `README.md` - options documentation
   - includes creating a JasperReports Server cluster
+
 
 
 ## Get the JasperReports Server WAR file installer
@@ -125,14 +130,19 @@ For example, if you have downloaded the zip to your ~/Downloads directory:
 $ cp ~/Downloads/TIB_js-jrs_X.X.X_bin.zip resources/
 ```
 
+## (Alternative to WAR file installer) Build from a JasperReports Server AWS Marketplace AMI
+
+See https://community.jaspersoft.com/wiki/building-and-running-jasperreports-server-containers-aws-ecs-and-eks
+- Deploy JasperReports Server images into ECR
+- Define a Postgres RDS instance for the JasperReports Server to use as a repository
+- Define ECS tasks to deploy JasperReports Server
+- (coming) Deploy JasperReports Server to EKS
+
 # docker build time environment variables
 These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
 
 Environment Variable Name | Notes |
 ------------ | ------------- |
-`HTTP_PORT` | 8080. Cannot be overridden |
-`HTTPS_PORT` | Default: 8443 |
- | |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. | 
  | A self signed SSL certificate is defined for Tomcat. |
 `DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
@@ -153,7 +163,7 @@ Environment Variable Name | Notes |
 `DB_PASSWORD` | database password. Default: postgres |
 `DB_NAME` | JasperReports Server repository schema name in the database. Default: "jasperserver" |
  | |
-`HTTP_PORT` | 8080. Cannot be overridden | 
+`HTTP_PORT` | 8080. Cannot be overridden. Use non default Dockerfiles to use 80/443 standard ports. | 
 `HTTPS_PORT` | Default: 8443 | 
  | |
 `JAVA_OPTS` | Command line options passed to OpenJDK 8 / Tomcat 9. Optional |
@@ -169,6 +179,8 @@ Environment Variable Name | Notes |
  | |
  | Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. |
 `KS_PASSWORD` | Keystore password. Default: "changeit" |
+ | |
+`S3_BUCKET_NAME` | S3 bucket to be used with a jasperserver-pro-aws image |
 
 
 # Configuring JasperReports Server with volumes
