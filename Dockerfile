@@ -7,7 +7,21 @@
 
 FROM tomcat:9.0-jdk8-openjdk
 
+ARG PHANTOMJS_VERSION
+ARG DN_HOSTNAME
+ARG KS_PASSWORD
+ARG JRS_HTTPS_ONLY
+ARG HTTP_PORT
+ARG HTTPS_PORT
+ARG POSTGRES_JDBC_DRIVER_VERSION
 
+ENV PHANTOMJS_VERSION 		${PHANTOMJS_VERSION:-2.1.1}
+ENV DN_HOSTNAME 		${DN_HOSTNAME:-localhost.localdomain}
+ENV KS_PASSWORD 		${KS_PASSWORD:-changeit}
+ENV JRS_HTTPS_ONLY 		${JRS_HTTPS_ONLY:-false}
+ENV HTTP_PORT 			${HTTP_PORT:-8080}
+ENV HTTPS_PORT 			${HTTPS_PORT:-8443}
+ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
 # This Dockerfile requires the JasperReports Server WAR file installer file 
 # in the resources directory below the Dockerfile.
 
@@ -22,7 +36,8 @@ FROM tomcat:9.0-jdk8-openjdk
 
 COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 
-RUN echo "apt-get" && echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+RUN echo "apt-get" && \
+    echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
 	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
@@ -31,14 +46,17 @@ RUN echo "apt-get" && echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/nu
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
+    #
     echo "unzip WAR File installer" && \
     unzip /tmp/jasperserver.zip -d /usr/src/jasperreports-server > /dev/null && \
     rm -rf /tmp/* && \
     mv /usr/src/jasperreports-server/jasperreports-server-*/* /usr/src/jasperreports-server && \
+    #
     echo "unzip JasperReports Server WAR to Tomcat" && \
 	unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
 		-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
 	rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
+    #
 	# java shouldn't be there - just to make sure
 	rm -rf /usr/src/jasperreports-server/java && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
@@ -46,21 +64,17 @@ RUN echo "apt-get" && echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/nu
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
 	echo "Check JAVA environment" && \
     env | grep JAVA && \
-    java -version
-
-
-ENV PHANTOMJS_VERSION 2.1.1
-
+    java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
-RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-     wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
-    -O /tmp/phantomjs.tar.bz2 --no-verbose && \
+    # echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+    wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
+        -O /tmp/phantomjs.tar.bz2 --no-verbose && \
     tar -xjf /tmp/phantomjs.tar.bz2 -C /tmp && \
     rm -f /tmp/phantomjs.tar.bz2 && \
     mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
     ln -sf /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin && \
-    rm -rf /tmp/*
+    rm -rf /tmp/* && \
 # In case you wish to download from a different location you can manually
 # download the archive and copy from resources/ at build time. Note that you
 # also # need to comment out the preceding RUN command
@@ -70,22 +84,15 @@ RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
 #    mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
 #    ln -sf /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin && \
 #    rm -rf /tmp/*
-
-ENV POSTGRES_JDBC_DRIVER_VERSION 42.2.5
-
-RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
-    -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
-
+    #
+    # echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+    wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
+        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
+#
 # Configure tomcat for SSL by default with a self-signed certificate.
 # Option to set up JasperReports Server to use HTTPS only.
 #
-ENV DN_HOSTNAME=${DN_HOSTNAME:-localhost.localdomain} \
-    KS_PASSWORD=${KS_PASSWORD:-changeit} \
-    JRS_HTTPS_ONLY=${JRS_HTTPS_ONLY:-false} \
-    HTTPS_PORT=${HTTPS_PORT:-8443}
-
-RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
+    keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 		-storetype PKCS12 \
         -storepass "${KS_PASSWORD}" \
         -keypass "${KS_PASSWORD}" \
@@ -93,7 +100,7 @@ RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 	keytool -list -keystore /root/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
     xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \ 
         -n Connector -v "" --var connector-ssl '$prev' \
-    --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
+    --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT}" \
     --insert '$connector-ssl' --type attr -n protocol -v \ 
         "org.apache.coyote.http11.Http11NioProtocol" \
     --insert '$connector-ssl' --type attr -n maxThreads -v "150" \
@@ -111,7 +118,7 @@ RUN keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"
 # or use dynamic ports.
-EXPOSE 8080 ${HTTPS_PORT:-8443}
+EXPOSE ${HTTP_PORT} ${HTTPS_PORT}
 
 COPY scripts/entrypoint.sh /
 RUN chmod +x /entrypoint.sh

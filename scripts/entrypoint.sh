@@ -118,7 +118,7 @@ run_jasperserver() {
 
   # If JRS_HTTPS_ONLY is set, sets JasperReports Server to
   # run only in HTTPS. Update keystore and password if given
-  config_ssl
+  config_ports_and_ssl
 
   # Set Java options for Tomcat.
   # using G1GC - default Java GC in later versions of Java 8
@@ -130,22 +130,6 @@ run_jasperserver() {
   
   # Assuming we are using a Java 8 version beyond 8u191, we can use the Java 10+ JAVA_OPTS
   # for containers
-  
-  # so not using automated Java docker optimizations
-  # ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
-  
-  # instead, explicitly setting heap based on container 
-  
-  CONTAINER_MEMORY_BYTES=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
-  echo "Container memory allocation: $CONTAINER_MEMORY_BYTES bytes"
-  
-  # set java heap to container memory size - 200 MB
-  #(( OS_MEMORY_ALLOCATION = 200 * 1024 * 1024 ))
-  #(( MAX_HEAP_IN_BYTES = CONTAINER_MEMORY_BYTES - OS_MEMORY_ALLOCATION ))
-  #echo "Heap allocation: $MAX_HEAP_IN_BYTES bytes."
-  #JAVA_OPTS="$JAVA_OPTS -XX:MaxRAMFraction=1 -XX:MaxRAM=$MAX_HEAP_IN_BYTES"
-  
-  # Better to use % of allocated memory.
   # Assuming a minimum of 3GB for the container => a max of 2.4GB for heap
   # defaults to 33/3% Min, 80% Max
   
@@ -153,6 +137,7 @@ run_jasperserver() {
   JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
   JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT"
   
+  echo "JAVA_OPTS = $JAVA_OPTS"
   # start tomcat
   exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
 }
@@ -167,8 +152,6 @@ config_license() {
   if [ ! -f "$JRS_LICENSE_FINAL/jasperserver.license" ]; then
 	echo "Used internal evaluation license"
     cp /usr/src/jasperreports-server/jasperserver.license ~
-	#\
-    #  /usr/local/share/jasperserver-pro/license
   else
     echo "Used license at $JRS_LICENSE_FINAL"
 	cp $JRS_LICENSE_FINAL/jasperserver.license ~
@@ -349,7 +332,13 @@ is not correctly configured."
   fi
 }
 
-config_ssl() {
+config_ports_and_ssl() {
+  #
+  # pushing Tomcat to run on HTTP_PORT and HTTPS_PORT
+  echo "Tomcat to run on HTTP on ${HTTP_PORT} and HTTPS on ${HTTPS_PORT}"
+  sed -i "s/port=\"[0-9]\+\" protocol=\"HTTP\/1.1\"/port=\"${HTTP_PORT}\" protocol=\"HTTP\/1.1\"/" $CATALINA_HOME/conf/server.xml
+  sed -i "s/redirectPort=\"[0-9]\+\"/redirectPort=\"${HTTPS_PORT}\"/" $CATALINA_HOME/conf/server.xml
+
   # if $JRS_HTTPS_ONLY is set in environment to true, disable HTTP support
   # in JasperReports Server.
   JRS_HTTPS_ONLY=${JRS_HTTPS_ONLY:-false}
