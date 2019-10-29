@@ -232,10 +232,6 @@ init_databases() {
   
   currentDatabase=""
   
-  JRS_LOAD_SAMPLES=${JRS_LOAD_SAMPLES:-false}
-  #loadSamples=[[ "$1" = "samples" -o "$JRS_LOAD_SAMPLES" = "true" ]]
-  echo "JRS_LOAD_SAMPLES $JRS_LOAD_SAMPLES, command $1" 
-  
   cd /usr/src/jasperreports-server/buildomatic/
   
   while read -r line
@@ -287,28 +283,31 @@ init_databases() {
   
   echo "Database init status: $DB_NAME : $sawJRSDBName foodmart: $sawFoodmartDBName  sugarcrm $sawSugarCRMDBName"
   if [ "$sawJRSDBName" = "no" ]; then
-	  setup_jasperserver set-pro-webapp-name create-js-db init-js-db-pro import-minimal-pro
+    echo "Initializing $DB_NAME repository database"
+ 	setup_jasperserver set-pro-webapp-name create-js-db init-js-db-pro import-minimal-pro
+  
+	JRS_LOAD_SAMPLES=${JRS_LOAD_SAMPLES:-false}
+	  
+	# Only install the samples if explicitly requested
+	if [ "$1" = "samples" -o "$JRS_LOAD_SAMPLES" = "true" ]; then
+		echo "Samples load requested"
+		# if foodmart database not present - setup database
+		if [ "$sawFoodmartDBName" = "no" ]; then
+			setup_jasperserver create-foodmart-db \
+							load-foodmart-db \
+							update-foodmart-db
+		fi
+
+		# if sugarcrm database not present - setup database
+		if [ "$sawSugarCRMDBName" = "no" ]; then
+			setup_jasperserver create-sugarcrm-db \
+							load-sugarcrm-db 
+		fi
+
+		setup_jasperserver import-sample-data-pro
+	fi
   else
     echo "$DB_NAME repository database already exists: not creating and loading"
-  fi
-	  
-  # Only install the samples if explicitly requested
-  if [ "$1" = "samples" -o "$JRS_LOAD_SAMPLES" = "true" ]; then
-    echo "Samples load requested"
-	# if foodmart database not present - setup database
-	if [ "$sawFoodmartDBName" = "no" ]; then
-		setup_jasperserver create-foodmart-db \
-						load-foodmart-db \
-						update-foodmart-db
-	fi
-
-	# if sugarcrm database not present - setup database
-	if [ "$sawSugarCRMDBName" = "no" ]; then
-		setup_jasperserver create-sugarcrm-db \
-						load-sugarcrm-db 
-	fi
-	
-	setup_jasperserver import-sample-data-pro
   fi
 }
 
