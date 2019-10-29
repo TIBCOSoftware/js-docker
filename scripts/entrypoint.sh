@@ -63,12 +63,12 @@ dbPort=$DB_PORT
 _EOL_
   fi
   
-  JRS_DEPLOY_CUSTOMIZATION=${JRS_DEPLOY_CUSTOMIZATION:-/usr/local/share/jasperserver-pro/deploy-customization}
+  JRS_DEFAULT_MASTER=${JRS_DEFAULT_MASTER:-/usr/local/share/jasperserver-pro/default-master}
 
-  if [[ -f "$JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties" ]]; then
+  if [[ -f "$JRS_DEFAULT_MASTER/default_master_additional.properties" ]]; then
     # note that because these properties are at the end of the properties file
 	# they will have precedence over the ones created above
-    cat $JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties >> /usr/src/jasperreports-server/buildomatic/default_master.properties
+    cat $JRS_DEFAULT_MASTER/default_master_additional.properties >> /usr/src/jasperreports-server/buildomatic/default_master.properties
   fi
 }
 

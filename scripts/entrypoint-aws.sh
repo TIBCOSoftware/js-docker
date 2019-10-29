@@ -21,8 +21,8 @@ initialize_from_S3() {
   
   # get default_master/default_master_additional.properties into /usr/local/share/jasperserver-pro/deploy-customization
   
-  if aws s3 ls s3://${S3_BUCKET_NAME}/default_master/default_master_additional.properties ; then
-    aws s3 cp s3://${S3_BUCKET_NAME}/default_master/default_master_additional.properties /usr/local/share/jasperserver-pro/deploy-customization/default_master_additional.properties
+  if aws s3 ls s3://${S3_BUCKET_NAME}/default-master/default_master_additional.properties ; then
+    aws s3 cp s3://${S3_BUCKET_NAME}/default-master/default_master_additional.properties /usr/local/share/jasperserver-pro/default_master/default_master_additional.properties
   fi
   
   # get license/jasperserver.license into /usr/local/share/jasperserver-pro/license
