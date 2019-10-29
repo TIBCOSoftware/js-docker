@@ -8,6 +8,7 @@
    1. [Get the JaspeReports Server Docker configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
    1. [Repository structure](#the-installed-repository-structure)
    1. [Get the JasperReports Server WAR file installer](#get-the-jasperreports-server-war-file-installer)
+   1. [Deploy JasperReports Server to AWS](#deploy-to-aws-ecs-and-eks)
 1. [docker build time environment variables](#docker-build-time-environment-variables)
 1. [docker run time environment variables](#docker-run-time-environment-variables)
 1. [Configuring JasperReports Server with volumes](#configuring-jasperreports-server-with-volumes)
@@ -128,10 +129,10 @@ For example, if you have downloaded the zip to your ~/Downloads directory:
 $ cp ~/Downloads/TIB_js-jrs_X.X.X_bin.zip resources/
 ```
 
-## (Alternative to WAR file installer) Build from a JasperReports Server AWS Marketplace AMI
+## Deploy to AWS ECS and EKS
 
 See https://community.jaspersoft.com/wiki/building-and-running-jasperreports-server-containers-aws-ecs-and-eks
-- Deploy JasperReports Server images into ECR
+- Deploy JasperReports Server images into ECR from an AWS Marketplace AMI
 - Define a Postgres RDS instance for the JasperReports Server to use as a repository
 - Define ECS tasks to deploy JasperReports Server
 - (coming) Deploy JasperReports Server to EKS
@@ -166,8 +167,8 @@ Environment Variable Name | Notes |
 `HTTP_PORT` | HTTP port Tomcat runs on. Default: HTTP_PORT in image | 
 `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: HTTPS_PORT in image | 
  | |
-`JAVA_OPTS` | Command line options passed to OpenJDK 8 / Tomcat 9. Optional |
- | The Java heap size of JasperReports Server is automatically managed to conform to the container size. |
+`JAVA_OPTS` | Command line options passed to OpenJDK 8 / Tomcat 9. Optional. The Java heap size of JasperReports Server is automatically managed to conform to the container size.|
+ |  |
 `JAVA_MIN_RAM_PERCENTAGE` | Java heap minimum percentage in the container. Default: 33.3% |
 `JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
 `JDBC_DRIVER_VERSION` | optional. for non-PostgreSQL databases. Requires a JDBC driver with the required version accessible through a volume. See [Use of Volumes](#jasperreports-server-use-of-volumes)  |
@@ -177,8 +178,7 @@ Environment Variable Name | Notes |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 `JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. Default: false | 
  | |
- | Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. |
-`KS_PASSWORD` | Keystore password. Default: "changeit" |
+`KS_PASSWORD` | Keystore password. Default: "changeit". Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below.|
  | |
 `S3_BUCKET_NAME` | S3 bucket to be used with a jasperserver-pro:aws image, Referred to in `entrypoint-aws.sh` |
 
@@ -210,7 +210,7 @@ License | `/usr/local/share/jasperreports-pro/license` | Path to contain jaspers
 JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names can be overridden. | 
 Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names can be overridden. |
 New keystore file | `/usr/local/share/jasperserver-pro/keystore` | .keystore files in this volume loaded into /root. The keystore password must be set as the KS_PASSWORD environment variable.|
- Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
+ Additional default_master installation properties | `/usr/local/share/jasperserver-pro/default-master` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | Include a new version of a JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/<dbType>/jdbc | valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
 
 ## Setting volumes
