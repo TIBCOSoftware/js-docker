@@ -48,7 +48,8 @@ initialize_from_S3() {
 }
 
 # what about import and export?
-# expect that they would be working with the S3 bucket too!
+# expect that folks would be importing/exporting with a S3 bucket too!
+# for now, leave the using mounts approach
 
 initialize_from_S3
 
