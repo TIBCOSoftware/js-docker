@@ -1,4 +1,11 @@
-FROM jasperserver-pro:7.2.0
+
+ARG JasperReportsServerVersion
+
+ENV JasperReportsServerVersion		${JasperReportsServerVersion:-7.2.0}
+
+FROM jasperserver-pro:${JasperReportsServerVersion}
+
+COPY scripts/entrypoint-aws.sh /entrypoint-aws.sh
 
 RUN apt-get update > /dev/null && \
 	apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
@@ -8,12 +15,9 @@ RUN apt-get update > /dev/null && \
         groff \
         less > /dev/null && \
     pip3 install awscli --upgrade && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY scripts/entrypoint-aws.sh /entrypoint-aws.sh
-RUN chmod +x /entrypoint-aws.sh && \
+    rm -rf /var/lib/apt/lists/* && \
+	chmod +x /entrypoint-aws.sh && \
     ls -lsa /
-
 
 ENTRYPOINT ["/entrypoint-aws.sh"]
 
