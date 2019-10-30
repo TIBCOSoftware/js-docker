@@ -16,6 +16,7 @@
    1. [JasperReports Server use of volumes](#jasperreports-server-use-of-volumes)
    1. [Setting volumes](#setting-volumes)
    1. [Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-mac-and-windows)
+   1. [S3 for configuration on AWS](#s3-for-configuration-on-aws)
 1. [Build and run](#build-and-run)
    1. [Building and running with docker-compose](#building-and-running-with-docker-compose)
    1. [Using a pre-existing PostgreSQL database in Docker](#using-a-pre-existing-postgresql-instance-in-docker)
@@ -228,7 +229,7 @@ docker-compose:
 
 If you update the files in a volume listed above, you will need to restart the container, as these are only processed at container start time.
 
-### Paths to data volumes on Mac and Windows
+## Paths to data volumes on Mac and Windows
 
 You can mount a volume to a directory on your local machine.
 For example, to access a license on a local directory on Mac:
@@ -252,6 +253,11 @@ Windows paths need some help with a Docker Compose environment setting:
 ```console
 COMPOSE_CONVERT_WINDOWS_PATHS=1
 ```
+
+## S3 for configuration on AWS
+
+You can use the Dockerfile-s3-config Dockerfile to have the configuration volumes in S3. The entrypoint-aws.sh loads the files from the given S3_BUCKET_NAME environment variable. See https://community.jaspersoft.com/wiki/building-and-running-jasperreports-server-containers-aws-ecs-and-eks
+
 
 # Build and run
 
