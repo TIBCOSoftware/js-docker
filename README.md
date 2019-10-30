@@ -8,7 +8,7 @@
    1. [Get the JaspeReports Server Docker configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
    1. [Repository structure](#the-installed-repository-structure)
    1. [Get the JasperReports Server WAR file installer](#get-the-jasperreports-server-war-file-installer)
-   1. [Deploy JasperReports Server to AWS](#deploy-to-aws-ecs-and-eks)
+   1. [Deploy JasperReports Server to AWS container services](#deploy-to-aws-ecs-and-eks)
 1. [docker build time environment variables](#docker-build-time-environment-variables)
 1. [docker run time environment variables](#docker-run-time-environment-variables)
 1. [Configuring JasperReports Server with volumes](#configuring-jasperreports-server-with-volumes)
@@ -145,10 +145,12 @@ Environment Variable Name | Notes |
 `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
 `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. | 
- | A self signed SSL certificate is defined for Tomcat. |
+  | A self signed SSL certificate is defined for Tomcat. |
 `DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
 `KS_PASSWORD` | Keystore password. Default: "changeit" |
 `POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this in the Dockerfile, the new version will be downloaded from https://jdbc.postgresql.org/download.html |
+ | |
+ `JasperReportsServerVersion` | Used in `Dockerfile-s3-config` to refer to the version this wrapper image is based on |
 
 # docker run time environment variables
 These can be passed on the command line with -e, in an env-file, docker-compose.yml, Kubernetes etc.
@@ -180,7 +182,7 @@ Environment Variable Name | Notes |
  | |
 `KS_PASSWORD` | Keystore password. Default: "changeit". Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below.|
  | |
-`S3_BUCKET_NAME` | S3 bucket to be used with a jasperserver-pro:aws image, Referred to in `entrypoint-aws.sh` |
+`S3_BUCKET_NAME` | S3 bucket to be used with a jasperserver-pro:aws image. Referred to in `entrypoint-aws.sh` |
 
 
 # Configuring JasperReports Server with volumes
