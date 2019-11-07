@@ -15,6 +15,9 @@
 # Sets script to fail if any command fails.
 set -e
 
+BUILDOMATIC_HOME=${BUILDOMATIC_HOME:-/usr/src/jasperreports-server/buildomatic}
+MOUNTS_HOME=${MOUNTS_HOME:-/usr/local/share/jasperserver-pro}
+
 initialize_deploy_properties() {
   # If environment is not set, uses default values for postgres
   DB_TYPE=${DB_TYPE:-postgresql}
@@ -25,7 +28,7 @@ initialize_deploy_properties() {
 
   # Default_master.properties. Modify according to
   # JasperReports Server documentation.
-  cat >/usr/src/jasperreports-server/buildomatic/default_master.properties\
+  cat >${BUILDOMATIC_HOME}/default_master.properties\
 <<-_EOL_
 appServerType=tomcat
 appServerDir=$CATALINA_HOME
@@ -42,13 +45,13 @@ _EOL_
   # set the JDBC_DRIVER_VERSION if it is passed in.
   # Otherwise rely on the default maven.jdbc.version from the dbType
   if [ ! -z "$JDBC_DRIVER_VERSION" ]; then
-    cat >> /usr/src/jasperreports-server/buildomatic/default_master.properties\
+    cat >> ${BUILDOMATIC_HOME}/default_master.properties\
 <<-_EOL_
 maven.jdbc.version=$JDBC_DRIVER_VERSION
 _EOL_
   elif [ "$DB_TYPE" = "postgresql" ]; then
     POSTGRES_JDBC_DRIVER_VERSION=${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-    cat >> /usr/src/jasperreports-server/buildomatic/default_master.properties\
+    cat >> ${BUILDOMATIC_HOME}/default_master.properties\
 <<-_EOL_
 maven.jdbc.version=$POSTGRES_JDBC_DRIVER_VERSION
 _EOL_
@@ -57,18 +60,18 @@ _EOL_
   # set the DB_PORT if it is passed in.
   # Otherwise rely on the default port from the dbType
   if [ ! -z "$DB_PORT" ]; then
-    cat >> /usr/src/jasperreports-server/buildomatic/default_master.properties\
+    cat >> ${BUILDOMATIC_HOME}/default_master.properties\
 <<-_EOL_
 dbPort=$DB_PORT
 _EOL_
   fi
   
-  JRS_DEFAULT_MASTER=${JRS_DEFAULT_MASTER:-/usr/local/share/jasperserver-pro/default-master}
+  JRS_DEPLOY_CUSTOMIZATION=${JRS_DEPLOY_CUSTOMIZATION:-${MOUNTS_HOME}/deploy-customization}
 
-  if [[ -f "$JRS_DEFAULT_MASTER/default_master_additional.properties" ]]; then
+  if [[ -f "$JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties" ]]; then
     # note that because these properties are at the end of the properties file
 	# they will have precedence over the ones created above
-    cat $JRS_DEFAULT_MASTER/default_master_additional.properties >> /usr/src/jasperreports-server/buildomatic/default_master.properties
+    cat $JRS_DEPLOY_CUSTOMIZATION/default_master_additional.properties >> ${BUILDOMATIC_HOME}/default_master.properties
   fi
 }
 
@@ -77,7 +80,7 @@ setup_jasperserver() {
   # execute buildomatic js-ant targets for installing/configuring
   # JasperReports Server.
   
-  cd /usr/src/jasperreports-server/buildomatic/
+  cd ${BUILDOMATIC_HOME}/
   
   for i in $@; do
     # Default buildomatic deploy-webapp-pro target attempts to remove
@@ -147,7 +150,7 @@ config_license() {
   # Non-default location (~/ or /root) used to allow
   # for storing license in a volume. To update license
   # replace license file, restart container
-  JRS_LICENSE_FINAL=${JRS_LICENSE:-/usr/local/share/jasperserver-pro/license}
+  JRS_LICENSE_FINAL=${JRS_LICENSE:-${MOUNTS_HOME}/license}
   echo "License directory $JRS_LICENSE_FINAL"
   if [ ! -f "$JRS_LICENSE_FINAL/jasperserver.license" ]; then
 	echo "Used internal evaluation license"
@@ -168,7 +171,7 @@ try_database_connection() {
   sawJRSDBName=false
   sawConnectionOK=0
       
-  cd /usr/src/jasperreports-server/buildomatic/
+  cd ${BUILDOMATIC_HOME}/
 
   while read -r line
   do
@@ -232,7 +235,7 @@ init_databases() {
   
   currentDatabase=""
   
-  cd /usr/src/jasperreports-server/buildomatic/
+  cd ${BUILDOMATIC_HOME}/
   
   while read -r line
   do
@@ -355,7 +358,7 @@ config_ports_and_ssl() {
     echo "NOT! Setting HTTPS only within JasperReports Server. Should actually turn it off, but cannot."
   fi
 
-  KEYSTORE_PATH=${KEYSTORE_PATH:-/usr/local/share/jasperserver-pro/keystore}
+  KEYSTORE_PATH=${KEYSTORE_PATH:-${MOUNTS_HOME}/keystore}
   if [ -d "$KEYSTORE_PATH" ]; then
 	  echo "Keystore update path $KEYSTORE_PATH"
 
@@ -397,11 +400,11 @@ config_ports_and_ssl() {
 
 apply_customizations() {
   # unpack zips (if exist) from path
-  # /usr/local/share/jasperserver-pro/customization
+  # ${MOUNTS_HOME}/customization
   # to JasperReports Server web application path
   # $CATALINA_HOME/webapps/jasperserver-pro/
   # file sorted with natural sort
-  JRS_CUSTOMIZATION=${JRS_CUSTOMIZATION:-/usr/local/share/jasperserver-pro/customization}
+  JRS_CUSTOMIZATION=${JRS_CUSTOMIZATION:-${MOUNTS_HOME}/customization}
   if [ -d "$JRS_CUSTOMIZATION" ]; then
 	  echo "Deploying Customizations from $JRS_CUSTOMIZATION"
 
@@ -417,7 +420,7 @@ apply_customizations() {
 	  done
   fi
   
-  TOMCAT_CUSTOMIZATION=${TOMCAT_CUSTOMIZATION:-/usr/local/share/jasperserver-pro/tomcat-customization}
+  TOMCAT_CUSTOMIZATION=${TOMCAT_CUSTOMIZATION:-${MOUNTS_HOME}/tomcat-customization}
   if [ -d "$TOMCAT_CUSTOMIZATION" ]; then
 	  echo "Deploying Tomcat Customizations from $TOMCAT_CUSTOMIZATION"
 	  TOMCAT_CUSTOMIZATION_FILES=`find $TOMCAT_CUSTOMIZATION -iname "*zip" \
@@ -433,117 +436,135 @@ apply_customizations() {
 }
 
 import() {
-  initialize_deploy_properties
+
+  # not doing app server management during an import
+  cat >> ${BUILDOMATIC_HOME}/default_master.properties\
+<<-_EOL_
+appServerType=skipAppServerCheck
+_EOL_
+
   # Import from the passed in list of volumes
   
-  cd /usr/src/jasperreports-server/buildomatic/
+  cd ${BUILDOMATIC_HOME}
   
   for volume in $@; do
       # look for import.properties file in the volume
-	  if [[ -f "$volume/import.properties" ]]; then
-		  echo "Importing into JasperReports Server from $volume"
-	  
-		  # parse import.properties. each uncommented line with contents will have
-		  # js-import command line parameters
-		  # see "Importing from the Command Line" in JasperReports Server Admin guide
-		  
-		  while read -r line
-		  do
-			if [ -z "$line"  -o "${line:0:1}" == "#" ]; then
-			  #echo "comment line or blank line"
-			  continue
-			fi
+      if [[ -f "$volume/import.properties" ]]; then
+        echo "Importing into JasperReports Server from $volume"
+      
+        # parse import.properties. each uncommented line with contents will have
+        # js-import command line parameters
+        # see "Importing from the Command Line" in JasperReports Server Admin guide
+          
+        while read -r line
+        do
+          line="$(echo -e "${line}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
-			# split up the args
-			IFS=' ' read -r -a args <<< "$line"
-			command=""
-			foundInput=false
-			element=""
-			for index in "${!args[@]}"
-			do
-				element="${args[index]}"
-				if [ "$element" = "--input-dir" -o "$element" = "--input-zip" ]; then
-				  # find the --input-dir or --input-zip values
-				  #echo "found $element"
-				  foundInput=true
-				elif [ "$foundInput" = true ]; then
-				  #echo "setting $volume/$element"
-				  # update input to include the volume
-				  element="$volume/$element"
-				  foundInput=false
-				fi
-				command="$command $element"
-			done
-			
-			./js-import.sh "$command"
-		  done < "$volume/import.properties"
-		  # rename import.properties to stop accidental re-import
-	      mv "$volume/import.properties" "$volume/import-done.properties"
+          if [ -z "$line" -o "${line:0:1}" == "#" ]; then
+          #echo "comment line or blank line"
+            continue
+          fi
+
+          # split up the args
+          IFS=' ' read -r -a args <<< "$line"
+          command=""
+          foundInput=false
+          element=""
+          for index in "${!args[@]}"
+            do
+                element="${args[index]}"
+                if [ "$element" = "--input-dir" -o "$element" = "--input-zip" ]; then
+                  # find the --input-dir or --input-zip values
+                  #echo "found $element"
+                  foundInput=true
+                elif [ "$foundInput" = true ]; then
+                  #echo "setting $volume/$element"
+                  # update input to include the volume
+                  element="$volume/$element"
+                  foundInput=false
+                fi
+                command="$command $element"
+            done
+            
+            echo "Import $command executing"
+            echo "========================="
+
+            ./js-import.sh "$command" || echo "Import $command failed"
+        done < "$volume/import.properties"
+        # rename import.properties to stop accidental re-import
+        mv "$volume/import.properties" "$volume/import-done.properties"
       else
-		  echo "No import.properties file in $volume. Skipping import."
-	  fi
+        echo "No import.properties file in $volume. Skipping import."
+      fi
   done
 }
 
 
 export() {
-  initialize_deploy_properties
-  # Export from the passed in list of volumes
-  
-  cd /usr/src/jasperreports-server/buildomatic/
-  
-  for volume in $@; do
-      # look for export.properties file in the volume
-	  if [[ -f "$volume/export.properties" ]]; then
-		  echo "Exporting into JasperReports Server into $volume"
-	  
-		  # parse export.properties. each uncommented line with contents will have
-		  # js-export command line parameters
-		  # see "Exporting from the Command Line" in JasperReports Server Admin guide
-		  
-		  while read -r line
-		  do
-			if [ -z "$line"  -o "${line:0:1}" == "#" ]; then
-			  #echo "comment line or blank line"
-			  continue
-			fi
 
-			# split up the args
-			IFS=' ' read -r -a args <<< "$line"
-			command=""
-			foundInput=false
-			element=""
-			for index in "${!args[@]}"
-			do
-				element="${args[index]}"
-				# find the --output-dir or --output-zip values
-				if [ "$element" = "--output-dir" -o "$element" = "--output-zip" ]; then
-				  #echo "found $element"
-				  foundInput=true
-				elif [ "$foundInput" = true ]; then
-				  # update output name to include the volume
-				  element="$volume/$element"
-				  foundInput=false
-				fi
-				command="$command $element"
-			done
-			
-			./js-export.sh "$command"
-		  done < "$volume/export.properties"
-		  # rename export.properties to stop accidental re-export
-	      mv "$volume/export.properties" "$volume/export-done.properties"
-      else
-		  echo "No export.properties file in $volume. Skipping export."
-	  fi
-  done
+    # not doing app server management during an export
+    cat >> ${BUILDOMATIC_HOME}/default_master.properties\
+<<-_EOL_
+appServerType=skipAppServerCheck
+_EOL_
+
+    # Export from the passed in list of volumes
+    
+    cd ${BUILDOMATIC_HOME}
+    
+    for volume in $@; do
+        # look for export.properties file in the volume
+        if [[ -f "$volume/export.properties" ]]; then
+            echo "Exporting into JasperReports Server into $volume"
+        
+            # parse export.properties. each uncommented line with contents will have
+            # js-export command line parameters
+            # see "Exporting from the Command Line" in JasperReports Server Admin guide
+            
+            while read -r line
+            do
+                line="$(echo -e "${line}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+                if [ -z "$line" -o "${line:0:1}" == "#" ]; then
+                    #echo "comment line or blank line"
+                    continue
+                fi
+
+                # split up the args
+                IFS=' ' read -r -a args <<< "$line"
+                command=""
+                foundInput=false
+                element=""
+
+                for index in "${!args[@]}"
+                do
+                    element="${args[index]}"
+                    # find the --output-dir or --output-zip values
+                    if [ "$element" = "--output-dir" -o "$element" = "--output-zip" ]; then
+                        #echo "found $element"
+                        foundInput=true
+                    elif [ "$foundInput" = true ]; then
+                        # update output name to include the volume
+                        element="$volume/$element"
+                        foundInput=false
+                    fi
+                    command="$command $element"
+                done
+            
+                echo "Export $command executing"
+                echo "========================="
+
+                ./js-export.sh "$command" || echo "Export $command failed"
+
+            done < "$volume/export.properties"
+            # rename export.properties to stop accidental re-export
+            mv "$volume/export.properties" "$volume/export-done.properties"
+        else
+            echo "No export.properties file in $volume. Skipping export."
+        fi
+    done
 }
 
-  
-# echo "JAVA environment variables"
-# env | grep JAVA
-# echo "JAVA version: " && java -version
-# echo "PATH: $PATH"
-# echo "whereis java: " && whereis java
 
 initialize_deploy_properties
 
