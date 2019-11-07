@@ -22,8 +22,10 @@
    1. [Using a pre-existing PostgreSQL database in Docker](#using-a-pre-existing-postgresql-instance-in-docker)
    1. [Creating a new PostgreSQL database](#creating-a-new-postgresql-database)
 1. [Initializing the JasperReport Server Repository](#initializing-the-jasperreport-server-repository)
-1. [Import content into the JasperReports Server repository](#importing-to-a-jasperreports-server-repository)
-1. [Export from the JasperReports Server repository](#exporting-from-a-jasperreports-server-repository)
+1. [Import and Export for the JasperReports Server repository](#import-and-export) 
+   1. [Export from a JasperReports Server repository](#exporting-to-a-jasperreports-server-repository)
+   1. [Import into a JasperReports Server repository](#importing-from-a-jasperreports-server-repository)
+   1. [Import/Export on AWS](#exporting-from-a-jasperreports-server-repository)
 1. [JasperReports Server logs](#jasperreports-server-logs)
 1. [Logging in to JasperReports Server](#logging-in-to-jasperreports-server)
 1. [Troubleshooting](#troubleshooting)
@@ -109,7 +111,7 @@ The js-docker github repository contains:
 - `resources\` - directory where you put your JasperReports Server zip file copied into the image at build time
 - `scripts\` - entrypoints for image
   - `entrypoint.sh` - Base runtime configuration for a JasperReports Server container. Referred to by `Dockerfile` and `Dockerfile-exploded`. 
-  - `entrypoint-aws.sh` - Loads config and license from S3 before starting JasperReports Server.Referred to by `Dockerfile-s3-config`
+  - `entrypoint-aws.sh` - Loads config and license from S3 before starting JasperReports Server. Referred to by `Dockerfile-s3-config`
 - `kubernetes\` - directory of JasperReports Server Kubernetes configuration
   - `README.md` - JasperReports Server Kubernetes documentation
 - `options\` - directory of optional configurations and customizations for JasperReports Server containers
@@ -183,6 +185,7 @@ Environment Variable Name | Notes |
  | |
 `KS_PASSWORD` | Keystore password. Default: "changeit". Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below.|
  | |
+`MOUNTS_HOME` | Directory in the container where mounted volumes will be. In AWS containers loading configs and/or import/exports from S3, this will be the destination directory in the container where S3 contents will be stored. | 
 `S3_BUCKET_NAME` | S3 bucket to be used with a jasperserver-pro:aws image. Referred to in `entrypoint-aws.sh` |
 
 
@@ -393,10 +396,10 @@ Administration Guide - section: "Exporting from the Command Line" for the option
 # Comment lines are ignored, as are empty lines
 
 # Server settings
---output-zip BS-server-settings-export.zip
+--output-zip BS-server-settings-export.zip  --include-server-settings
 
 # Repository export
---output-zip Bikeshare-JRS-export.zip
+--output-zip Bikeshare-JRS-export.zip --uris /public/Bikeshare_demo
 
 # Repository export
 --output-dir some-sub-directory
@@ -482,6 +485,25 @@ After an import run, the import.properties file is renamed in the volume as `imp
 Note that, as of JasperReports 7.2.0 at least, there is no way to import a organization
 export.zip at the highest level (root) without first creating the organization via the
 JasperReports Server user interface or REST.
+
+# Import/Export on AWS
+
+Import/Export commands on AWS containers can work with S3 buckets in addition to mounted volumes.
+
+```
+import s3 InputBucketName1/folder InputBucketName2/folder InputBucketName3/folder
+
+export s3 ExportBucketName1/folder ExportBucketName2/folder ExportBucketName3/folder
+
+import mnt Mounted/Directory1 Mounted/Directory2 Mounted/Directory3
+
+export mnt Mounted/Directory4 Mounted/Directory5 Mounted/Directory6
+```
+
+The `S3_BUCKET_NAME` environment variable is used during import/export to load configuration needed for repository database connections.
+
+The S3 versions of the commands will need read/write permissions to the buckets, so your IAMInstanceRole needs to be set accordingly.
+
   
 # JasperReports Server logs
 
@@ -535,7 +557,12 @@ After the JasperReports Server container is up, log into it via URL.
 The URL depends upon your installation. The default configuration uses:
 
 ```
-http://localhost:8080/jasperserver-pro
+http://<domain or IP>:8080/jasperserver-pro
+
+or if running on port 80
+
+http://<domain or IP>/jasperserver-pro
+
 ```
 
 Where:
