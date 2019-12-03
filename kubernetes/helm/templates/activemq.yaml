@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jmsCacheService.fullname" . }}
+  labels:
+    app: jasperreports-server-cache-synch
+    app.kubernetes.io/name: {{ include "jmsCacheService.name" . }}
+    helm.sh/chart: {{ include "jasperreports-server-pro.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  ports:
+    - port: {{ .Values.jmsCacheService.port }}
+      targetPort: {{ .Values.jmsCacheService.port }}
+      name: activemq
+  selector:
+    app: jasperreports-server-cache-synch
+    tier: support-services
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ include "jmsCacheService.fullname" . }}
+  labels:
+    app: jasperreports-server-cache-synch
+    app.kubernetes.io/name: {{ include "jmsCacheService.name" . }}
+    helm.sh/chart: {{ include "jasperreports-server-pro.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: jasperreports-server-cache-synch
+        tier: support-services
+    spec:
+      containers:
+        - image: {{ .Values.jmsCacheService.image | quote }}
+          name: activemq
+          ports:
+            - containerPort: {{ .Values.jmsCacheService.port }}
+              name: activemq

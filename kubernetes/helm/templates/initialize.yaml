@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}-init-repo"
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}-init-repo"
+      labels:
+        app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+        app.kubernetes.io/instance: {{.Release.Name | quote }}
+        helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: "{{ include "jasperreports-server-pro.name" . }}-init-repo"
+        image: {{ include "jasperreports-server-pro.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: DB_HOST
+            {{- if .Values.postgresql.enabled }}
+            value: "{{ .Release.Name }}-postgresql"
+            {{ else }}
+            value: {{ .Values.repositoryDatabase.host | quote }}
+            {{- end }}
+          - name: DB_PORT
+            value: {{ .Values.repositoryDatabase.port | quote }}
+          - name: DB_NAME
+            value: {{ .Values.repositoryDatabase.database | quote }}
+          - name: DB_USER
+            value: {{ .Values.repositoryDatabase.user | quote }}
+          - name: DB_PASSWORD
+            value: {{ .Values.repositoryDatabase.password | quote }}
+          #  valueFrom:
+          #    secretKeyRef:
+          #      name: repository-pass
+          #      key: password
+          {{- if .Values.jasperReportsServerContainer.aws.s3ConfigBucket }}
+          - name: S3_BUCKET_NAME
+            value: {{ .Values.jasperReportsServerContainer.aws.s3ConfigBucket | quote }}
+          {{- end }}
+        # command: ["/entrypoint-aws.sh"]
+        args: ["init","samples"]
