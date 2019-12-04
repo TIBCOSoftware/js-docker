@@ -1,4 +1,4 @@
 # Copyright (c) 2019. ERAMON GmbH.
-FROM postgres:latest
+FROM postgres:9
 
 EXPOSE 5432
