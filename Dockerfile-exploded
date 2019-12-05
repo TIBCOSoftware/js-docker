@@ -5,7 +5,11 @@
 # Tomcat official Docker Hub images are not using Oracle anymore, hence the rename
 #FROM tomcat:9.0-jre8
 
-FROM tomcat:9.0-jdk8-openjdk
+# set certified Tomcat+JRE image version for the JasperReports Server
+# Certified version of Tomcat for JasperReports Server 7.2.0 commercial editions
+
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
+FROM ${TOMCAT_BASE_IMAGE}
 
 ARG DN_HOSTNAME
 ARG KS_PASSWORD
