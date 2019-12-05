@@ -145,6 +145,7 @@ These can be passed on the command line with --build-arg, in an env-file, docker
 
 Environment Variable Name | Notes |
 ------------ | ------------- |
+`TOMCAT_BASE_IMAGE` | The Docker image version of Tomcat that is certified for the version of JasperReports Server being deployed. Default: "tomcat:9.0.17-jre8" which is for JasperReports Server 7.2.0. |
 `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
 `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
 `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. | 
