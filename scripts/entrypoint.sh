@@ -454,10 +454,10 @@ import() {
 				element="${args[index]}"
 				if [ "$element" = "--input-dir" -o "$element" = "--input-zip" ]; then
 				  # find the --input-dir or --input-zip values
-				  #echo "found $element"
+				  echo "found $element"
 				  foundInput=true
 				elif [ "$foundInput" = true ]; then
-				  #echo "setting $volume/$element"
+				  echo "setting $volume/$element"
 				  # update input to include the volume
 				  element="$volume/$element"
 				  foundInput=false

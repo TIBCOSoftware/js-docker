@@ -54,16 +54,12 @@ RUN echo "apt-get" && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
 	echo "Check JAVA environment" && \
     env | grep JAVA && \
-    java -version
-
-
-ENV PHANTOMJS_VERSION 2.1.1
-
+    java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
-RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-     wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
-    -O /tmp/phantomjs.tar.bz2 --no-verbose && \
+    # echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+    wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
+        -O /tmp/phantomjs.tar.bz2 --no-verbose && \
     tar -xjf /tmp/phantomjs.tar.bz2 -C /tmp && \
     rm -f /tmp/phantomjs.tar.bz2 && \
     mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
