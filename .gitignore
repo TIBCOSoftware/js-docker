@@ -1,3 +1,5 @@
 *.license
 *.zip
 *.bz2
+*.log
+*.tlog

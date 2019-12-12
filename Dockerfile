@@ -32,7 +32,7 @@ COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y postgresql-client mysql-client unzip xmlstarlet vim > /dev/null && \
+	apt-get install -y postgresql-client mysql-client git unzip xmlstarlet vim > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
 	rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \

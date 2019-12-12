@@ -34,8 +34,8 @@ dbHost=$DB_HOST
 dbUsername=$DB_USER
 dbPassword=$DB_PASSWORD
 js.dbName=$DB_NAME
-foodmart.dbName=jasperserver_foodmart
-sugarcrm.dbName=jasperserver_sugarcrm
+foodmart.dbName=foodmart
+sugarcrm.dbName=sugarcrm
 admin.jdbcUrl=jdbc:mysql://$DB_HOST:$DB_PORT/jasperserver_connect_check
 webAppName=jasperserver-pro
 _EOL_
@@ -231,19 +231,19 @@ init_databases() {
 	fi
 	if [[ $line == *"$DB_NAME"* ]]; then
 	  currentDatabase=$DB_NAME
-	elif [[ $line == *"jasperserver_foodmart"* ]]; then
-	  currentDatabase=jasperserver_foodmart
-	elif [[ $line == *"jasperserver_sugarcrm"* ]]; then
-	  currentDatabase=jasperserver_sugarcrm
+	elif [[ $line == *"foodmart"* ]]; then
+	  currentDatabase=foodmart
+	elif [[ $line == *"sugarcrm"* ]]; then
+	  currentDatabase=sugarcrm
 	elif [[ $line == *"Database doesn"* ]]; then
 		case "$currentDatabase" in
 		  $DB_NAME )
 			sawJRSDBName="no"
 			;;
-		  jasperserver_foodmart )
+		  foodmart )
 			sawFoodmartDBName="no"
 			;;
-		  jasperserver_sugarcrm )
+		  sugarcrm )
 			sawSugarCRMDBName="no"
 			;;
 		  *)
@@ -253,10 +253,10 @@ init_databases() {
 		  $DB_NAME )
 			sawJRSDBName="yes"
 			;;
-		  jasperserver_foodmart )
+		  foodmart )
 			sawFoodmartDBName="yes"
 			;;
-		  jasperserver_sugarcrm )
+		  sugarcrm )
 			sawSugarCRMDBName="yes"
 			;;
 		  *)
