@@ -5,7 +5,7 @@
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
-   1. [Get the JaspeReports Server Docker configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
+   1. [Get the JasperReports Server Docker configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
    1. [Repository structure](#the-installed-repository-structure)
    1. [Get the JasperReports Server WAR file installer](#get-the-jasperreports-server-war-file-installer)
    1. [Deploy JasperReports Server to AWS container services](#deploy-to-aws-ecs-and-eks)
@@ -66,7 +66,7 @@ The following software is required or recommended:
 - (*recommended*):
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-- (*recommended*) [docker-compose](https://docs.docker.com/compose/install) version 1.12 or higher
+- (*optional*) [docker-compose](https://docs.docker.com/compose/install) version 1.12 or higher
 - (*optional*) [git](https://git-scm.com/downloads)
 - (*optional*) TIBCO Jaspersoft&reg; commercial license.
 - Contact your sales
@@ -213,9 +213,10 @@ for more information.
 Description | Path to override in container | Notes |
 ------------ | ------------- | ------------ |
 License | `/usr/local/share/jasperreports-pro/license` | Path to contain jasperserver.license file to use. If not provided, a temporary license is used. |
+Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the database. |
 JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names can be overridden. | 
 Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names can be overridden. |
-New keystore file | `/usr/local/share/jasperserver-pro/keystore` | .keystore files in this volume loaded into /root. The keystore password must be set as the KS_PASSWORD environment variable.|
+SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable.|
  Additional default_master installation properties | `/usr/local/share/jasperserver-pro/default-master` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | Include a new version of a JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/<dbType>/jdbc | valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
 Complete JasperReports Server web application | `${CATALINA_HOME}/webapps/jasperserver-pro` | The complete JasperReport Server WAR structure in the external volume. Not expected to be used often - override smaller pieces of the container through the above mounts |
@@ -260,7 +261,7 @@ COMPOSE_CONVERT_WINDOWS_PATHS=1
 
 ## S3 for configuration on AWS
 
-You can use the Dockerfile-s3-config Dockerfile to have the configuration volumes in S3. The entrypoint-aws.sh loads the files from the given S3_BUCKET_NAME environment variable. See https://community.jaspersoft.com/wiki/building-and-running-jasperreports-server-containers-aws-ecs-and-eks
+With the Dockerfile-s3-config Dockerfile option to have some or all of the the configuration volumes in S3. The entrypoint-aws.sh loads the files from well-named folders under the given S3_BUCKET_NAME environment variable, if they exist. With version 7.5, the .jrsks and .jrsksp files are saved into the S3_BUCKET_NAME/keystore if they did not previously exist in the bucket. See https://community.jaspersoft.com/wiki/building-and-running-jasperreports-server-containers-aws-ecs-and-eks
 
 
 # Build and run

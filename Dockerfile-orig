@@ -17,34 +17,44 @@ ARG JRS_HTTPS_ONLY
 ARG HTTP_PORT
 ARG HTTPS_PORT
 ARG POSTGRES_JDBC_DRIVER_VERSION
-ARG EXPLODED_INSTALLER_DIRECTORY
 
-ENV PHANTOMJS_VERSION 		${PHANTOMJS_VERSION:-2.1.1}
+ENV PHANTOMJS_VERSION 	${PHANTOMJS_VERSION:-2.1.1}
 ENV DN_HOSTNAME 		${DN_HOSTNAME:-localhost.localdomain}
 ENV KS_PASSWORD 		${KS_PASSWORD:-changeit}
 ENV JRS_HTTPS_ONLY 		${JRS_HTTPS_ONLY:-false}
 ENV HTTP_PORT 			${HTTP_PORT:-8080}
 ENV HTTPS_PORT 			${HTTPS_PORT:-8443}
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-jasperreports-server-bin/}
 
-# This Dockerfile requires an exploded JasperReports Server WAR file installer file 
-# EXPLODED_INSTALLER_DIRECTORY (default jasperreports-server-bin/) directory below the Dockerfile.
+# This Dockerfile requires the JasperReports Server WAR file installer file 
+# in the resources directory below the Dockerfile.
 
-RUN mkdir /usr/src/jasperreports-server
+# COPY the JasperReports Server WAR file installer into the image 
 
-COPY ${EXPLODED_INSTALLER_DIRECTORY} /usr/src/jasperreports-server/
+# JasperReports Server WAR file installer names for version 6.3 and prior
+# were named jasperreports-server-<version number>-bin.zip
+# COPY resources/jasperreports-server*zip /tmp/jasperserver.zip
+
+# JasperReports Server WAR file installer names for version 6.4 and beyond
+# are named TIB_js-jrs_<version number>_bin.zip
+
+COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
 	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -rf $CATALINA_HOME/webapps/ROOT && \
+	rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
+    #
+    echo "unzip WAR File installer" && \
+    unzip /tmp/jasperserver.zip -d /usr/src/jasperreports-server > /dev/null && \
+    rm -rf /tmp/* && \
+    mv /usr/src/jasperreports-server/jasperreports-server-*/* /usr/src/jasperreports-server && \
     #
     echo "unzip JasperReports Server WAR to Tomcat" && \
 	unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
