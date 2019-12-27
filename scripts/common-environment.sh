@@ -94,15 +94,20 @@ _EOL_
   
 }
 
+test_database_result=nothing
+
 # tests connection to the configured repo database.
 # could fail altogether, be missing the database or succeed
 # do-install-upgrade-test does 2 connections
 # - database specific admin database
 # - js.dbName
 # at least one attempt has to work to indicate the host is accessible
+
 try_database_connection() {
-  sawJRSDBName=false
-  sawConnectionOK=0
+  local sawAdministrative=notyet
+  local sawJRSDBName=notyet
+  local sawConnectionOK=0
+  local currentDatabase=
       
   cd ${BUILDOMATIC_HOME}/
 
@@ -112,41 +117,85 @@ try_database_connection() {
 	  #echo "blank line"
 	  continue
 	fi
-	# on subsequent tries, show the output
-    if [ $1 -gt 1 ]; then
-      echo $line
-	fi
-	if [[ $line == *"$DB_NAME"* ]]; then
-	  sawJRSDBName=true
-	elif [[ $line == *"Connection OK"* ]]; then
-	  sawConnectionOK=$((sawConnectionOK + 1))
-	fi
+    echo "$line"
+	case "$line" in
+		*"Validating"* )
+			case "$line" in
+				*"administrative"* )
+				  currentDatabase=administrative
+				  ;;
+				*"JasperServer"* )
+				  currentDatabase=JasperServer
+				  ;;
+				*)
+				  echo "Validating unknown database"
+			esac
+			;;
+		*"Database doesn"* )
+			case "$currentDatabase" in
+			  administrative )
+				sawAdministrative="no"
+				;;
+			  JasperServer )
+				sawJRSDBName="no"
+				;;
+			  *)
+				echo "database doesn't exist for unknown database"
+			esac
+			;;
+		*"Connection OK"* )
+			case "$currentDatabase" in
+			  administrative )
+				sawAdministrative="yes"
+				;;
+			  JasperServer )
+				sawJRSDBName="yes"
+				;;
+			  *)
+				echo "Connection OK unknown database"
+			esac
+			sawConnectionOK=$((sawConnectionOK + 1))
+			;;
+		*"FATAL: database \"$DB_NAME\" does not exist"* )
+			sawJRSDBName=fatal
+			;;
+	esac
+	#if [[ $line == *"FATAL: database \"$DB_NAME\" does not exist"* ]]; then
+	  
+    #elif [[ $sawJRSDBName != "fatal" && $line == *"$DB_NAME"* ]]; then
+	#  sawJRSDBName=true
+	#fi
+	
+	# if [[ $line == *"Connection OK"* ]]; then
+	  # sawConnectionOK=$((sawConnectionOK + 1))
+	# fi
   done < <(./js-ant do-install-upgrade-test)
 
-  if [ "$sawConnectionOK" -lt 1 ]; then
-	echo "##### Failing! ##### Saw $sawConnectionOK OK connections, not at least 1"
-    retval="fail"
-  elif [ "$sawJRSDBName" = "false" ]; then
-    retval="missing"
+  if [ "$sawConnectionOK" -lt 2 ]; then
+	echo "##### Failing! ##### Saw $sawConnectionOK OK connections, not at least 2."
+    test_database_result="fail"
+  elif [ "$sawJRSDBName" = "fatal" ]; then
+	echo "Repository $DB_NAME of $DB_TYPE on host ${DB_HOST} missing."
+    test_database_result="missing"
   else
-    retval="OK"
+	echo "Repository $DB_NAME of $DB_TYPE on host ${DB_HOST} available."
+	test_database_result="OK"
   fi
 }
 
 test_database_connection() {
-	# Retry 5 times to check PostgreSQL is accessible.
+	# Retry 5 times to check database is accessible.
 	for retry in {1..5}; do
-	  try_database_connection $retry
-	  #echo "test_connection returned $retval"
-	  if [ "$retval" = "OK" -o "$retval" = "missing" ]; then
-		echo "$DB_TYPE at host ${DB_HOST} accepting connections and logging in"
+	  try_database_connection
+	  echo "test_connection returned $test_database_result"
+	  if [ "$test_database_result" = "OK" -o "$test_database_result" = "missing" ]; then
 		break
 	  elif [[ $retry = 5 ]]; then
-		echo "$DB_TYPE at host ${DB_HOST} not accessible or cannot log in!"
+		echo "Unable to get connection to $DB_TYPE at host ${DB_HOST} after 5 tries."
 		echo "##### Exiting #####"
 		exit 1
 	  else
-		echo "Sleeping to try $DB_TYPE at host ${DB_HOST} connection again..." && sleep 15
+		echo "Sleeping to try repository $DB_NAME of $DB_TYPE at host ${DB_HOST} connection again..." && sleep 15
 	  fi
 	done
 }

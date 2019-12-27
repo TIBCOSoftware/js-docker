@@ -6,11 +6,7 @@
 
 # This script sets up and runs JasperReports Server on container start.
 # Default "run" command, set in Dockerfile, executes run_jasperserver.
-# If webapps/jasperserver-pro does not exist, run_jasperserver 
-# redeploys webapp. If "jasperserver" database does not exist,
-# run_jasperserver redeploys minimal database.
-# Additional "init" only calls init_database, which will try to recreate 
-# database and fail if DB exists.
+# Use jasperserver-pro-cmdline to initialize the repository database
 
 # Sets script to fail if any command fails.
 set -e
