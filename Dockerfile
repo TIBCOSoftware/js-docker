@@ -36,7 +36,8 @@ ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jaspe
 RUN mkdir -p /usr/src/jasperreports-server
 
 # get the WAR and license
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver* /usr/src/jasperreports-server/
+#COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver* /usr/src/jasperreports-server/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver-pro $CATALINA_HOME/webapps/jasperserver-pro/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/TIB* /usr/src/jasperreports-server/
 
 # Ant
@@ -70,15 +71,13 @@ RUN echo "apt-get" && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
-    echo "unzip JasperReports Server WAR to Tomcat" && \
-	unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
-		-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
-	rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
+    #echo "unzip JasperReports Server WAR to Tomcat" && \
+	#unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
+	#	-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
+	#rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
     #
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
-	echo "Check JAVA environment" && \
-    env | grep JAVA && \
     java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.

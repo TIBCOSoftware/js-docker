@@ -29,7 +29,7 @@ RUN mkdir -p /usr/src/jasperreports-server
 # Ant
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/apache-ant /usr/src/jasperreports-server/apache-ant/
 
-# js-ant script, Ant XMLs and support in bin
+# js-ant script, Ant XMLs and supporting resources in bin
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/js-ant /usr/src/jasperreports-server/buildomatic/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/js-*.sh /usr/src/jasperreports-server/buildomatic/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/*.xml /usr/src/jasperreports-server/buildomatic/
@@ -51,13 +51,12 @@ COPY scripts/*.sh /
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y postgresql-client unzip wget > /dev/null && \
+	apt-get install -y unzip wget > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
 	echo "Check JAVA environment" && \
-    env | grep JAVA && \
     java -version && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
