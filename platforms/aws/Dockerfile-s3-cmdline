@@ -1,4 +1,8 @@
 
+
+# JasperReports Server command line image, loading resources from S3.
+# Leverages base JRS image of same version
+
 ARG JASPERREPORTS_SERVER_VERSION
 
 ENV JASPERREPORTS_SERVER_VERSION		${JASPERREPORTS_SERVER_VERSION:-7.5.0}

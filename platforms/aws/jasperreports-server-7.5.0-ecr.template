@@ -1,5 +1,6 @@
 Description: >
     TIBCO JasperReports Server BYOL 7.5.0 for Docker.
+
     This template launches a base TIBCO JasperReports Server BYOL docker image, creates ECR repos 'jasperserver-pro' and 'jasperserver-pro-cmdline'and pushes base docker images into the ECR repo.
     This template also provides you an option to create an S3 bucket and folder structure inside the bucket required for base docker image customization.
     If you update this template for another JasperReports Server version, change the AWSRegionToAMI and the JasperReportsServerVersion in the UserData below
