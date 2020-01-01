@@ -1,12 +1,13 @@
 
-ARG JasperReportsServerVersion
+ARG JASPERREPORTS_SERVER_VERSION
 
-ENV JasperReportsServerVersion		${JasperReportsServerVersion:-7.2.0}
+ENV JASPERREPORTS_SERVER_VERSION		${JASPERREPORTS_SERVER_VERSION:-7.5.0}
 
-FROM jasperserver-pro:${JasperReportsServerVersion}
+FROM jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_VERSION}
 
-COPY scripts/entrypoint-aws.sh /entrypoint-aws.sh
+COPY scripts /
 
+# load AWS CLI
 RUN apt-get update > /dev/null && \
 	apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
 	apt-get install -y \
@@ -16,11 +17,11 @@ RUN apt-get update > /dev/null && \
         less > /dev/null && \
     pip3 install awscli --upgrade && \
     rm -rf /var/lib/apt/lists/* && \
-	chmod +x /entrypoint-aws.sh && \
+	chmod +x /*.sh && \
     ls -lsa /
 
-ENTRYPOINT ["/entrypoint-aws.sh"]
+ENTRYPOINT ["/entrypoint-aws-cmdline.sh"]
 
 # Default action executed by entrypoint script.
-CMD ["run"]
+CMD ["init"]
 
