@@ -144,12 +144,6 @@ import() {
     importFileName="import.properties"
 	volume="$path"
 
-    # custom volume/properties file; not a directory
-	if [ ! -d "$path" ]; then
-	  importFileName="${path##*/}"
-	  volume="${path%/*}"
-	fi
-
     # look for import command file - "import.properties" default - in the given volume
 
     if [[ ! -e "$volume/$importFileName" ]]; then
@@ -240,12 +234,6 @@ export() {
     for path in $@; do
 		exportFileName=export.properties
 		volume="$path"
-
-		# custom volume/properties file; not a directory
-		if [ -e "$path" ]; then
-			exportFileName="${path##*/}"
-			volume="${path%/*}"
-		fi
 
 		# look for export command file - "export.properties" default - in the given volume
 
