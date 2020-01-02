@@ -1,4 +1,4 @@
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2020. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 
@@ -7,8 +7,10 @@
 
 # set certified Tomcat+JRE image version for the JasperReports Server
 # Certified version of Tomcat for JasperReports Server 7.2.0 commercial editions
+# ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
 
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
+# Certified version of Tomcat for JasperReports Server 7.5.0 commercial editions
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.27-jdk11-openjdk
 FROM ${TOMCAT_BASE_IMAGE}
 
 ARG DN_HOSTNAME
