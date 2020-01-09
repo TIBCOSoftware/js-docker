@@ -22,12 +22,12 @@ ARG POSTGRES_JDBC_DRIVER_VERSION
 ARG JASPERREPORTS_SERVER_VERSION
 ARG EXPLODED_INSTALLER_DIRECTORY
 
-ENV PHANTOMJS_VERSION 		${PHANTOMJS_VERSION:-2.1.1}
-ENV DN_HOSTNAME 		${DN_HOSTNAME:-localhost.localdomain}
-ENV KS_PASSWORD 		${KS_PASSWORD:-changeit}
-ENV JRS_HTTPS_ONLY 		${JRS_HTTPS_ONLY:-false}
-ENV HTTP_PORT 			${HTTP_PORT:-8080}
-ENV HTTPS_PORT 			${HTTPS_PORT:-8443}
+ENV PHANTOMJS_VERSION         ${PHANTOMJS_VERSION:-2.1.1}
+ENV DN_HOSTNAME         ${DN_HOSTNAME:-localhost.localdomain}
+ENV KS_PASSWORD         ${KS_PASSWORD:-changeit}
+ENV JRS_HTTPS_ONLY         ${JRS_HTTPS_ONLY:-false}
+ENV HTTP_PORT             ${HTTP_PORT:-8080}
+ENV HTTPS_PORT             ${HTTPS_PORT:-8443}
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
 ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
@@ -65,7 +65,7 @@ COPY scripts/* /
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
+    apt-get install -y unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
@@ -74,12 +74,12 @@ RUN echo "apt-get" && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
     #echo "unzip JasperReports Server WAR to Tomcat" && \
-	#unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
-	#	-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
-	#rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
+    #unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
+    #    -d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
+    #rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
     #
-	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
-	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
+    chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
+    chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
     java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
@@ -109,11 +109,11 @@ RUN echo "apt-get" && \
 # Option to set up JasperReports Server to use HTTPS only.
 #
     keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
-		-storetype PKCS12 \
+        -storetype PKCS12 \
         -storepass "${KS_PASSWORD}" \
         -keypass "${KS_PASSWORD}" \
         -keystore /root/.keystore.p12 && \
-	keytool -list -keystore /root/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
+    keytool -list -keystore /root/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
     xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \ 
         -n Connector -v "" --var connector-ssl '$prev' \
     --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT}" \
@@ -130,7 +130,7 @@ RUN echo "apt-get" && \
     --insert '$connector-ssl' --type attr -n keystoreFile \
         -v "/root/.keystore.p12" \
     ${CATALINA_HOME}/conf/server.xml && \
-	chmod +x /*.sh
+    chmod +x /*.sh
 
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"

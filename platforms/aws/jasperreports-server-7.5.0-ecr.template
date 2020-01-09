@@ -8,7 +8,6 @@ Description: >
 
 Parameters:
 
-
     KeyName:
         Description: Select an existing key pair. You must provide existing key pair to be able to SSH into EC2 instances.
         Type: AWS::EC2::KeyPair::KeyName
@@ -22,24 +21,29 @@ Parameters:
         Type: String
         MaxLength: 63
         ConstraintDescription: Must comply with AWS S3 bucket naming convention.
-        
+
     JasperReportsServerVersion:
         Description: In the AMI you are using. Update AMI and this version number.
         Type: String
         MinLength: 1
         MaxLength: 63
-        Default: '7.2.0'
+        Default: '7.5.0'
         ConstraintDescription: Should be a proper version number.
 
     VPCID:
       Type: 'AWS::EC2::VPC::Id'
       Description: VpcId of your existing Virtual Private Cloud (VPC)
-      MinLength: 1
-      MaxLength: 64
 
     PrivateSubnet:
       Description: ID of private subnet for the image creation Workload
       Type: 'AWS::EC2::Subnet::Id'
+
+    JaspersoftForDockerURL:
+        Description: URL to a zip file containing TIBCOSoftware/js-docker
+        Type: String
+        MaxLength: 100
+        Default: "https://github.com/TIBCOSoftware/js-docker/zipball/7.5"
+        ConstraintDescription: Can be a release ZIP, or point to a branch zipball, like the default.
 
 Metadata: 
     AWS::CloudFormation::Interface: 
@@ -60,14 +64,16 @@ Metadata:
             default: "S3 Bucket Name:"
 
 Conditions:
-    HasKeyName: !Not [!Equals [!Ref KeyName, ""]],
-    CreateS3BucketCondition: {"Fn::Equals" : [{"Ref" : "S3BucketName"}, ""] }
+    HasKeyName:
+      !Not [!Equals [!Ref KeyName, ""]]
+    CreateS3BucketCondition:
+      !Equals [!Ref S3BucketName, ""]
 
 Mappings:
 
   AWSRegionAMI:
     us-east-1:
-      '64': ami-06f91cd7d5536aed2
+      '64': ami-0f6d3ef8e53f204e9
     us-east-2:
       '64': ami-07f4e1c328364f8e4
     us-west-1:
@@ -117,92 +123,109 @@ Resources:
               - DeviceName: "/dev/xvda"
                 Ebs: 
                   VolumeSize: "15"
-            IamInstanceProfile: !Ref ECSInstanceProfile
+            IamInstanceProfile: !Ref ECRInstanceProfile
             InstanceInitiatedShutdownBehavior: stop
             SubnetId: !Ref PrivateSubnet
             UserData: 
-                "Fn::Base64": !Sub |
-                    #!/bin/bash
-                    echo 'JasperReports Server-Containers-AWS: Start of EC2 Instance UserData execution...'
-                    echo "Install Docker..."
-                    sudo yum update
-                    sudo yum -y install docker
-                    sudo service docker start
-                    #sudo usermod -aG docker $USER
-                    
-                    echo "Installing JasperReports Server images for version ${JasperReportsServerVersion}"
-                    cd /usr/share/jrs_dist/
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/Dockerfile" -O Dockerfile --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/Dockerfile-cmdline" -O Dockerfile-cmdline --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/platforms/aws/Dockerfile-s3" -O Dockerfile-s3 --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/platforms/aws/Dockerfile-s3-cmdline" -O Dockerfile-s3-cmdline --no-verbose
-                    mkdir scripts
-                    cd scripts
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/scripts/entrypoint.sh" -O entrypoint.sh --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/scripts/entrypoint-cmdline.sh" -O entrypoint-cmdline.sh --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/scripts/common-environment.sh" -O common-environment.sh --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/platforms/aws/scripts/entrypoint-aws.sh" -O entrypoint-aws.sh --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/platforms/aws/scripts/entrypoint-aws-cmdline.sh" -O entrypoint-aws-cmdline.sh --no-verbose
-                    wget "https://raw.githubusercontent.com/TIBCOSoftware/js-docker/7.5/platforms/aws/scripts/common-environment-aws.sh" -O common-environment-aws.sh --no-verbose
-                    cd ..
-                    docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 -t jasperserver-pro:${JasperReportsServerVersion} .
-                    docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:aws-${JasperReportsServerVersion} .
-                    docker build -f Dockerfile-cmdline --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
-                    docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} .
+                "Fn::Base64": !Sub
+                    - |+
+                      #!/bin/bash
+                      echo 'JasperReports Server-Containers-AWS: Start of EC2 Instance UserData execution...'
+                      echo "Install Docker..."
+                      sudo yum update
+                      sudo yum -y install docker unzip
+                      sudo service docker start
+                      #sudo usermod -aG docker $USER
+                      
+                      echo "Installing JasperReports Server images for version ${JasperReportsServerVersion}"
+                      cd /usr/share/jrs_dist/
 
-                    echo 'ECR login...'
-                    $( aws ecr get-login --region ${AWS::Region} --no-include-email )
-                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
-                        echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
-                    else 
-                        echo 'jasperserver-pro ECR Repository does not exist, creating...'
-                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
-                    fi
-                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro-cmdline | grep repositoryUri; then
-                        echo 'jasperserver-pro-cmdline ECR Repository already exists, skipping repository creation...'
-                    else 
-                        echo 'jasperserver-pro-cmdline ECR Repository does not exist, creating...'
-                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
-                    fi
+                      echo "Get js-docker from TIBCOSoftware Github"
+                      wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
+                      unzip -q js-dockerrepo.zip
+                      mv $(ls -d TIBCOSoftware-js-docker*/)/* .
+                      ls -l
 
-                    echo 'Tagging and pushing to ECR...'
-                    
-                    docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                    docker tag jasperserver-pro:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
-                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                    docker tag jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
-                    
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
-                    
-                    ExtBucketName="$S3BucketName"
-                    if [ "$ExtBucketName" = "" ] ; then
-                      ExtBucketName="$JrioS3Bucket"
-                    fi
-                    if aws s3api get-bucket-location --bucket ${ExtBucketName} | grep LocationConstraint; then
-                        echo "S3 Bucket ${ExtBucketName} already exists, skipping bucket creation..."
-                    else 
-                        echo "Creating S3 Bucket ${ExtBucketName}..."
-                        aws s3 mb s3://${ExtBucketName}
-                    fi
-                    aws s3api put-object --bucket ${ExtBucketName} --key default-master/
-                    aws s3api put-object --bucket ${ExtBucketName} --key license/
-                    aws s3api put-object --bucket ${ExtBucketName} --key keystore/
-                    aws s3api put-object --bucket ${ExtBucketName} --key customization/
-                    aws s3api put-object --bucket ${ExtBucketName} --key tomcat-customization/
-                    aws s3api put-object --bucket ${ExtBucketName} --key ssl-certificate/
-                    echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
-                    sudo poweroff
+                      echo "unzip WAR from jasperreports-server-bin"
+                      cd jasperreports-server-bin
+                      ls -l
+                      mkdir jasperserver-pro
+                      unzip -q jasperserver-pro.war -d jasperserver-pro
+                      ls -l jasperserver-pro
+                      ls -l buildomatic
+                      cd ..
 
-    # This IAM Role is attached to all of the ECS hosts.
-    # Please note that this role will be used by ALL containers running on the ECS host.
-    ECSRole:
+                      docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
+                      docker build -f Dockerfile-cmdline --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443  --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
+        
+                      cd platforms/aws/
+                      docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:aws-${JasperReportsServerVersion} .
+                      docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} .
+        
+                      echo 'ECR login...'
+                      $( aws ecr get-login --region ${AWS::Region} --no-include-email )
+                      if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
+                          echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
+                      else 
+                          echo 'jasperserver-pro ECR Repository does not exist, creating...'
+                          aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
+                      fi
+                      if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro-cmdline | grep repositoryUri; then
+                          echo 'jasperserver-pro-cmdline ECR Repository already exists, skipping repository creation...'
+                      else 
+                          echo 'jasperserver-pro-cmdline ECR Repository does not exist, creating...'
+                          aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
+                      fi
+        
+                      echo 'Tagging and pushing to ECR...'
+        
+                      docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
+                      docker tag jasperserver-pro:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
+                      docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                      docker tag jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
+                      
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
+        
+                      if aws s3api get-bucket-location --bucket ${BucketName} | grep LocationConstraint; then
+                          echo "S3 Bucket ${BucketName} already exists, skipping bucket creation..."
+                      else
+                          echo "Creating S3 Bucket ${BucketName} ..."
+                          aws s3 mb s3://${BucketName}
+                      fi
+        
+                      #echo "default master folder exists in S3: " $(aws s3 ls s3://${BucketName}/default-master | grep None)
+                      if [[ $(aws s3 ls s3://${BucketName}/default-master) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key default-master/
+                      fi
+                      if [[ $(aws s3 ls s3://${BucketName}/license) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key license/
+                      fi
+                      if [[ $(aws s3 ls s3://${BucketName}/license) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key keystore/
+                      fi
+                      if [[ $(aws s3 ls s3://${BucketName}/customization) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key customization/
+                      fi
+                      if [[ $(aws s3 ls s3://${BucketName}/tomcat-customization) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key tomcat-customization/
+                      fi
+                      if [[ $(aws s3 ls s3://${BucketName}/ssl-certificate) = *None* ]] ; then
+                          aws s3api put-object --bucket ${BucketName} --key ssl-certificate/
+                      fi
+                      echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
+                      sudo poweroff
+
+                    - BucketName:
+                        !If [CreateS3BucketCondition, !Ref JRSS3Bucket, !Ref S3BucketName]
+
+    ECRRole:
         Type: AWS::IAM::Role
         Properties: 
             Path: /
-            RoleName: !Sub ${AWS::StackName}-ECSRole-${AWS::Region}
+            RoleName: !Sub ${AWS::StackName}-ECRRole-${AWS::Region}
             AssumeRolePolicyDocument: |
                 {
                     "Statement": [{
@@ -214,21 +237,12 @@ Resources:
                     }]
                 }
             Policies: 
-                - PolicyName: ecs-service
+                - PolicyName: jrs-image-init-service
                   PolicyDocument: |
                     {
                         "Statement": [{
                             "Effect": "Allow",
                             "Action": [
-                                "ecs:*",
-                                "aws-marketplace:MeterUsage",
-                                "ec2:AuthorizeSecurityGroupIngress",
-                                "ec2:Describe*",
-                                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-                                "elasticloadbalancing:DeregisterTargets",
-                                "elasticloadbalancing:Describe*",
-                                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-                                "elasticloadbalancing:RegisterTargets",
                                 "ecr:*",
                                 "s3:*",
                                 "logs:*"
@@ -237,38 +251,46 @@ Resources:
                         }]
                     }
 
-    ECSInstanceProfile: 
+    ECRInstanceProfile: 
         Type: AWS::IAM::InstanceProfile
         Properties:
             Path: /
             Roles: 
-                - !Ref ECSRole
+                - !Ref ECRRole
 
-   JrioS3Bucket:
-      Type: AWS::S3::Bucket
-      Condition: CreateS3BucketCondition
-      DeletionPolicy: Retain
+    JRSS3Bucket:
+        Type: AWS::S3::Bucket
+        Condition: CreateS3BucketCondition
+        DeletionPolicy: Retain
 
 
 #################### Output Section ####################
 Outputs:
 
-  jasperserver-pro-ECR:
-      Description: Amazon ECR (Amazon EC2 Container Registry) for JasperReports Server images.
-      Value: !Sub "https://console.aws.amazon.com/ecs/home?region=${AWS::Region}#/repositories/jasperserver-pro#images"
+    jasperserverProECR:
+        Description: Amazon ECR (Amazon EC2 Container Registry) for JasperReports Server images.
+        Value: !Join
+            - ''
+            -
+                - 'https://console.aws.amazon.com/ecr/home?region='
+                - !Ref 'AWS::Region'
+                - '#/repositories/jasperserver-pro#images'
 
-  jasperserver-pro-cmdline-ECR:
-      Description: Amazon ECR (Amazon EC2 Container Registry)) for JasperReports Server command line images.
-      Value: !Sub "https://console.aws.amazon.com/ecs/home?region=${AWS::Region}#/repositories/jasperserver-pro-cmdline#images"
+    jasperserverProCmdlineECR:
+        Description: Amazon ECR (Amazon EC2 Container Registry)) for JasperReports Server command line images.
+        Value: !Join
+            - ''
+            -
+                - 'https://console.aws.amazon.com/ecr/home?region='
+                - !Ref 'AWS::Region'
+                - '#/repositories/jasperserver-pro-cmdline#images'
 
-  S3Bucket:
-    Description: The S3 Bucket to be used for customizing the base images.
-    Value: !Join
-      - " "
-      - "https://console.aws.amazon.com/s3/home?region="
-      - !Ref 'AWS::Region'
-      - "&bucket="
-      - !If 
-        - CreateS3BucketCondition
-          - !Ref JRSS3Bucket
-          - !Ref S3BucketName
+    S3Bucket:
+        Description: The S3 Bucket to be used for customizing the base images.
+        Value: !Join
+            - ''
+            -
+                - 'https://console.aws.amazon.com/s3/home?region='
+                - !Ref 'AWS::Region'
+                - '&bucket='
+                - !If [CreateS3BucketCondition, !Ref JRSS3Bucket, !Ref S3BucketName]
