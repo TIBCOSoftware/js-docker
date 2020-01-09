@@ -158,9 +158,9 @@ Resources:
                       docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
                       docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
         
-                      cd platforms/aws/
-                      docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:aws-${JasperReportsServerVersion} .
-                      docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} .
+                      cd platforms/aws
+                      docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:s3-${JasperReportsServerVersion} .
+                      docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
         
                       echo 'ECR login...'
                       $( aws ecr get-login --region ${AWS::Region} --no-include-email )
@@ -182,7 +182,7 @@ Resources:
                       docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
                       docker tag jasperserver-pro:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
                       docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                      docker tag jasperserver-pro-cmdline:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
+                      docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
                       
                       docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
                       docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
@@ -196,26 +196,28 @@ Resources:
                           aws s3 mb s3://${BucketName}
                       fi
 
-                      echo "looking at bucket folders"
-                      aws s3 ls s3://${BucketName}/default-master
-                      aws s3 ls s3://${BucketName}/default-master | grep None
-                      echo "above grep *None*"
-                      if [[ $(aws s3 ls s3://${BucketName}/default-master) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/default-master | grep default-master; then
+                          echo "Creating s3://${BucketName}/default-master"
                           aws s3api put-object --bucket ${BucketName} --key default-master/
                       fi
-                      if [[ $(aws s3 ls s3://${BucketName}/license) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/license | grep license; then
+                          echo "Creating s3://${BucketName}/license"
                           aws s3api put-object --bucket ${BucketName} --key license/
                       fi
-                      if [[ $(aws s3 ls s3://${BucketName}/license) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/keystore | grep keystore ; then
+                          echo "Creating s3://${BucketName}/keystore"
                           aws s3api put-object --bucket ${BucketName} --key keystore/
                       fi
-                      if [[ $(aws s3 ls s3://${BucketName}/customization) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/customization | grep customization; then
+                          echo "Creating s3://${BucketName}/customization"
                           aws s3api put-object --bucket ${BucketName} --key customization/
                       fi
-                      if [[ $(aws s3 ls s3://${BucketName}/tomcat-customization) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/tomcat-customization | grep tomcat-customization; then
+                          echo "Creating s3://${BucketName}/tomcat-customization"
                           aws s3api put-object --bucket ${BucketName} --key tomcat-customization/
                       fi
-                      if [[ $(aws s3 ls s3://${BucketName}/ssl-certificate) = *None* ]] ; then
+                      if ! aws s3 ls s3://${BucketName}/ssl-certificate | grep ssl-certificate; then
+                          echo "Creating s3://${BucketName}/ssl-certificate"
                           aws s3api put-object --bucket ${BucketName} --key ssl-certificate/
                       fi
                       echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
