@@ -144,19 +144,19 @@ Resources:
                       wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
                       unzip -q js-dockerrepo.zip
                       mv $(ls -d TIBCOSoftware-js-docker*/)/* .
-                      ls -l
+                      #ls -l
 
                       echo "unzip WAR from jasperreports-server-bin"
                       cd jasperreports-server-bin
-                      ls -l
+                      #ls -l
                       mkdir jasperserver-pro
                       unzip -q jasperserver-pro.war -d jasperserver-pro
-                      ls -l jasperserver-pro
-                      ls -l buildomatic
+                      #ls -l jasperserver-pro
+                      #ls -l buildomatic
                       cd ..
 
                       docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
-                      docker build -f Dockerfile-cmdline --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443  --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
+                      docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
         
                       cd platforms/aws/
                       docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:aws-${JasperReportsServerVersion} .
@@ -195,8 +195,11 @@ Resources:
                           echo "Creating S3 Bucket ${BucketName} ..."
                           aws s3 mb s3://${BucketName}
                       fi
-        
-                      #echo "default master folder exists in S3: " $(aws s3 ls s3://${BucketName}/default-master | grep None)
+
+                      echo "looking at bucket folders"
+                      aws s3 ls s3://${BucketName}/default-master
+                      aws s3 ls s3://${BucketName}/default-master | grep None
+                      echo "above grep *None*"
                       if [[ $(aws s3 ls s3://${BucketName}/default-master) = *None* ]] ; then
                           aws s3api put-object --bucket ${BucketName} --key default-master/
                       fi
