@@ -9,11 +9,20 @@
 
 . ./common-environment-aws.sh
 
-initialize_from_S3
 BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
+
 
 case "$1" in
   init)
+	createBucketFolder(${S3_DEFAULT_MASTER})
+	createBucketFolder(${S3_LICENSE})
+	createBucketFolder(${S3_KEYSTORE})
+	createBucketFolder(${S3_CUSTOMIZATION})
+	createBucketFolder(${S3_TOMCAT_CUSTOMIZATION})
+	createBucketFolder(${S3_SSL_CERTIFICATE})
+
+    initialize_from_S3
+
     ( ${BASE_ENTRYPOINT} "$@" )
     ;;
 
@@ -21,6 +30,7 @@ case "$1" in
     # args are:
     #   mode: s3 or mnt
     #   in-order volumes or A_BUCKET_NAME/folder
+    initialize_from_S3
     echo "$@"
     shift 1
     case "$1" in
@@ -29,7 +39,7 @@ case "$1" in
         shift 1
         # copy contents to /tmp/${bucketAndFolder}
         for bucketAndFolder in $@; do
-		  importFileName="import.properties"
+          importFileName="import.properties"
 
           if aws s3 ls s3://${bucketAndFolder}/${importFileName} ; then
             echo "Loading import from s3: ${bucketAndFolder}"
@@ -45,8 +55,8 @@ case "$1" in
             aws s3 rm s3://${bucketAndFolder}/${importFileName}
             rm -rf /tmp/${bucketAndFolder}
           else
-		    echo "No import.properties in s3://${bucketAndFolder}. Skipping import."
-		  fi
+            echo "No import.properties in s3://${bucketAndFolder}. Skipping import."
+          fi
         done
         for bucketAndFolder in $@; do
         done
@@ -63,6 +73,7 @@ case "$1" in
     # args are:
     #   mode: s3 or mnt
     #   in-order volumes or A_BUCKET_NAME/folder
+    initialize_from_S3
     echo "$@"
     shift 1
     case "$1" in
@@ -72,7 +83,7 @@ case "$1" in
         command=""
         # copy contents to /tmp/${bucketAndFolder}
         for bucketAndFolder in $@; do
-		  exportFileName="export.properties"
+          exportFileName="export.properties"
 
           if aws s3 ls s3://${bucketAndFolder}/${exportFileName} ; then
             echo "Exporting to s3: ${bucketAndFolder}"
@@ -84,8 +95,8 @@ case "$1" in
             aws s3 rm s3://${bucketAndFolder}/${exportFileName}
             rm -rf /tmp/${bucketAndFolder}
           else
-		    echo "No export.properties in s3://${bucketAndFolder}. Skipping export."
-		  fi
+            echo "No export.properties in s3://${bucketAndFolder}. Skipping export."
+          fi
         done
         ;;
       mnt)

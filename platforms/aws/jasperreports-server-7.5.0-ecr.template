@@ -117,7 +117,7 @@ Resources:
               - AWSRegionAMI
               - !Ref 'AWS::Region'
               - '64'
-            InstanceType: t2.medium
+            InstanceType: m5.large
             KeyName: !If [HasKeyName, !Ref KeyName, !Ref "AWS::NoValue"]
             BlockDeviceMappings: 
               - DeviceName: "/dev/xvda"
@@ -137,16 +137,16 @@ Resources:
                       sudo service docker start
                       #sudo usermod -aG docker $USER
                       
-                      echo "Installing JasperReports Server images for version ${JasperReportsServerVersion}"
+                      echo 'Installing JasperReports Server images for version ${JasperReportsServerVersion}'
                       cd /usr/share/jrs_dist/
 
-                      echo "Get js-docker from TIBCOSoftware Github"
+                      echo 'Get js-docker from TIBCOSoftware Github'
                       wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
                       unzip -q js-dockerrepo.zip
                       mv $(ls -d TIBCOSoftware-js-docker*/)/* .
                       #ls -l
 
-                      echo "unzip WAR from jasperreports-server-bin"
+                      echo 'unzip WAR from jasperreports-server-bin'
                       cd jasperreports-server-bin
                       #ls -l
                       mkdir jasperserver-pro
@@ -163,7 +163,8 @@ Resources:
                       docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
         
                       echo 'ECR login...'
-                      $( aws ecr get-login --region ${AWS::Region} --no-include-email )
+                      aws ecr get-login --region ${AWS::Region} --no-include-email
+                      echo 'Create image repositories ...'
                       if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
                           echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
                       else 
@@ -180,51 +181,17 @@ Resources:
                       echo 'Tagging and pushing to ECR...'
         
                       docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                      docker tag jasperserver-pro:aws-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
+                      docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
                       docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
                       docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
                       
                       docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
                       docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:aws-${JasperReportsServerVersion}
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:aws-${JasperReportsServerVersion}
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
+                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
         
-                      if aws s3api get-bucket-location --bucket ${BucketName} | grep LocationConstraint; then
-                          echo "S3 Bucket ${BucketName} already exists, skipping bucket creation..."
-                      else
-                          echo "Creating S3 Bucket ${BucketName} ..."
-                          aws s3 mb s3://${BucketName}
-                      fi
-
-                      if ! aws s3 ls s3://${BucketName}/default-master | grep default-master; then
-                          echo "Creating s3://${BucketName}/default-master"
-                          aws s3api put-object --bucket ${BucketName} --key default-master/
-                      fi
-                      if ! aws s3 ls s3://${BucketName}/license | grep license; then
-                          echo "Creating s3://${BucketName}/license"
-                          aws s3api put-object --bucket ${BucketName} --key license/
-                      fi
-                      if ! aws s3 ls s3://${BucketName}/keystore | grep keystore ; then
-                          echo "Creating s3://${BucketName}/keystore"
-                          aws s3api put-object --bucket ${BucketName} --key keystore/
-                      fi
-                      if ! aws s3 ls s3://${BucketName}/customization | grep customization; then
-                          echo "Creating s3://${BucketName}/customization"
-                          aws s3api put-object --bucket ${BucketName} --key customization/
-                      fi
-                      if ! aws s3 ls s3://${BucketName}/tomcat-customization | grep tomcat-customization; then
-                          echo "Creating s3://${BucketName}/tomcat-customization"
-                          aws s3api put-object --bucket ${BucketName} --key tomcat-customization/
-                      fi
-                      if ! aws s3 ls s3://${BucketName}/ssl-certificate | grep ssl-certificate; then
-                          echo "Creating s3://${BucketName}/ssl-certificate"
-                          aws s3api put-object --bucket ${BucketName} --key ssl-certificate/
-                      fi
                       echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
                       sudo poweroff
-
-                    - BucketName:
-                        !If [CreateS3BucketCondition, !Ref JRSS3Bucket, !Ref S3BucketName]
 
     ECRRole:
         Type: AWS::IAM::Role
