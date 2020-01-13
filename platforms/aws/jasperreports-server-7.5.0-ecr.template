@@ -127,71 +127,70 @@ Resources:
             InstanceInitiatedShutdownBehavior: stop
             SubnetId: !Ref PrivateSubnet
             UserData: 
-                "Fn::Base64": !Sub
-                    - |+
-                      #!/bin/bash
-                      echo 'JasperReports Server-Containers-AWS: Start of EC2 Instance UserData execution...'
-                      echo "Install Docker..."
-                      sudo yum update
-                      sudo yum -y install docker unzip
-                      sudo service docker start
-                      #sudo usermod -aG docker $USER
-                      
-                      echo 'Installing JasperReports Server images for version ${JasperReportsServerVersion}'
-                      cd /usr/share/jrs_dist/
+                Fn::Base64: !Sub |
+                    #!/bin/bash
+                    echo 'JasperReports Server-Containers-AWS: Start of EC2 Instance UserData execution...'
+                    echo "Install Docker..."
+                    sudo yum update
+                    sudo yum -y install docker unzip
+                    sudo service docker start
+                    #sudo usermod -aG docker $USER
+                    
+                    echo 'Installing JasperReports Server images for version ${JasperReportsServerVersion}'
+                    cd /usr/share/jrs_dist/
 
-                      echo 'Get js-docker from TIBCOSoftware Github'
-                      wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
-                      unzip -q js-dockerrepo.zip
-                      mv $(ls -d TIBCOSoftware-js-docker*/)/* .
-                      #ls -l
+                    echo 'Get js-docker from TIBCOSoftware Github'
+                    wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
+                    unzip -q js-dockerrepo.zip
+                    mv $(ls -d TIBCOSoftware-js-docker*/)/* .
+                    #ls -l
 
-                      echo 'unzip WAR from jasperreports-server-bin'
-                      cd jasperreports-server-bin
-                      #ls -l
-                      mkdir jasperserver-pro
-                      unzip -q jasperserver-pro.war -d jasperserver-pro
-                      #ls -l jasperserver-pro
-                      #ls -l buildomatic
-                      cd ..
+                    echo 'unzip WAR from jasperreports-server-bin'
+                    cd jasperreports-server-bin
+                    #ls -l
+                    mkdir jasperserver-pro
+                    unzip -q jasperserver-pro.war -d jasperserver-pro
+                    #ls -l jasperserver-pro
+                    #ls -l buildomatic
+                    cd ..
 
-                      docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
-                      docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
-        
-                      cd platforms/aws
-                      docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:s3-${JasperReportsServerVersion} .
-                      docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
-        
-                      echo 'ECR login...'
-                      aws ecr get-login --region ${AWS::Region} --no-include-email
-                      echo 'Create image repositories ...'
-                      if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
-                          echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
-                      else 
-                          echo 'jasperserver-pro ECR Repository does not exist, creating...'
-                          aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
-                      fi
-                      if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro-cmdline | grep repositoryUri; then
-                          echo 'jasperserver-pro-cmdline ECR Repository already exists, skipping repository creation...'
-                      else 
-                          echo 'jasperserver-pro-cmdline ECR Repository does not exist, creating...'
-                          aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
-                      fi
-        
-                      echo 'Tagging and pushing to ECR...'
-        
-                      docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                      docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
-                      docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                      docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
-                      
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
-                      docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
-        
-                      echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
-                      sudo poweroff
+                    docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
+      
+                    cd platforms/aws
+                    docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:s3-${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
+      
+                    echo 'ECR login...'
+                    $(aws ecr get-login --region ${AWS::Region} --no-include-email)
+                    echo 'Create image repositories ...'
+                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
+                        echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
+                    else 
+                        echo 'jasperserver-pro ECR Repository does not exist, creating...'
+                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
+                    fi
+                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro-cmdline | grep repositoryUri; then
+                        echo 'jasperserver-pro-cmdline ECR Repository already exists, skipping repository creation...'
+                    else 
+                        echo 'jasperserver-pro-cmdline ECR Repository does not exist, creating...'
+                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
+                    fi
+      
+                    echo 'Tagging and pushing to ECR...'
+      
+                    docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
+                    docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
+                    
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
+      
+                    echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
+                    sudo poweroff
 
     ECRRole:
         Type: AWS::IAM::Role
