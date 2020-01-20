@@ -22,8 +22,6 @@ run_jasperserver() {
 
   execute_buildomatic deploy-webapp-pro
 
-  config_license
-
   # setup phantomjs
   config_phantomjs
 
@@ -35,14 +33,14 @@ run_jasperserver() {
   config_ports_and_ssl
 
   # Set Java options for Tomcat.
-  # using G1GC - default Java GC in later versions of Java 8
+  # using G1GC - default Java GC in later versions of Java 8 and Java 11
   
   # setting heap based on info:
   # https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e 
   # https://stackoverflow.com/questions/49854237/is-xxmaxramfraction-1-safe-for-production-in-a-containered-environment
   # https://www.oracle.com/technetwork/java/javase/8u191-relnotes-5032181.html
   
-  # Assuming we are using a Java 8 version beyond 8u191, we can use the Java 10+ JAVA_OPTS
+  # Assuming we are using a Java 8 version beyond 8u191 or Java 11, we can use the Java 10+ JAVA_OPTS
   # for containers
   # Assuming a minimum of 3GB for the container => a max of 2.4GB for heap
   # defaults to 33/3% Min, 80% Max
@@ -56,21 +54,6 @@ run_jasperserver() {
   exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
 }
 
-config_license() {
-  # if license file does not exist, copy evaluation license.
-  # Non-default location (~/ or /root) used to allow
-  # for storing license in a volume. To update license
-  # replace license file, restart container
-  JRS_LICENSE_FINAL=${JRS_LICENSE:-${MOUNTS_HOME}/license}
-  echo "License directory $JRS_LICENSE_FINAL"
-  if [ ! -f "$JRS_LICENSE_FINAL/jasperserver.license" ]; then
-	echo "Used internal evaluation license"
-    cp /usr/src/jasperreports-server/jasperserver.license ~
-  else
-    echo "Used license at $JRS_LICENSE_FINAL"
-	cp $JRS_LICENSE_FINAL/jasperserver.license ~
-  fi
-}
 
 
 config_phantomjs() {

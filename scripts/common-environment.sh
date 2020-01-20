@@ -26,6 +26,9 @@ export ks=$KEYSTORE_PATH
 export ksp=$KEYSTORE_PATH
 
 initialize_deploy_properties() {
+  # license could fail
+  config_license
+  
   # If environment is not set, uses default values for postgres
   DB_TYPE=${DB_TYPE:-postgresql}
   DB_USER=${DB_USER:-postgres}
@@ -198,6 +201,22 @@ test_database_connection() {
 		echo "Sleeping to try repository $DB_NAME of $DB_TYPE at host ${DB_HOST} connection again..." && sleep 15
 	  fi
 	done
+}
+
+
+config_license() {
+  # load license file from volume
+  JRS_LICENSE_FINAL=${JRS_LICENSE:-${MOUNTS_HOME}/license}
+  if [ ! -f "$JRS_LICENSE_FINAL/jasperserver.license" ]; then
+	echo "No license file in $JRS_LICENSE_FINAL. Exiting.,..."
+    exit 1
+  else
+    echo "Used license at $JRS_LICENSE_FINAL"
+	cp $JRS_LICENSE_FINAL/jasperserver.license ~
+	# get rid of old license files if they exist. ie. container restart
+	rm -f ~/.jr-*
+	rm -f ~/.*lic
+  fi
 }
 
 execute_buildomatic() {
