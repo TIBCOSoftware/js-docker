@@ -44,14 +44,12 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/jdbc-dep /usr/src/jasperreports
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/install_resources /usr/src/jasperreports-server/buildomatic/install_resources/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/build-conf /usr/src/jasperreports-server/buildomatic/build_conf/
 
 COPY scripts/*.sh /
 
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y unzip wget > /dev/null && \
+    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils unzip wget  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \

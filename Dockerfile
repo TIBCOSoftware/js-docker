@@ -38,7 +38,6 @@ ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jaspe
 RUN mkdir -p /usr/src/jasperreports-server
 
 # get the WAR and license
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver* /usr/src/jasperreports-server/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver-pro $CATALINA_HOME/webapps/jasperserver-pro/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/TIB* /usr/src/jasperreports-server/
 
@@ -53,12 +52,8 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/app-server /usr/src/jasperr
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperreports-server/buildomatic/bin/groovy/
 
 # supporting resources
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/sampleconf /usr/src/jasperreports-server/buildomatic/bin/sampleconf/
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/jdbc-dep /usr/src/jasperreports-server/buildomatic/bin/jdbc-dep/
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/install-resources /usr/src/jasperreports-server/buildomatic/install_resources/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
-#COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/build-conf /usr/src/jasperreports-server/buildomatic/build_conf/
 
 COPY scripts/* /
 
