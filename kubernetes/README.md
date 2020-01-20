@@ -43,31 +43,19 @@ For more information about JasperReports Server, see the
 The following software is required or recommended:
 
 - [docker-engine](https://docs.docker.com/engine/installation) version 1.18 or higher
-- [kubernetes](https://kubernetes.io/) version 1.10 or higher
-- (*Recommended* for development - they include Kubernetes):
+- (*required*) TIBCO Jaspersoft&reg; commercial license.
+  - Contact your sales representative for information about licensing.
+- (*Recommended*) for development - they include Kubernetes:
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-- (*optional*) [git](https://git-scm.com/downloads)
-- (*optional*) TIBCO Jaspersoft&reg; commercial license.
-- Contact your sales
-representative for information about licensing. If you do not specify a
-TIBCO Jaspersoft license, a 3 day evaluation license is used.
-- (*optional*) Preconfigured PostgreSQL 9 or 10 database. If you do not
-currently have a PostgreSQL instance, you can create a PostgreSQL container
-at build time.
-
-# JasperReports Server Image Installation
-
-Build a JasperReports Server image as "jasperserver-pro:X.X.X" as per 
- [https://github.com/TIBCOSoftware/js-docker](https://github.com/TIBCOSoftware/js-docker)
- 
-Depending on your platform, you may need to push the image into the image repository the platform will use, so Docker/k8s can access it.
+- (*optional*)[kubernetes](https://kubernetes.io/) version 1.10 or higher
+- (*optional*) Preconfigured PostgreSQL 9 or 10 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at build time.
 
 # Configure and Start the Jaspersoft repository database
 
 This JasperReports Server deloyment to Docker and k8s uses a PostgreSQL database to store configuration information.
 
-You can run the PostgreSQL repository outside k8s.
+You can run the repository outside k8s.
 - You will need to set the DB_\* environment variables in the k8s configuration to point to the external database.
 
 Or run the PostgreSQL repository inside k8s, which is the default approach taken with this configuration.
@@ -76,6 +64,19 @@ Or run the PostgreSQL repository inside k8s, which is the default approach taken
   - set volume name, username, password, use secrets etc according to your requirements
 - use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yml`
 
+See the main README for details on how to use other databases for the repository apart from PostgreSQL.
+
+# Secrets and Volumes
+
+Your JasperReports Server license can be in a secret.
+
+`kubectl create secret generic jasperreports-server-license --from-file=jasperserver.license=./jasperserver.license`
+
+Keystore files must be in a persistent volume.
+
+- The cmdline containers create and update the keystore files.
+- The JasperReports Server needs that volume.
+
 # Configure the JasperReports Server service
 
 Edit the `jasperreports-server-k8s.yml` file.
@@ -83,17 +84,18 @@ Edit the `jasperreports-server-k8s.yml` file.
 By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a NodePort.
 It refers to the repository via `DB_HOST`, which in the default configuration is the `postgresql` service within k8s defined above.
 - Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
-- Volumes and volume contents that may be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
-  - License file
-  - JasperReports Server WAR level configuration, like single sign on, clustering etc.
+- Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
+  - Required: License file in a secret. You could also put it in a volume.
+  - Required: Keystore volume
+  - Optional: JasperReports Server WAR level configuration, like single sign on, clustering etc. SSL certificate.
 - Adjust the DB_\* environment variables to reach the repository.
 - Do k8s level configuration, such as pods, LoadBalancer, use of secrets etc.
   - You can set the NodePort the Server will run on or change the network access as you see fit.
+- The init-container, which runs the cmdline image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume.
 
 # Launch the JasperReports Server service
 
 `kubectl apply -f jasperreports-server-k8s.yml`
-
 
 # Logging in to JasperReports Server 
 
@@ -110,7 +112,7 @@ kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP         
 postgresql             ClusterIP   10.100.26.80   <none>        5432/TCP         4m
 ```
 
-31562 is the NodePort for the jasperreports-server service in the PORT(S) column.
+31562 indicated above is the NodePort for the jasperreports-server service in the PORT(S) column.
 
 So login via:
 

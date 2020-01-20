@@ -31,14 +31,12 @@ spec:
     spec:
       containers:
       - name: jasperreports-server
-        image: jasperserver-pro:7.2.0
+        image: jasperserver-pro:7.5.0
         env:
           - name: DB_HOST
             value: postgresql
           - name: DB_NAME
             value: jasper-k8s
-          - name: JRS_LOAD_SAMPLES
-            value: "true"
         ports:
           - name: http
             containerPort: 8080
@@ -46,4 +44,34 @@ spec:
           - name: https
             containerPort: 8443
             protocol: TCP
-
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro/license"
+          readOnly: true
+        - name: jasperreports-server-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: false
+      initContainers:
+      - name: init
+        image: jasperserver-pro-cmdline:7.5.0
+        env:
+          - name: DB_HOST
+            value: postgresql
+          - name: DB_NAME
+            value: jasper-k8s
+          - name: JRS_LOAD_SAMPLES
+            value: "true"
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro/license"
+          readOnly: true
+        - name: jasperreports-server-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: false
+      volumes:
+      - name: license
+        secret:
+          secretName: jasperreports-server-license
+      - name: jasperreports-server-volume
+        persistentVolumeClaim:
+          claimName: jasperreports-server-pv-claim
