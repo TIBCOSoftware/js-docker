@@ -127,7 +127,7 @@ We need to arrange the JasperReports Server WAR file installer in order to build
 
 1. Download the JasperReports Server WAR File installer zip archive from the TIBCO eDelivery site or build it from a bundled installer [Jaspersoft WAR File Installer builder](buildWARFileInstaller)
 1. Put the installer zip file to the `resources` directory in the repository structure.
-1. Run resources/unpackWARInstaller.sh or unpackWARInstaller.bat. This will create a directory like jasperreports-server-pro-`version`-bin. Also unzip jasperreports-server-pro-`version`-bin/jasperserver-pro.war into jasperreports-server-pro-`version`-bin/jasperserver-pro.
+1. Run resources/unpackWARInstaller.sh or unpackWARInstaller.bat. This will create a directory like jasperreports-server-pro-X.X.X-bin. Also unzip jasperreports-server-pro-X.X.X-bin/jasperserver-pro.war into jasperreports-server-pro-X.X.X-bin/jasperserver-pro.
 
 You can do this manually as well.
 
@@ -199,7 +199,6 @@ This image does not create the repository and keystore files. See cmdline below.
 | `POSTGRES_JDBC_DRIVER_VERSION` | optional, Default: 42.2.5. If you change this, the new version will need to be installed by volume as above. See [Use of Volumes](#jasperreports-server-use-of-volumes) | 
 | `JRS_DBCONFIG_REGEN` | Forces updates to the repository JNDI database configuration plus the JDBC driver in tomcat/lib. Default: false. |
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
-| `JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. Default: false |
 | `KS_PASSWORD` | SSL Keystore password. Default: "changeit". Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. | 
 
 For the cmdline:
@@ -219,6 +218,7 @@ If the `DB_NAME` repository database does not exist in the configured repository
 | `JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
 | `JDBC_DRIVER_VERSION` | optional. for non-PostgreSQL databases. Requires a JDBC driver with the required version accessible through a volume. See [Use of Volumes](#jasperreports-server-use-of-volumes)  |
 | `POSTGRES_JDBC_DRIVER_VERSION` | optional, Default: 42.2.5. If you change this, the new version will need to be installed by volume as above. See [Use of Volumes](#jasperreports-server-use-of-volumes) | 
+| `JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. Default: false |
 
 # Configuring JasperReports Server with volumes
 

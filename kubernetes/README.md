@@ -78,7 +78,7 @@ Keystore files must be in a persistent volume.
 - The JasperReports Server must access the keystore files.
 - The volume containing the the keystore files must map to `/usr/local/share/jasperserver-pro/keystore` in the container.
 
-See the main [README(../#configuring_jasperreports_server_with_volumes)] for details of other volumes.
+See the main [README](../#configuring_jasperreports_server_with_volumes) for details of other volumes.
 
 
 # Configure the JasperReports Server service
@@ -87,8 +87,8 @@ Edit the `jasperreports-server-k8s.yml` file.
 
 By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a NodePort.
 It refers to the repository via `DB_HOST`, which in the default configuration is the `postgresql` service within k8s defined above.
-- Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
-- Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
+- Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](../#docker-run-time-environment-variables)
+- Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](../#configuring-jasperreports-server-with-volumes)
   - Required: License file in a secret. You could also put it in a volume.
   - Required: Keystore volume
   - Optional: JasperReports Server WAR level configuration, like single sign on, clustering etc. SSL certificate.
