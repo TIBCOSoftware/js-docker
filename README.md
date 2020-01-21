@@ -201,9 +201,6 @@ This image does not create the repository and keystore files. See cmdline below.
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 | `JRS_LOAD_SAMPLES` | Load JasperReports Server samples when creating the database. Default: false |
 | `KS_PASSWORD` | SSL Keystore password. Default: "changeit". Only used if a keystore is being overridden through a new keystore.  See new keystore addition through volumes below. | 
-| `MOUNTS_HOME` | Directory in the container where mounted volumes will be. Default: /usr/local/share/jasperserver-pro |
-| `BUILDOMATIC_HOME` | Where the JasperReports Server build and launch tools are in the container. Default: /usr/src/jasperreports-server/buildomatic |
-| `KEYSTORE_PATH` | Where the JasperReports Server key related files will be stored in the container. Default: ${MOUNTS_HOME}/keystore |
 
 For the cmdline:
 
@@ -222,9 +219,6 @@ If the `DB_NAME` repository database does not exist in the configured repository
 | `JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
 | `JDBC_DRIVER_VERSION` | optional. for non-PostgreSQL databases. Requires a JDBC driver with the required version accessible through a volume. See [Use of Volumes](#jasperreports-server-use-of-volumes)  |
 | `POSTGRES_JDBC_DRIVER_VERSION` | optional, Default: 42.2.5. If you change this, the new version will need to be installed by volume as above. See [Use of Volumes](#jasperreports-server-use-of-volumes) | 
-| `MOUNTS_HOME` | Directory in the container where mounted volumes will be. Default: /usr/local/share/jasperserver-pro |
-| `BUILDOMATIC_HOME` | Where the JasperReports Server build and launch tools are in the container. Default: /usr/src/jasperreports-server/buildomatic |
-| `KEYSTORE_PATH` | Where the JasperReports Server key related files will be stored in the container. Default: ${MOUNTS_HOME}/keystore |
 
 # Configuring JasperReports Server with volumes
 
@@ -247,7 +241,7 @@ For the JasperReports Server Web app (WAR):
 | Description | Path to override in container | Notes |
 | ------------ | ------------- | ------------ |
 | License | `/usr/local/share/jasperreports-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
-| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the database. |
+| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the repository database. |
 | JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Volume to contain zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable. |

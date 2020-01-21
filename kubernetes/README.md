@@ -75,7 +75,11 @@ Your JasperReports Server license can be in a secret.
 Keystore files must be in a persistent volume.
 
 - The cmdline containers create and update the keystore files.
-- The JasperReports Server needs that volume.
+- The JasperReports Server must access the keystore files.
+- The volume containing the the keystore files must map to `/usr/local/share/jasperserver-pro/keystore` in the container.
+
+See the main [README(../#configuring_jasperreports_server_with_volumes)] for details of other volumes.
+
 
 # Configure the JasperReports Server service
 
