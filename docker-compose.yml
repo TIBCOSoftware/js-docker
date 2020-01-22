@@ -14,8 +14,8 @@ services:
     
     # expose port on the host
     ports:
-      - 8090:8080
-      - 8493:8443
+      - 8080:8080
+      - 8443:8443
     
     # set depends on js_database Postgresql service
     # depends_on:
@@ -46,11 +46,12 @@ services:
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore
+      - /C/Users/swood/Documents/Docker/keystore:/usr/local/share/jasperserver-pro/keystore
       
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
       #- jrs_deploy_customization:/usr/local/share/jasperserver-pro/deploy-customization
+      #- /C/Users/swood/Documents/Docker/additional:/usr/local/share/jasperserver-pro/deploy-customization
       
       # include a new version of a JDBC driver for repository databases supported by 
       # JasperReports Server.
@@ -102,7 +103,7 @@ services:
     # setting following values here will override settings from env_file
     #environment:
       #- DB_HOST=jasperserver_pro_repository
-      # - JRS_LOAD_SAMPLES=true
+      #- JRS_LOAD_SAMPLES=true
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
@@ -121,11 +122,11 @@ services:
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore
+      - /C/Users/swood/Documents/Docker/keystore:/usr/local/share/jasperserver-pro/keystore
       
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
-      #- jrs_deploy_customization:/usr/local/share/jasperserver-pro/deploy-customization
+      #- /C/Users/swood/Documents/Docker/additional:/usr/local/share/jasperserver-pro/deploy-customization
       
       # include a new version of a JDBC driver for repository databases supported by 
       # JasperReports Server.
@@ -145,7 +146,8 @@ services:
       # Under Docker for Windows, volumes have to be under the logged in user's User area
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license
       
-      - /C/Users/swood/Documents/Docker/jrs-import:/usr/local/share/jasperserver-pro/import
+      # for import/export
+      #- /C/Users/swood/Documents/Docker/jrs-import:/usr/local/share/jasperserver-pro/import
 
     mem_limit: 3g
     mem_reservation: 1g
