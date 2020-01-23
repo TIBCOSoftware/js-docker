@@ -1,4 +1,4 @@
-# TIBCO JasperReports&reg; Server with Kubernetes
+# TIBCO JasperReports&reg; Server with AKS
 
 # Table of contents
 
@@ -32,11 +32,14 @@ the PostgreSQL 9 database with JasperReports Server 6.4+
 and with PostgreSQL 10 for JasperReports Server 7.2+.
 
 Knowledge of Docker, Kubernetes and your infrastructure is required.
-For more information about Docker see the
-[official documentation for Docker](https://docs.docker.com/).
 
-For more information about JasperReports Server, see the
-[Jaspersoft community](http://community.jaspersoft.com/).
+For more information about Docker and containers, see the [official documentation for Docker](https://docs.docker.com/).
+
+For more information about Kubernetes, see the [official documentation for Kubernetes](https://kubernetes.io/).
+
+For more information about JasperReports Server, see:
+- [Jaspersoft Quick Start](https://www.jaspersoft.com/quick-start).
+- [Jaspersoft community](http://community.jaspersoft.com/).
 
 # Prerequisites
 
