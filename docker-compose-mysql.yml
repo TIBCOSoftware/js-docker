@@ -8,9 +8,13 @@ version: '2'
 
 services:
   jasperserver-pro:
-    image: jasperserver-pro:7.5.0
+    image: "jasperserver-pro:${JASPERREPORTS_SERVER_VERSION}"
     
-    build: .
+    build:
+      context: .
+      args:
+        - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
+        - "TOMCAT_BASE_IMAGE=${TOMCAT_BASE_IMAGE}"
     
     # expose port on the host
     ports:
@@ -72,9 +76,13 @@ services:
     cpu_shares: 256
   
   jasperserver-pro-cmdline:
-    image: jasperserver-pro-cmdline:7.5.0
+    image: "jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_VERSION}"
     
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-cmdline
+      args:
+        - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
     
     # set depends on js_database Postgresql service
     depends_on:
@@ -130,6 +138,7 @@ services:
       # Under Docker for Windows, volumes have to be under the logged in user's User area
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license
       
+      # for import/export
       - /C/Users/swood/Documents/Docker/jrs-import:/usr/local/share/jasperserver-pro/import
 
     mem_limit: 3g
