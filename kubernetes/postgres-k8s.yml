@@ -58,7 +58,7 @@ spec:
         tier: postgreSQL
     spec:
       containers:
-        - image: postgres:9
+        - image: postgres:11
           name: postgresql
           env:
             - name: POSTGRES_USER

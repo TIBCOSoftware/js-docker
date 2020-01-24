@@ -37,7 +37,7 @@
 
 # Introduction
 
-This distribution includes `Dockerfile`s and supporting files for building, configuring, and running TIBCO JasperReports&reg; Server in containers.  This sample can be used as is or modified to meet the needs of your environment. 
+This distribution includes `Dockerfile`s and supporting files for building, configuring, and running TIBCO JasperReports&reg; Server commercial editions in containers.  This sample can be used as is or modified to meet the needs of your environment. 
 The distribution can be downloaded from [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker).
 
 This configuration has been certified using
@@ -123,9 +123,11 @@ There are two images for JasperReports Server container deployments.
 
 ### Prepare the resources for the images
 
-We need to arrange the JasperReports Server WAR file installer in order to build the images.
+We need commercial editions of the JasperReports Server WAR file installer in order to build the images.
 
-1. Download the JasperReports Server WAR File installer zip archive from the TIBCO eDelivery site or build it from a bundled installer [Jaspersoft WAR File Installer builder](buildWARFileInstaller)
+1. Either:
+  - Download a commerical edition of JasperReports Server WAR File installer zip archive from the TIBCO eDelivery site, which is available to TIBCO/Jaspersoft customers.
+  - Or build a WAR file installer from the installation of a commercial Jaspersoft bundled installer [Jaspersoft WAR File Installer builder](buildWARFileInstaller)
 1. Put the installer zip file to the `resources` directory in the repository structure.
 1. Run resources/unpackWARInstaller.sh or unpackWARInstaller.bat. This will create a directory like jasperreports-server-pro-X.X.X-bin. Also unzip jasperreports-server-pro-X.X.X-bin/jasperserver-pro.war into jasperreports-server-pro-X.X.X-bin/jasperserver-pro.
 
