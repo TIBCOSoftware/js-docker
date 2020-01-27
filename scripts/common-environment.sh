@@ -40,8 +40,12 @@ initialize_deploy_properties() {
 
   echo "Current keystore files in $KEYSTORE_PATH"
   # echo $JRSKS_PATH_FILES
+  if [ ! -d ${KEYSTORE_PATH} ] ; then
+    mkdir ${KEYSTORE_PATH}
+  fi
 
   if [ ! -f "$KEYSTORE_PATH/.jrsks" -o ! -f "$KEYSTORE_PATH/.jrsksp" ]; then
+      ls -a ${KEYSTORE_PATH}
 	  echo ".jrsks missing in $KEYSTORE_PATH. They will be created"
   fi
 

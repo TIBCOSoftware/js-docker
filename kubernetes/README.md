@@ -52,7 +52,123 @@ The following software is required or recommended:
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
 - (*optional*)[kubernetes](https://kubernetes.io/) version 1.10 or higher
-- (*optional*) Preconfigured PostgreSQL 9 or 10 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at build time.
+- (*optional*) Preconfigured PostgreSQL 9, 10 or 11 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at run time.
+
+# Build the Kubernetes specific command line image
+
+Build the main `jasperserver-pro:<version>` and `jasperserver-pro-cmdline:<version>` images in the js-docker directory.
+
+In this directory, run:
+
+`docker build -f Dockerfile-cmdline-k8s -t jasperserver-pro-cmdline:k8s-<version> .`
+
+# Secrets and Volumes
+
+Your JasperReports Server license is in a secret.
+
+`kubectl create secret generic jasperserver-pro-license --from-file=jasperserver.license=./jasperserver.license`
+
+Keystore files are in a secret, too. The cmdline:k8s init container or job creates and updates the keystore secret.
+You have to at least create the jasperserver-pro-jrsks secret.
+
+`kubectl create secret generic jasperserver-pro-jrsks`
+
+You can pre-load the keystore files, too, before you run the server or the command line against a new repository database.
+
+`kubectl create secret generic jasperserver-pro-jrsks --from-file=.jrsks=./.jrsks  --from-file=.jrsksp=./.jrsksp`
+
+These secrets need to be mapped as volumes into the containers.
+You need to map a volume for configuration files created by the init container. At least:
+
+```
+      volumes:
+      - name: license
+        secret:
+          secretName: jasperserver-pro-license
+      - name: keystore-files-secret
+        secret:
+          secretName: jasperserver-pro-jrsks
+      - name: jasperserver-pro-volume
+        emptyDir: {}
+```
+
+And then use the volumes with the containers:
+
+```
+      initContainers:
+      - name: init
+        image: jasperserver-pro-cmdline:k8s-7.5.0
+        env:
+          - name: DB_HOST
+            value: postgresql
+          - name: DB_NAME
+            value: jasperserver
+          - name: JRS_LOAD_SAMPLES
+            value: "true"
+          # point to a non default volumeMount path when working with secrets
+          - name: JRS_LICENSE
+            value: "/usr/local/share/jasperserver-pro-secrets/license"
+          #- name: KEYSTORE_SECRET_NAME
+          #  value: "jasperserver-pro-jrsks"
+
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro-secrets/license"
+          readOnly: true
+
+        # have the keystore secret under its own path.
+        # init container will maintain the keystore files in 
+        # /usr/local/share/jasperserver-pro/keystore
+        # and update the secret if needed
+
+        - name: keystore-files-secret
+          mountPath: "/usr/local/share/jasperserver-pro-secrets/jasperserver-pro-jrsks"
+          readOnly: true
+
+        - name: jasperserver-pro-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: false
+```
+
+And for the JaspeReports Server web application:
+
+```
+      containers:
+      - name: jasperserver-pro
+        image: jasperserver-pro:7.5.0
+        env:
+          - name: DB_HOST
+            value: postgresql
+          - name: DB_NAME
+            value: jasperserver
+          - name: JRS_LICENSE
+            value: "/usr/local/share/jasperserver-pro-secrets/license"
+
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro-secrets/license"
+          readOnly: true
+
+        # web app accesses the keystore secret directly
+        - name: keystore-files-secret
+          mountPath: "/usr/local/share/jasperserver-pro/keystore"
+          readOnly: true
+
+        - name: jasperserver-pro-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: true
+```
+
+See the main [README](https://github.com/TIBCOSoftware/js-docker#configuring_jasperreports_server_with_volumes) for details of other volumes.
+
+# Additional environment variables
+
+For the cmdline:
+
+| Environment Variable Name | Notes |
+| ------------ | ------------- |
+| `KEYSTORE_SECRET_NAME` | Secret name where keystore files will be stored. Used in volumeMount paths. Default: jasperserver-pro-jrsks | 
+
 
 # Configure and Start the Jaspersoft repository database
 
@@ -69,21 +185,6 @@ Or run the PostgreSQL repository inside k8s, which is the default approach taken
 
 See the main README for details on how to use other databases for the repository apart from PostgreSQL.
 
-# Secrets and Volumes
-
-Your JasperReports Server license can be in a secret.
-
-`kubectl create secret generic jasperreports-server-license --from-file=jasperserver.license=./jasperserver.license`
-
-Keystore files must be in a persistent volume.
-
-- The cmdline containers create and update the keystore files.
-- The JasperReports Server must access the keystore files.
-- The volume containing the the keystore files must map to `/usr/local/share/jasperserver-pro/keystore` in the container.
-
-See the main [README](https://github.com/TIBCOSoftware/js-docker#configuring_jasperreports_server_with_volumes) for details of other volumes.
-
-
 # Configure the JasperReports Server service
 
 Edit the `jasperreports-server-k8s.yml` file.
@@ -93,12 +194,12 @@ It refers to the repository via `DB_HOST`, which in the default configuration is
 - Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
 - Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
   - Required: License file in a secret. You could also put it in a volume.
-  - Required: Keystore volume
+  - Required: Keystore secret as above
   - Optional: JasperReports Server WAR level configuration, like single sign on, clustering etc. SSL certificate.
 - Adjust the DB_\* environment variables to reach the repository.
 - Do k8s level configuration, such as pods, LoadBalancer, use of secrets etc.
   - You can set the NodePort the Server will run on or change the network access as you see fit.
-- The init-container, which runs the cmdline image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume.
+- The init-container, which runs the cmdline:k8s image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume, prior to the JaspeReports Server web application starts.
 
 # Launch the JasperReports Server service
 
