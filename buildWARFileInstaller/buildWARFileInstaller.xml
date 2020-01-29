@@ -10,7 +10,7 @@
 		
 		<copy todir="warfile/${JRS-Product-And-Version}-bin/buildomatic">
 		  <fileset dir="buildomatic">
-			<exclude name="install_resources/export/catalog/**/*"/>
+			<exclude name="install_resources/export/js-catalog/**/*"/>
 			<exclude name="jasperserver-pro.war"/>
 			<exclude name="buildomatic/build_conf/default/maven_settings*.xml"/>
 			<exclude name="buildomatic/build_conf/default/js-mvn"/>
