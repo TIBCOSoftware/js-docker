@@ -1,0 +1,77 @@
+# kubectl apply -f .\jasperreports-server-k8s.yml
+# kubectl delete -f .\jasperreports-server-k8s.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: jasperserver-pro
+  labels:
+    app: jasperserver-pro
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: jasperserver-pro
+  selector:
+    app: jasperserver-pro
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: jasperserver-pro
+  labels:
+    app: jasperserver-pro
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: jasperserver-pro
+    spec:
+      containers:
+      - name: jasperserver-pro
+        image: jasperserver-pro:7.5.0
+        env:
+          - name: DB_HOST
+            value: postgresql
+          - name: DB_NAME
+            value: jrs-secret-vol
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          - name: https
+            containerPort: 8443
+            protocol: TCP
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro/license"
+          readOnly: true
+        - name: jasperserver-pro-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: true
+      initContainers:
+      - name: init
+        image: jasperserver-pro-cmdline:7.5.0
+        env:
+          - name: DB_HOST
+            value: postgresql
+          - name: DB_NAME
+            value: jrs-secret-vol
+          - name: JRS_LOAD_SAMPLES
+            value: "true"
+        volumeMounts:
+        - name: license
+          mountPath: "/usr/local/share/jasperserver-pro/license"
+          readOnly: true
+        - name: jasperserver-pro-volume
+          mountPath: "/usr/local/share/jasperserver-pro"
+          readOnly: false
+      volumes:
+      - name: license
+        secret:
+          secretName: jasperserver-pro-license
+      - name: jasperserver-pro-volume
+        persistentVolumeClaim:
+          claimName: jasperreports-server-pv-claim

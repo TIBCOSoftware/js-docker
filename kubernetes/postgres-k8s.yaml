@@ -40,7 +40,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 20Gi
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -58,7 +58,7 @@ spec:
         tier: postgreSQL
     spec:
       containers:
-        - image: postgres:9
+        - image: postgres:11
           name: postgresql
           env:
             - name: POSTGRES_USER

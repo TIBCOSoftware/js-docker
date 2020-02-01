@@ -1,4 +1,4 @@
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2020. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 
@@ -7,8 +7,10 @@
 
 # set certified Tomcat+JRE image version for the JasperReports Server
 # Certified version of Tomcat for JasperReports Server 7.2.0 commercial editions
+# ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
 
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
+# Certified version of Tomcat for JasperReports Server 7.5.0 commercial editions
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.27-jdk11-openjdk
 FROM ${TOMCAT_BASE_IMAGE}
 
 ARG DN_HOSTNAME
@@ -17,57 +19,62 @@ ARG JRS_HTTPS_ONLY
 ARG HTTP_PORT
 ARG HTTPS_PORT
 ARG POSTGRES_JDBC_DRIVER_VERSION
+ARG JASPERREPORTS_SERVER_VERSION
+ARG EXPLODED_INSTALLER_DIRECTORY
 
-ENV PHANTOMJS_VERSION 	${PHANTOMJS_VERSION:-2.1.1}
-ENV DN_HOSTNAME 		${DN_HOSTNAME:-localhost.localdomain}
-ENV KS_PASSWORD 		${KS_PASSWORD:-changeit}
-ENV JRS_HTTPS_ONLY 		${JRS_HTTPS_ONLY:-false}
-ENV HTTP_PORT 			${HTTP_PORT:-8080}
-ENV HTTPS_PORT 			${HTTPS_PORT:-8443}
+ENV PHANTOMJS_VERSION         ${PHANTOMJS_VERSION:-2.1.1}
+ENV DN_HOSTNAME         ${DN_HOSTNAME:-localhost.localdomain}
+ENV KS_PASSWORD         ${KS_PASSWORD:-changeit}
+ENV JRS_HTTPS_ONLY         ${JRS_HTTPS_ONLY:-false}
+ENV HTTP_PORT             ${HTTP_PORT:-8080}
+ENV HTTPS_PORT             ${HTTPS_PORT:-8443}
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
 
-# This Dockerfile requires the JasperReports Server WAR file installer file 
-# in the resources directory below the Dockerfile.
+# This Dockerfile requires an exploded JasperReports Server WAR file installer file 
+# EXPLODED_INSTALLER_DIRECTORY (default jasperreports-server-bin/) directory below the Dockerfile.
 
-# COPY the JasperReports Server WAR file installer into the image 
+RUN mkdir -p /usr/src/jasperreports-server
 
-# JasperReports Server WAR file installer names for version 6.3 and prior
-# were named jasperreports-server-<version number>-bin.zip
-# COPY resources/jasperreports-server*zip /tmp/jasperserver.zip
+# get the WAR and license
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver-pro $CATALINA_HOME/webapps/jasperserver-pro/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/TIB* /usr/src/jasperreports-server/
 
-# JasperReports Server WAR file installer names for version 6.4 and beyond
-# are named TIB_js-jrs_<version number>_bin.zip
+# Ant
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/apache-ant /usr/src/jasperreports-server/apache-ant/
 
-COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
+# js-ant script, Ant XMLs and support in bin
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/js-ant /usr/src/jasperreports-server/buildomatic/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/build.xml /usr/src/jasperreports-server/buildomatic/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/*.xml /usr/src/jasperreports-server/buildomatic/bin/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/app-server /usr/src/jasperreports-server/buildomatic/bin/app-server/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperreports-server/buildomatic/bin/groovy/
+
+# supporting resources
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
+
+COPY scripts/* /
 
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y postgresql-client unzip xmlstarlet  > /dev/null && \
+    apt-get install -y unzip xmlstarlet  > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
-	rm -rf $CATALINA_HOME/webapps/ROOT && \
+    rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
-    echo "unzip WAR File installer" && \
-    unzip /tmp/jasperserver.zip -d /usr/src/jasperreports-server > /dev/null && \
-    rm -rf /tmp/* && \
-    mv /usr/src/jasperreports-server/jasperreports-server-*/* /usr/src/jasperreports-server && \
+    #echo "unzip JasperReports Server WAR to Tomcat" && \
+    #unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
+    #    -d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
+    #rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
     #
-    echo "unzip JasperReports Server WAR to Tomcat" && \
-	unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
-		-d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
-	rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
-    #
-	# java shouldn't be there - just to make sure
-	rm -rf /usr/src/jasperreports-server/java && \
-	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
-	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \
-	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
-	echo "Check JAVA environment" && \
-    env | grep JAVA && \
+    chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
+    chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
     java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
@@ -97,11 +104,11 @@ RUN echo "apt-get" && \
 # Option to set up JasperReports Server to use HTTPS only.
 #
     keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
-		-storetype PKCS12 \
+        -storetype PKCS12 \
         -storepass "${KS_PASSWORD}" \
         -keypass "${KS_PASSWORD}" \
         -keystore /root/.keystore.p12 && \
-	keytool -list -keystore /root/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
+    keytool -list -keystore /root/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
     xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \ 
         -n Connector -v "" --var connector-ssl '$prev' \
     --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT}" \
@@ -117,15 +124,13 @@ RUN echo "apt-get" && \
         -v "${KS_PASSWORD}"\
     --insert '$connector-ssl' --type attr -n keystoreFile \
         -v "/root/.keystore.p12" \
-    ${CATALINA_HOME}/conf/server.xml 
+    ${CATALINA_HOME}/conf/server.xml && \
+    chmod +x /*.sh
 
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"
 # or use dynamic ports.
 EXPOSE ${HTTP_PORT} ${HTTPS_PORT}
-
-COPY scripts/entrypoint.sh /
-RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 
