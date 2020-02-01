@@ -261,6 +261,12 @@ Apply the service via:
 - Keystore in secret: `kubectl apply -f jasperreports-server-k8s-secret.yaml`
 - Keystore in volume: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
 
+# Troubleshooting
+
+When running the service with keystore files in a secret, this error:
+`Error from server (Forbidden): secrets \"jasperserver-pro-jrsks\" is forbidden: User "system:serviceaccount:default:default" cannot get secrets in the namespace "default"`
+comes from the cmdline init-container not having permissions to update the secret. See the ClusterRole update above.
+
 # Logging in to JasperReports Server 
 
 After the JasperReports Server container is up, log into it via URL from a browser.
