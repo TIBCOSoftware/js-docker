@@ -62,6 +62,17 @@ In this directory, run:
 
 `docker build -f Dockerfile-cmdline-k8s -t jasperserver-pro-cmdline:k8s-<version> .`
 
+# Configure the JasperReports Server service
+
+By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a LoadBalancer.
+The init-container in the Service, which runs a cmdline image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume, prior to the JaspeReports Server web application starts.
+
+- Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
+- It refers to the repository via `DB_HOST`, which in the default configuration is the `postgresql` service within k8s defined above.
+- Do k8s level configuration, such as pods, NodePort or LoadBalancer, use of secrets etc.
+  - You can set the NodePort the Server will run on or change the network access as you see fit.
+- Decide on secrets and volumes below.
+
 # Secrets and Volumes
 
 Your JasperReports Server license is in a secret.
@@ -177,6 +188,8 @@ And for the JasperReports Server web application container:
           readOnly: true
 ```
 
+Install the service via: `kubectl apply -f jasperreports-server-k8s-secret.yaml`
+
 ## Persistent Volume for the keystore files
 
 Create a persistent volume. See `local-pv.yaml` as an example.
@@ -227,7 +240,6 @@ For the cmdline:
 | ------------ | ------------- |
 | `KEYSTORE_SECRET_NAME` | When using a secret to store the keystore files, this is the secret name where keystore files will be stored. Used in volumeMount paths. Default: jasperserver-pro-jrsks | 
 
-
 # Configure and Start the Jaspersoft repository database
 
 This JasperReports Server deloyment to Docker and k8s uses a PostgreSQL database to store configuration information.
@@ -239,37 +251,21 @@ Or run the PostgreSQL repository inside k8s, which is the default approach taken
 - edit `postgres-k8s.yml` to suit your environment.
   - This creates a persistent volume and the `postgresql` service in k8s 
   - set volume name, username, password, use secrets etc according to your requirements
-- use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yml`
+- use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yaml`
 
 See the main README for details on how to use other databases for the repository apart from PostgreSQL.
 
-# Configure the JasperReports Server service
-
-Edit the `jasperreports-server-k8s.yml` file.
-
-By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a NodePort.
-It refers to the repository via `DB_HOST`, which in the default configuration is the `postgresql` service within k8s defined above.
-- Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
-- Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
-  - Required: License file in a secret. You could also put it in a volume.
-  - Required: Keystore secret as above
-  - Optional: JasperReports Server WAR level configuration, like single sign on, clustering etc. SSL certificate.
-- Adjust the DB_\* environment variables to reach the repository.
-- Do k8s level configuration, such as pods, LoadBalancer, use of secrets etc.
-  - You can set the NodePort the Server will run on or change the network access as you see fit.
-- The init-container, which runs the cmdline:k8s image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume, prior to the JaspeReports Server web application starts.
-
 # Launch the JasperReports Server service
 
-`kubectl apply -f jasperreports-server-k8s.yml`
+Apply the service via:
+- Keystore in secret: `kubectl apply -f jasperreports-server-k8s-secret.yaml`
+- Keystore in volume: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
 
 # Logging in to JasperReports Server 
 
 After the JasperReports Server container is up, log into it via URL from a browser.
 
-The default JasperReports Server configuration here puts the Server on a public
-NodePort of your k8s cluster. Find the assigned port by running:
-
+If you launched the service using type: NodePort, you can find the port via:
 ```
 PS > kubectl get services
 NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
@@ -280,11 +276,7 @@ postgresql             ClusterIP   10.100.26.80   <none>        5432/TCP        
 
 31562 indicated above is the NodePort for the jasperreports-server service in the PORT(S) column.
 
-So login via:
-
-```
-http://<host>:<NodePort>/jasperserver-pro
-```
+So login via: `http://<host>:<NodePort>/jasperserver-pro`
 
 Where:
 
@@ -297,7 +289,7 @@ JasperReports Server ships with the following default credentials:
 - jasperadmin/jasperadmin - Administrator for the default organization
 
 # Copyright
-Copyright &copy; 2019. TIBCO Software Inc.
+Copyright &copy; 2019-2020. TIBCO Software Inc.
 This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
