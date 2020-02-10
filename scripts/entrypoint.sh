@@ -406,7 +406,7 @@ apply_customizations() {
 		if [[ -f "$customization" ]]; then
 			echo "Unzipping $customization into Tomcat"
 			unzip -o -q "$customization" \
-				-d $CATALINA_HOME
+				-d $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/lib/
 		fi
 	  done
 	fi
