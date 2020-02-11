@@ -1,0 +1,184 @@
+<!--
+  ~ Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+  ~ Licensed pursuant to commercial TIBCO End User License Agreement.
+  -->
+
+<!--
+  - This file is a sample of PreAuthentication API configuration.  The API deals with cases
+  - when the external user comes to Jasper Server already authenticated & authorized.  Very
+  - often the user name, roles, tenant ids, etc. are encrypted as a token parameter in the request; so, there is
+  - no need to redirect user to SSO servers or extract user details from external datasources.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- marker disabling JIAuthenticationSynchronizer: pre-5.1 external auth config-->
+    <alias name="${bean.authenticationProcessingFilter}" alias="proxyAuthenticationProcessingFilter"/>
+
+    <bean id="proxyPreAuthenticatedProcessingFilter" class="com.jaspersoft.jasperserver.api.security.externalAuth.preauth.BasePreAuthenticatedProcessingFilter">
+        <!-- request parameter containing pre-authenticated token with user info -->
+        <property name="principalParameter" value="pp"/>
+        <!-- tokenInRequestParam=false - principalParameter is read from header only.
+             tokenInRequestParam=true - principalParameter is read from request url parameters only.
+             If tokenInRequestParam is not specified, the authentication token is looked up in request header
+             and, then, if not found, in request params -->
+        <property name="tokenInRequestParam" value="true"/>
+
+        <!-- Check if there's a new token in the request -->
+        <property name="checkForPrincipalChanges" value="true"/>
+
+        <!-- DevelopmentPlainTextNonCipher works with the plain-text tokens by default.  It should be used in the development phase only.-->
+        <!-- In prod., substitute with your token decryption implementation of com.jaspersoft.jasperserver.api.common.crypto.CipherI interface -->
+        <property name="tokenDecryptor">
+<!--            <bean class="com.jaspersoft.jasperserver.api.common.crypto.DevelopmentPlainTextNonCipher"/>-->
+            <bean class="EraCipher"/>
+        </property>
+
+        <property name="externalDataSynchronizer">
+            <ref bean="externalDataSynchronizer"/>
+        </property>
+
+        <property name="authenticationManager">
+            <ref bean="preAuthenticatedManager"/>
+        </property>
+
+        <property name="authenticationDetailsSource">
+            <bean class="com.jaspersoft.jasperserver.api.security.externalAuth.preauth.BasePreAuthenticatedGrantesAuthorityDetailsSource"/>
+        </property>
+        <property name="jsonRedirectUrl" ref="authSuccessJsonRedirectUrl"/>
+    </bean>
+
+    <bean id="preAuthenticatedManager" class="com.jaspersoft.jasperserver.api.security.externalAuth.wrappers.spring.JSProviderManager">
+        <constructor-arg index="0">
+            <list>
+                <!-- This bean calls upon preAuthenticatedUserDetailsService to create user details based on
+                 a token extracted from request by proxyPreAuthenticatedProcessingFilter -->
+                <bean class="com.jaspersoft.jasperserver.api.security.externalAuth.wrappers.spring.preauth.JSPreAuthenticatedAuthenticationProvider">
+                    <property name="preAuthenticatedUserDetailsService">
+                        <bean class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.preauth.MTJSPreAuthenticatedUserDetailsService">
+                            <!-- Token format configuration example for token: u=obama|r=PRESIDENT,HUSBAND|o=WhiteHouse|pa1=USA,Kenya|pa2=Washington -->
+                            <property name="tokenPairSeparator" value="#"/>
+                            <property name="tokenFormatMapping">
+                                <map>
+                                    <entry key="username" value="u" />
+                                    <entry key="roles" value="r" />
+                                    <entry key="orgId" value="o" />
+                                    <entry key="expireTime" value="exp" />
+                                    <entry key="profile.attribs" >
+                                        <map>
+                                            <entry key="tenantId" value="pa1" />
+                                        </map>
+                                    </entry>
+                                </map>
+                            </property>
+                            <property name="tokenExpireTimestampFormat" value="yyyyMMddHHmmssZ"/>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <!-- ############ Synchronizer ############ -->
+    <bean id="externalDataSynchronizer"
+          class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.MTExternalDataSynchronizerImpl">
+        <property name="externalUserProcessors">
+            <list>
+                <ref bean="externalTenantSetupProcessor"/>  <!-- REQUIRED processor -->
+                <ref bean="mtExternalUserSetupProcessor"/>  <!-- REQUIRED processor -->
+                <ref bean="externalProfileAttributeProcessor"/>  <!-- OPTIONAL processor: comment out if no profile attributes are expected -->
+                <!-- Example processor for creating user folder.
+                Other custom processors can be created and
+                added to the list.-->
+                <!--<ref bean="externalUserFolderProcessor"/>-->
+            </list>
+        </property>
+    </bean>
+
+    <bean id="abstractExternalProcessor" class="com.jaspersoft.jasperserver.api.security.externalAuth.processors.AbstractExternalUserProcessor" abstract="true">
+        <property name="repositoryService" ref="${bean.repositoryService}"/>
+        <property name="userAuthorityService" ref="${bean.userAuthorityService}"/>
+        <property name="tenantService" ref="${bean.tenantService}"/>
+        <property name="profileAttributeService" ref="profileAttributeService"/>
+        <property name="objectPermissionService" ref="objectPermissionService"/>
+    </bean>
+
+    <bean id="mtExternalUserSetupProcessor" class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.processors.MTExternalUserSetupProcessor" parent="abstractExternalProcessor">
+        <property name="userAuthorityService">
+            <ref bean="${bean.internalUserAuthorityService}"/>
+        </property>
+
+        <property name="organizationRoleMap">
+            <map>
+                <!-- Example of mapping customer roles to JRS roles -->
+                <!--<entry>
+                    <key>
+                        <value>ADMIN_EXTERNAL_ORGANIZATION</value>
+                    </key>
+                    <value>ROLE_ADMINISTRATOR</value>
+                </entry>-->
+            </map>
+        </property>
+
+        <property name="defaultInternalRoles">
+            <list>
+                <value>ROLE_USER</value>
+            </list>
+        </property>
+
+        <property name="permittedRolesRegex">
+            <list>
+                <!-- Used to set regex's to limit what external roles are imported into Jasper Server.
+                    By default, all roles are imported.
+                    Examples of the regex's importing only roles starting with JRS_ and EXT_:
+                    <value>JRS_.*</value>
+                    <value>EXT_.*</value>
+                -->
+            </list>
+        </property>
+
+    </bean>
+
+    <bean id="externalTenantSetupProcessor" class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.processors.MTExternalTenantSetupProcessor" parent="abstractExternalProcessor">
+        <property name="multiTenancyService" ref="internalMultiTenancyService"/>
+        <property name="organizationMap">
+            <map>
+                <entry key="JRS_Example" value="Example" />
+                <entry key="JRS_Example2" value="Example_Two" />
+            </map>
+        </property>
+        <property name="tenantIdNotSupportedSymbols" value="#{configurationBean.tenantIdNotSupportedSymbols}"/>
+
+        <!-- User credentials are setup in js.externalAuth.properties-->
+        <property name="externalTenantSetupUsers">
+            <list>
+                <bean class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.processors.MTAbstractExternalProcessor.ExternalTenantSetupUser">
+                    <property name="username" value="${new.tenant.user.name.1}"/>
+                    <property name="fullName" value="${new.tenant.user.fullname.1}"/>
+                    <property name="password" value="${new.tenant.user.password.1}"/>
+                    <property name="emailAddress" value="${new.tenant.user.email.1}"/>
+                    <property name="roleSet">
+                        <set>
+                            <value>ROLE_ADMINISTRATOR</value>
+                            <value>ROLE_USER</value>
+                        </set>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="externalProfileAttributeProcessor" class="com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalProfileAttributeProcessor" parent="abstractExternalProcessor">
+        <property name="profileAttributeService" ref="profileAttributeServiceTarget"/>
+    </bean>
+
+    <!-- EXAMPLE Processor
+    <bean id="externalUserFolderProcessor"
+          class="com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserFolderProcessor"
+          parent="abstractExternalProcessor">
+        <property name="repositoryService" ref="${bean.unsecureRepositoryService}"/>
+    </bean>
+    -->
+
+</beans>
