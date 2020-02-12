@@ -42,7 +42,7 @@ Parameters:
         Description: URL to a zip file containing TIBCOSoftware/js-docker
         Type: String
         MaxLength: 100
-        Default: "https://github.com/TIBCOSoftware/js-docker/zipball/master"
+        Default: "https://github.com/TIBCOSoftware/js-docker/zipball/7.5"
         ConstraintDescription: Can be a release ZIP, or point to a branch zipball, like the default.
 
 Metadata: 
@@ -156,11 +156,8 @@ Resources:
 
                     docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
                     docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
-
-                    cd kubernetes
-                    docker build -f Dockerfile-cmdline-k8s --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:k8s-${JasperReportsServerVersion} .
-
-                    cd ../platforms/aws
+      
+                    cd platforms/aws
                     docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:s3-${JasperReportsServerVersion} .
                     docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
       
@@ -183,14 +180,12 @@ Resources:
                     echo 'Tagging and pushing to ECR...'
       
                     docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                    docker tag jasperserver-pro-cmdline:k8s-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:k8s-${JasperReportsServerVersion}
                     docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
                     docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
                     
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:k8s-${JasperReportsServerVersion}
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
       
