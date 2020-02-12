@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: jaspersoft
+data:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jasperreports-server-repository
+  name: postgresql
+  namespace: jaspersoft
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: 5432
+  selector:
+    app: jasperreports-server-repository
+    tier: postgreSQL
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: jasperreports-server-repository
+  name: postgresql
+  namespace: jaspersoft
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: jasperreports-server-repository
+        tier: postgreSQL
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: postgres-config
+        image: postgres:11
+        name: postgresql
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        # resources:
+          # limits:
+            # cpu: 200m
+            # memory: 256Mi
+          # requests:
+            # cpu: 100m
+            # memory: 128Mi
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgresql
+      serviceAccountName: jasper-robot
+      volumes:
+      - name: postgresql
+        persistentVolumeClaim:
+          claimName: postgres-jasper-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  labels:
+    type: local
+  name: postgres-pv-volume-test
+  namespace: jaspersoft
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 40Gi
+  hostPath:
+    path: /mnt/postgres-jasper
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Delete
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: jasperreports-server-repository
+  name: postgres-jasper-claim
+  namespace: jaspersoft
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: manual

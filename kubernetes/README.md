@@ -25,7 +25,7 @@ and how you want to deploy JasperReports Server:
 - exposed to the outside world directly: NodePort, Ingress, LoadBalancer
 - JasperReports Server repository database location: within or external to Kubernetes
 - use of environment variables and volumes
-- use of secrets for passwords
+- use of secrets for license and keystores
 
 This configuration has been certified using
 the PostgreSQL 9 database with JasperReports Server 6.4+
@@ -99,33 +99,21 @@ See the main [README](https://github.com/TIBCOSoftware/js-docker#configuring_jas
 
 JasperReports Server keystore files need to be saved when the repository database is created or the keystore is updated via the js-import and js-export command line tools.
 Here are two approaches to keystore storage:
-- Using a persistant volume
+- Using a persistent volume
 - Using a Secret
 
 ## A Kubernetes Secret for keystore files
 
-Keystore files can be maintained in a Secret. See the `jasperreports-server-k8s-secret.yaml`.
-The cmdline:k8s init container or job creates and updates the keystore secret.
-Because of this update of the secret, the ClusterRole used by the Service has to have extended privileges.
+Keystore files can be maintained in a Secret. The cmdline:k8s init container or job creates and updates the keystore secret. This set of files creates the JasperReports Server environment:
 
-```
- - apiGroups:
-      - ""
-    resources:
-      - secrets
-    resourceNames:
-      - jasperserver-pro-jrsks
-    verbs:
-      - get
-      - update
-```
-You have to create the jasperserver-pro-jrsks secret.
-
-`kubectl create secret generic jasperserver-pro-jrsks`
+| command | Notes |
+| ------------ | ------------- |
+| `kubectl apply -f namespace-rbac.yaml` | creates the "jaspersoft" namespace and the "jasper-robot" service account with a role that allows the JasperReports Server containers to update the keystore secret "jasperserver-pro-jrsks" |
+| `kubectl apply -f secrets.yaml` | create the keystore secret "jasperserver-pro-jrsks" |
 
 You can pre-load the keystore files, too, before you run the server or the command line against a new repository database.
 
-`kubectl create secret generic jasperserver-pro-jrsks --from-file=.jrsks=./.jrsks  --from-file=.jrsksp=./.jrsksp`
+`kubectl create secret generic jasperserver-pro-jrsks -n jaspersoft --from-file=.jrsks=./.jrsks  --from-file=.jrsksp=./.jrsksp`
 
 These secret needs to be mapped as volumes into the containers.
 You need to map a volume for configuration files created by the init container. At least:
@@ -188,11 +176,9 @@ And for the JasperReports Server web application container:
           readOnly: true
 ```
 
-Install the service via: `kubectl apply -f jasperreports-server-k8s-secret.yaml`
-
 ## Persistent Volume for the keystore files
 
-Create a persistent volume. See `local-pv.yaml` as an example.
+An alternative is to have a persistent volume. See `local-pv.yaml` as an example.
 Run via `kubectl apply -f local-pv.yaml`
 
 Review `jasperreports-server-k8s-volume.yaml`
@@ -248,7 +234,7 @@ You can run the repository outside k8s.
 - You will need to set the DB_\* environment variables in the k8s configuration to point to the external database.
 
 Or run the PostgreSQL repository inside k8s, which is the default approach taken with this configuration.
-- edit `postgres-k8s.yml` to suit your environment.
+- edit `repository-database.yaml` to suit your environment.
   - This creates a persistent volume and the `postgresql` service in k8s 
   - set volume name, username, password, use secrets etc according to your requirements
 - use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yaml`
@@ -257,37 +243,47 @@ See the main README for details on how to use other databases for the repository
 
 # Launch the JasperReports Server service
 
-Apply the service via:
-- Keystore in secret: `kubectl apply -f jasperreports-server-k8s-secret.yaml`
-- Keystore in volume: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
+Launch the JasperReports Server.
+
+For keystores in secrets: `kubectl apply -f jasperreports-server-service-deployment.yaml`
+- An initContainer manages the repository database initialization and keystore creation.
+- ConfigMap for Deployment.
+- Service: ClusterIP, NodePort, LoadBalancer.
+
+Otherwise launch via volumes only: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
 
 # Troubleshooting
 
 When running the service with keystore files in a secret, this error:
 `Error from server (Forbidden): secrets \"jasperserver-pro-jrsks\" is forbidden: User "system:serviceaccount:default:default" cannot get secrets in the namespace "default"`
-comes from the cmdline init-container not having permissions to update the secret. See the ClusterRole update above.
+comes from the cmdline init-container not having permissions to update the secret. Check the Role being set for the namespace and the service account linked to it.
 
 # Logging in to JasperReports Server 
 
 After the JasperReports Server container is up, log into it via URL from a browser.
 
-If you launched the service using type: NodePort, you can find the port via:
+You can find the IP and port via:
 ```
 PS > kubectl get services
 NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
 jasperreports-server   NodePort    10.96.1.127    <none>        8080:31562/TCP   3m
 kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP          1d
 postgresql             ClusterIP   10.100.26.80   <none>        5432/TCP         4m
+
+or:
+
+jasperserver-pro       LoadBalancer   10.100.138.114   ab62d98fe4d3d11eab1980665fc8fbc6-1620952781.us-west-2.elb.amazonaws.com   80:30650/TCP,443:30961/TCP   3h22m
+p
 ```
 
 31562 indicated above is the NodePort for the jasperreports-server service in the PORT(S) column.
 
-So login via: `http://<host>:<NodePort>/jasperserver-pro`
+So login via: `http://<host>:<port>/jasperserver-pro`
 
 Where:
 
 - host : name or IP address of your k8s cluster.
-- NodePort : NodePort the jasperreports-server service is running on.
+- port : port the jasperreports-server service is running on.
 
 JasperReports Server ships with the following default credentials:
 

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jaspersoft
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jasper-robot
+  namespace: jaspersoft
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: use-secrets
+  namespace: jaspersoft
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  #resourceNames: [ "jasperserver-pro-jrsks" ]
+  verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: use-secrets-binding
+  namespace: jaspersoft
+roleRef:
+  kind: Role
+  name: use-secrets
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: jasper-robot
+  
