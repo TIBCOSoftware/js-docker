@@ -31,8 +31,7 @@
         <!-- DevelopmentPlainTextNonCipher works with the plain-text tokens by default.  It should be used in the development phase only.-->
         <!-- In prod., substitute with your token decryption implementation of com.jaspersoft.jasperserver.api.common.crypto.CipherI interface -->
         <property name="tokenDecryptor">
-<!--            <bean class="com.jaspersoft.jasperserver.api.common.crypto.DevelopmentPlainTextNonCipher"/>-->
-            <bean class="EraCipher"/>
+            <bean class="com.jaspersoft.jasperserver.api.common.crypto.DevelopmentPlainTextNonCipher"/>
         </property>
 
         <property name="externalDataSynchronizer">
@@ -58,7 +57,7 @@
                     <property name="preAuthenticatedUserDetailsService">
                         <bean class="com.jaspersoft.jasperserver.multipleTenancy.security.externalAuth.preauth.MTJSPreAuthenticatedUserDetailsService">
                             <!-- Token format configuration example for token: u=obama|r=PRESIDENT,HUSBAND|o=WhiteHouse|pa1=USA,Kenya|pa2=Washington -->
-                            <property name="tokenPairSeparator" value="#"/>
+                            <property name="tokenPairSeparator" value="|"/>
                             <property name="tokenFormatMapping">
                                 <map>
                                     <entry key="username" value="u" />
@@ -67,7 +66,8 @@
                                     <entry key="expireTime" value="exp" />
                                     <entry key="profile.attribs" >
                                         <map>
-                                            <entry key="tenantId" value="pa1" />
+                                            <entry key="profileAttrib1" value="pa1" />
+                                            <entry key="profileAttrib2" value="pa2" />
                                         </map>
                                     </entry>
                                 </map>
