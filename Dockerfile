@@ -109,14 +109,14 @@ RUN echo "apt-get" && \
 # permanently copy license
 COPY license/jasperserver.license /usr/src/jasperreports-server/jasperserver.license
 # copy cipher class
-COPY security/java/EraCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/EraCipher.jar
+COPY security/java/MyCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar
 # copy auth-config
 COPY security/config/applicationContext-externalAuth-preauth.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml
 # copy MySQL driver
 COPY driver/mariadb-java-client-1.6.3.jar /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar
 RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml && \
-	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/EraCipher.jar && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
 	chmod +x /usr/src/jasperreports-server/jasperserver.license
 
 # Expose ports. Note that you must do one of the following:

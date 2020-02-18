@@ -31,7 +31,7 @@
         <!-- DevelopmentPlainTextNonCipher works with the plain-text tokens by default.  It should be used in the development phase only.-->
         <!-- In prod., substitute with your token decryption implementation of com.jaspersoft.jasperserver.api.common.crypto.CipherI interface -->
         <property name="tokenDecryptor">
-            <bean class="com.jaspersoft.jasperserver.api.common.crypto.DevelopmentPlainTextNonCipher"/>
+            <bean class="MyCipher"/>
         </property>
 
         <property name="externalDataSynchronizer">
@@ -66,13 +66,13 @@
                                     <entry key="expireTime" value="exp" />
                                     <entry key="profile.attribs" >
                                         <map>
-                                            <entry key="profileAttrib1" value="pa1" />
+                                            <entry key="tenantId" value="pa1" />
                                             <entry key="profileAttrib2" value="pa2" />
                                         </map>
                                     </entry>
                                 </map>
                             </property>
-                            <property name="tokenExpireTimestampFormat" value="yyyyMMddHHmmssZ"/>
+                            <property name="tokenExpireTimestampFormat" value="yyyyMMddHHmmss"/>
                         </bean>
                     </property>
                 </bean>
