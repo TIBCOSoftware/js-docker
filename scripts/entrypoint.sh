@@ -154,9 +154,20 @@ apply_customizations() {
 	  # find . -path ./lower -prune -o -name "*txt"
 	  for customization in $JRS_CUSTOMIZATION_FILES; do
 		if [[ -f "$customization" ]]; then
-		  echo "Unzipping $customization into JasperReports Server webapp"
-		  unzip -o -q "$customization" \
-			-d $CATALINA_HOME/webapps/jasperserver-pro/
+		  if unzip -l $customization | grep install.sh ; then
+			echo "Installing ${customization##*/}"
+			mkdir -p "/tmp/jrs-installs/${customization##*/}"
+			unzip -o -q "$customization" -d "/tmp/jrs-installs/${customization##*/}"
+			cd "/tmp/jrs-installs/${customization##*/}"
+			chmod +x -R *.sh
+			./install.sh
+			cd ..
+			rm -rf "${customization##*/}"
+		  else
+			echo "Unzipping $customization into JasperReports Server webapp"
+			unzip -o -q "$customization" \
+				-d $CATALINA_HOME/webapps/jasperserver-pro/
+		  fi
 		fi
 	  done
   fi
