@@ -51,7 +51,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: 552906430377.dkr.ecr.us-west-2.amazonaws.com/jasperserver-pro:7.5.0
+        image: jasperserver-pro:7.5.0
         name: jasperserver-pro
         imagePullPolicy: Always
         ports:
@@ -82,7 +82,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: 552906430377.dkr.ecr.us-west-2.amazonaws.com/jasperserver-pro-cmdline:k8s-7.5.0
+        image: jasperserver-pro-cmdline:k8s-7.5.0
         name: init
         imagePullPolicy: Always
         resources:
