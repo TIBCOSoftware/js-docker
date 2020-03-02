@@ -1,4 +1,4 @@
-# TIBCO JasperReports&reg; Server with AKS
+# TIBCO JasperReports&reg; Server with Kubernetes
 
 # Table of contents
 
@@ -244,6 +244,9 @@ See the main README for details on how to use other databases for the repository
 # Launch the JasperReports Server service
 
 Launch the JasperReports Server.
+
+Update the references to images you have built ie. if you deployed the images into your Amazon ECR, then you will need to update your references to :
+<AWS Account>.dkr.ecr.<AWS region for ECR>.amazonaws.com/jasperserver-pro-cmdline:k8s-7.5.0
 
 For keystores in secrets: `kubectl apply -f jasperreports-server-service-deployment.yaml`
 - An initContainer manages the repository database initialization and keystore creation.

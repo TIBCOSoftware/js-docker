@@ -1,22 +1,14 @@
-# TIBCO JasperReports&reg; Server with AKS
+# TIBCO JasperReports&reg; Server with Amazon EKS
 
 # Table of contents
 
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
-1. [JasperReports Server Image Installation](#jasperreports-server-image-installation)
-1. [Configure and Start the Jaspersoft repository database](#configure-and-start-the-jaspersoft-repository-database)
-1. [Configure the JasperReports Server service](#configure-the-jasperreports-server-service)
-1. [Launch the JasperReports Server service](#launch-the-jasperreports-server-service)
-1. [Logging in to JasperReports Server ](#logging-in-to-jasperreports-server)
+1. [Install JasperReports Server images into AWS ECR](#install-jasperreports-server-images-into-AWS-ECR)
 
 # Introduction
 
-These configuration files perform
-[declarative configuration](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/)
-with `kubectl apply` to deploy JasperReports Server within Kubernetes (k8s).
-
-These Kubernetes configurations leverage images created via [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker)
+These EKS configurations leverage images created via [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker)
 and configuration options for the JasperReports Server containers are defined there.
 
 You must change the environment variables and declarative configuration to fit with your deployment environment,
@@ -42,100 +34,52 @@ For more information about JasperReports Server, see the
 
 The following software is required or recommended:
 
-- [docker-engine](https://docs.docker.com/engine/installation) version 1.18 or higher
 - (*required*) TIBCO Jaspersoft&reg; commercial license.
   - Contact your sales representative for information about licensing.
-- (*Recommended*) for development - they include Kubernetes:
-  - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
-  - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-- (*optional*)[kubernetes](https://kubernetes.io/) version 1.10 or higher
+- [kubernetes](https://kubernetes.io/) version 1.10 or higher
 - (*optional*) Preconfigured PostgreSQL 9 or 10 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at build time.
 
-# Configure and Start the Jaspersoft repository database
+# Install JasperReports Server images into AWS ECR
 
-This JasperReports Server deloyment to Docker and k8s uses a PostgreSQL database to store configuration information.
+The CloudFormation templates attached here:
+- jasperreports-server-7.2.0-ecr.template
+- jasperreports-server-7.5.0-ecr.template
 
-You can run the repository outside k8s.
-- You will need to set the DB_\* environment variables in the k8s configuration to point to the external database.
+create the JasperReports Server images:
+- jasperserver-pro:<version>
+- jasperserver-pro-cmdline:<version>
+- jasperserver-pro-cmdline:<version>-k8s
 
-Or run the PostgreSQL repository inside k8s, which is the default approach taken with this configuration.
-- edit `postgres-k8s.yml` to suit your environment.
-  - This creates a persistent volume and the `postgresql` service in k8s 
-  - set volume name, username, password, use secrets etc according to your requirements
-- use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yml`
+To create these stacks, you need to go to the AWS Marketplace and subscribe to TIBCO Jaspersoft Reporting and Analytics (BYOL).
+- Find via the listings via: https://aws.amazon.com/marketplace/search/results?x=0&y=0&searchTerms=jaspersoft+byol
+- Login to your AWS account as a user with the ability to subscribe to Marketplace listings.
+- Continue to Subscribe
+- Accept terms and conditions
+- Do not launch instances
 
-See the main README for details on how to use other databases for the repository apart from PostgreSQL.
+Create a stack for the desired version of JasperReports Server, based on the templates here. These templates:
+- Launch a JasperReports Server BYOL instance
+- Install Docker
+- Download the master branch of https://github.com/TIBCOSoftware/js-docker
+- Build 
+  - jasperserver-pro:<version>
+  - jasperserver-pro-cmdline:<version>
+  - jasperserver-pro-cmdline:<version>-k8s
+    - note that the JasperReports Server image is confiured to run on port 80 in the template
+- Create ECR repositories for the current AWS account and region if they do not exist
+  - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
+  - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
+- Tag and push the versions of the images to the ECR repositories
 
-# Secrets and Volumes
+# Deployment to EKS
 
-Your JasperReports Server license can be in a secret.
+General deployment into EKS is documented here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 
-`kubectl create secret generic jasperreports-server-license --from-file=jasperserver.license=./jasperserver.license`
+JasperReports Server deploys into EKS as per the instructions for Kubernetes [js-docker for Kubernetes](https://../../kubernetes)
 
-Keystore files must be in a persistent volume.
-
-- The cmdline containers create and update the keystore files.
-- The JasperReports Server must access the keystore files.
-- The volume containing the the keystore files must map to `/usr/local/share/jasperserver-pro/keystore` in the container.
-
-See the main [README](https://github.com/TIBCOSoftware/js-docker#configuring_jasperreports_server_with_volumes) for details of other volumes.
-
-
-# Configure the JasperReports Server service
-
-Edit the `jasperreports-server-k8s.yml` file.
-
-By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a NodePort.
-It refers to the repository via `DB_HOST`, which in the default configuration is the `postgresql` service within k8s defined above.
-- Modify the environment variables as needed: Refer to [JasperReports Server Docker environment variables](https://github.com/TIBCOSoftware/js-docker#docker-run-time-environment-variables)
-- Volumes and volume contents that are be needed: [JasperReports Server Docker volumes](https://github.com/TIBCOSoftware/js-docker#configuring-jasperreports-server-with-volumes)
-  - Required: License file in a secret. You could also put it in a volume.
-  - Required: Keystore volume
-  - Optional: JasperReports Server WAR level configuration, like single sign on, clustering etc. SSL certificate.
-- Adjust the DB_\* environment variables to reach the repository.
-- Do k8s level configuration, such as pods, LoadBalancer, use of secrets etc.
-  - You can set the NodePort the Server will run on or change the network access as you see fit.
-- The init-container, which runs the cmdline image, ensures that the JasperReports Server repository exists and the keystore files are created in the correct volume.
-
-# Launch the JasperReports Server service
-
-`kubectl apply -f jasperreports-server-k8s.yml`
-
-# Logging in to JasperReports Server 
-
-After the JasperReports Server container is up, log into it via URL from a browser.
-
-The default JasperReports Server configuration here puts the Server on a public
-NodePort of your k8s cluster. Find the assigned port by running:
-
-```
-PS > kubectl get services
-NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
-jasperreports-server   NodePort    10.96.1.127    <none>        8080:31562/TCP   3m
-kubernetes             ClusterIP   10.96.0.1      <none>        443/TCP          1d
-postgresql             ClusterIP   10.100.26.80   <none>        5432/TCP         4m
-```
-
-31562 indicated above is the NodePort for the jasperreports-server service in the PORT(S) column.
-
-So login via:
-
-```
-http://<host>:<NodePort>/jasperserver-pro
-```
-
-Where:
-
-- host : name or IP address of your k8s cluster.
-- NodePort : NodePort the jasperreports-server service is running on.
-
-JasperReports Server ships with the following default credentials:
-
-- superuser/superuser - System-wide administrator
-- jasperadmin/jasperadmin - Administrator for the default organization
 
 # Copyright
-Copyright &copy; 2019. TIBCO Software Inc.
+Copyright &copy; 2020. TIBCO Software Inc.
 This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
