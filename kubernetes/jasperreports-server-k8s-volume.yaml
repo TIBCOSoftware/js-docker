@@ -1,6 +1,20 @@
 # kubectl apply -f .\jasperreports-server-k8s.yml
 # kubectl delete -f .\jasperreports-server-k8s.yml
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jasper-config
+  namespace: jaspersoft
+data:
+  DB_HOST: postgresql
+  DB_NAME: jasperserver-k8s
+  DB_PORT: "5432"
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  JRS_LOAD_SAMPLES: "true"
+  #KEYSTORE_SECRET_NAME: '"jasperserver-pro-jrsks"'
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: jasperserver-pro
@@ -8,8 +22,8 @@ metadata:
     app: jasperserver-pro
 spec:
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 80
+      targetPort: 80
       name: jasperserver-pro
   selector:
     app: jasperserver-pro
@@ -32,17 +46,16 @@ spec:
       containers:
       - name: jasperserver-pro
         image: jasperserver-pro:7.5.0
-        env:
-          - name: DB_HOST
-            value: postgresql
-          - name: DB_NAME
-            value: jrs-secret-vol
+        imagePullPolicy: Always
+      - envFrom:
+        - configMapRef:
+            name: jasper-config
         ports:
           - name: http
-            containerPort: 8080
+            containerPort: 80
             protocol: TCP
           - name: https
-            containerPort: 8443
+            containerPort: 443
             protocol: TCP
         volumeMounts:
         - name: license
@@ -54,13 +67,9 @@ spec:
       initContainers:
       - name: init
         image: jasperserver-pro-cmdline:7.5.0
-        env:
-          - name: DB_HOST
-            value: postgresql
-          - name: DB_NAME
-            value: jrs-secret-vol
-          - name: JRS_LOAD_SAMPLES
-            value: "true"
+      - envFrom:
+        - configMapRef:
+            name: jasper-config
         volumeMounts:
         - name: license
           mountPath: "/usr/local/share/jasperserver-pro/license"
