@@ -75,7 +75,7 @@ Create a stack for the desired version of JasperReports Server, based on the tem
 
 General deployment into EKS is documented here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 
-JasperReports Server deploys into EKS as per the instructions for Kubernetes [js-docker for Kubernetes](https://../../kubernetes)
+JasperReports Server deploys into EKS as per the instructions for Kubernetes [js-docker for Kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
 
 
 # Copyright
