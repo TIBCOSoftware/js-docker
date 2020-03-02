@@ -5,6 +5,7 @@
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
 1. [Install JasperReports Server images into AWS ECR](#install-jasperreports-server-images-into-AWS-ECR)
+1. [Deployment to EKS](#deployment-to-eks)
 
 # Introduction
 
@@ -36,8 +37,15 @@ The following software is required or recommended:
 
 - (*required*) TIBCO Jaspersoft&reg; commercial license.
   - Contact your sales representative for information about licensing.
+- AWS Account
+- AWS administrative access. To manage:
+  - ECR
+  - EKS
+  - run CloudFormation templates
+  - subscribe to AWS Marketplace listings  
 - [kubernetes](https://kubernetes.io/) version 1.10 or higher
-- (*optional*) Preconfigured PostgreSQL 9 or 10 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at build time.
+- Bastion EC2 instance to run kubectl commands
+- (*optional*) Preconfigured PostgreSQL database in RDS
 
 # Install JasperReports Server images into AWS ECR
 
