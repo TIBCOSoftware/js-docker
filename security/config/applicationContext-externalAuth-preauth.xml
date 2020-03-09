@@ -111,13 +111,66 @@
 
         <property name="organizationRoleMap">
             <map>
-                <!-- Example of mapping customer roles to JRS roles -->
-                <!--<entry>
+                <entry>
                     <key>
-                        <value>ADMIN_EXTERNAL_ORGANIZATION</value>
+                        <value>ERAMON_MANDANT9999</value>
                     </key>
-                    <value>ROLE_ADMINISTRATOR</value>
-                </entry>-->
+                    <value>ERAMON_ROLE_MANDANT9999|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT0</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT0|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT1</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT1|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT2</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT2|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT3</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT3|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT4</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT4|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT5</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT5|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT6</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT6|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT7</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT7|*</value>
+                </entry>
+                <entry>
+                    <key>
+                        <value>ERAMON_MANDANT8</value>
+                    </key>
+                    <value>ERAMON_ROLE_MANDANT8|*</value>
+                </entry>
             </map>
         </property>
 
