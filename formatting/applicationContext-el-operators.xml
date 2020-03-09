@@ -1,0 +1,1170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+  ~ Licensed pursuant to commercial TIBCO End User License Agreement.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
+       	http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-4.3.xsd">
+
+    <!--
+            2014-03-31  thorick
+                        note:  the 2 top level beans:  operatorDef and functionDef have opposite 'inMemory' defaults:
+
+                               operatorDef:  inMemory == false    pushdown to DBMS
+                               functionDef:  inMemory == true     calculate in memory
+
+    -->
+    <!--  put some commonly used types for validation here -->
+    <!--  we've stretched the notion of ObjectType here to implement validation -->
+    <util:list id="operatorDefinitionList">
+        <!-- comparison (see above for why they're in separate groups) -->
+        <bean parent="comparisonDef">
+            <property name="name" value="equals"/>
+            <property name="symbol" value="=="/>
+        </bean>
+        <bean parent="comparisonDef">
+            <property name="name" value="notEqual"/>
+            <property name="symbol" value="!="/>
+        </bean>
+        <bean parent="scalarComparisonDef">
+            <property name="name" value="greaterOrEqual"/>
+            <property name="symbol" value="&gt;="/>
+        </bean>
+        <bean parent="scalarComparisonDef">
+            <property name="name" value="lessOrEqual"/>
+            <property name="symbol" value="&lt;="/>
+        </bean>
+        <bean parent="scalarComparisonDef">
+            <property name="name" value="greater"/>
+            <property name="symbol" value="&gt;"/>
+        </bean>
+        <bean parent="scalarComparisonDef">
+            <property name="name" value="less"/>
+            <property name="symbol" value="&lt;"/>
+        </bean>
+
+        <!-- logical -->
+        <bean parent="logicalDef">
+            <property name="name" value="and"/>
+        </bean>
+        <bean parent="logicalDef">
+            <property name="name" value="or"/>
+        </bean>
+
+        <!-- in -->
+        <bean parent="inDef">
+            <property name="name" value="in"/>
+        </bean>
+
+        <!-- arithmetic	-->
+        <bean parent="arithmeticDef">
+            <property name="name" value="add"/>
+            <property name="symbol" value="+"/>
+        </bean>
+        <bean parent="arithmeticDef">
+            <property name="name" value="subtract"/>
+            <property name="symbol" value="-"/>
+        </bean>
+        <bean parent="arithmeticDef">
+            <property name="name" value="multiply"/>
+            <property name="symbol" value="*"/>
+        </bean>
+        <bean parent="arithmeticDef">
+            <property name="name" value="divide"/>
+            <property name="symbol" value="/"/>
+        </bean>
+        <!--  percentRatio is the percentage of one field compared to another
+                 ( a / b ) * 100
+        -->
+        <bean parent="arithmeticDef">
+            <property name="name" value="percentRatio"/>
+            <property name="symbol" value="%"/>
+        </bean>
+
+        <!-- string match -->
+        <bean parent="stringMatchDef">
+            <property name="name" value="StartsWith"/>
+            <property name="alias" value="startsWith"/>
+        </bean>
+        <bean parent="stringMatchDef">
+            <property name="name" value="EndsWith"/>
+            <property name="alias" value="endsWith"/>
+        </bean>
+        <bean parent="stringMatchDef">
+            <property name="name" value="Contains"/>
+            <property name="alias" value="contains"/>
+        </bean>
+
+        <!-- relative dates -->
+        <bean parent="dateComparisonDef">
+            <property name="name" value="equalsDate"/>
+        </bean>
+        <bean parent="dateComparisonDef">
+            <property name="name" value="afterDate"/>
+        </bean>
+        <bean parent="dateComparisonDef">
+            <property name="name" value="beforeDate"/>
+        </bean>
+        <bean parent="dateComparisonDef">
+            <property name="name" value="isOnOrAfterDate"/>
+        </bean>
+        <bean parent="dateComparisonDef">
+            <property name="name" value="isOnOrBeforeDate"/>
+        </bean>
+        <bean parent="dateComparisonDef">
+            <property name="name" value="betweenDates"/>
+        </bean>
+
+        <!--
+             2015-12-03 thorick
+                        till now  isAnyValue() has been used but not formally defined as an operator
+                        we now have some function validation checks that need the metadata for this function
+        -->
+        <bean parent="functionDef">
+             <property name="name" value="isAnyValue"/>
+             <property name="javaType" value="java.lang.Boolean"/>
+             <property name="argumentTypes">
+                 <list>
+                     <value>#{ objectTypeMapper.checkType('Any') }</value>
+                 </list>
+             </property>
+             <property name="inMemory" value="false"/>
+             <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- allows function to use boolean expressions -->
+                    <entry key="wrapBooleanArgument" value="true"/>
+                    <!-- allows function to be used itself as a boolean expression and marks it to be additionally
+                        processed to work as argument properly. In other words: if this function will be used as an
+                        argument - it will be wrapped with additional "wrapBooleanExpression" function (which simply
+                        adds "case when" SQL clause for some databases). So body of function shouldn't contain any
+                        inner wrapping SQL itself.
+
+                        For example, next functions could be used as a boolean argument, but shouldn't be wrapped:
+                          - Case
+                          - CaseWhen
+                          - CaseRange
+                          - wrapBooleanExpression
+                    -->
+                    <entry key="wrapItselfAsBooleanArgument" value="true"/>
+                </map>
+             </property>
+        </bean>
+		<!-- PRODATO/ERAMON unit calculations -->
+		<bean parent="functionDef">
+			<property name="name" value="FormatValueByUnit"/>
+			<property name="javaType" value="java.lang.String"/>
+			<property name="argumentTypes">
+				<list>
+					<value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+					<value>#{ objectTypeMapper.checkType('String') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+					</list>
+			</property>
+		</bean>
+		<!-- End of PRODATO/ERAMON unit calculations -->
+        <bean parent="functionDef">
+            <property name="name" value="Length"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="alias" value="length"/>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Attribute"/>
+            <property name="alias" value="attribute"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                    <value>#{ operatorTypes['category'].optional() }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Boolean"/>
+            <property name="javaType" value="java.lang.Boolean"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Date"/>
+            <property name="javaType" value="java.util.Date"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Timestamp"/>
+            <property name="javaType" value="java.sql.Timestamp"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Time"/>
+            <property name="javaType" value="java.sql.Time"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Decimal"/>
+            <property name="javaType" value="java.math.BigDecimal"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Integer"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <!-- isNull(), str2int(), date(), time() are used in audit domain
+         They're not "official" so don't show in available functions (except IsNull) -->
+        <!-- isNull(): nuff said -->
+        <bean parent="functionDef">
+            <property name="name" value="IsNull"/>
+            <property name="javaType" value="java.lang.Boolean"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Any') }</value>
+                </list>
+            </property>
+            <property name="alias" value="isNull"/>
+            <property name="inMemory" value="false"/>
+            <property name="properties">
+                <map merge="true">
+                    <entry key="wrapBooleanArgument" value="true"/>
+                    <entry key="wrapItselfAsBooleanArgument" value="true"/>
+                </map>
+            </property>
+        </bean>
+        <!-- str2int(): parse a string, return int -->
+        <bean parent="auditFunctionDef">
+            <property name="name" value="str2int"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+        </bean>
+        <!-- date(): get date from a timestamp -->
+        <bean parent="auditFunctionDef">
+            <property name="name" value="date"/>
+            <property name="javaType" value="java.util.Date"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+        </bean>
+
+
+        <!--
+            http://bugzilla.jaspersoft.com/show_bug.cgi?id=43471
+                 2016-01-13  thorick
+                 The groovy 'time' function returns an object of type java.sql.Time
+                 so set the 'javaType' (which actually means 'java return type' (sigh)) to java.sql.Time
+                 else a forced cast of '(java.sql.Timestamp) time'
+                    Time to Timestamp  is something that the groovy runtime cannot handle and will throw an exception
+        -->
+        <bean parent="auditFunctionDef">
+            <property name="name" value="time"/>
+            <!--  causes problem: http://bugzilla.jaspersoft.com/show_bug.cgi?id=43471
+            <property name="javaType" value="java.sql.Timestamp"/>
+            -->
+            <property name="javaType" value="java.sql.Time"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="Round"/>
+            <property name="javaType" value="java.lang.Double"/>
+            <property name="aliases">
+                <list>
+                    <value>round</value>
+                </list>
+            </property>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Numeric') }</value>
+                    <value>#{ objectTypeMapper.checkType('Integer').optional() }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- 'Today' is new for v5.6 and should be considered different than lower case no argument 'today' -->
+        <bean parent="functionDef">
+            <property name="name" value="Today"/>
+            <property name="javaType" value="java.util.Date"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Integer').optional() }</value>
+                </list>
+            </property>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="Absolute"/>
+            <property name="aliases">
+                <list>
+                    <value>abs</value>
+                    <value>Abs</value>
+                </list>
+            </property>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Numeric') }</value>
+                </list>
+            </property>
+        </bean>
+
+        <!-- "if" has custom getJavaType() and validate() -->
+        <bean parent="functionDef" class="com.jaspersoft.commons.dataset.expr.IfOperatorDefinition">
+            <property name="name" value="IF"/>
+            <property name="aliases">
+                <list>
+                    <value>if</value>
+                    <value>If</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- We are supporting two kinds of "case" function
+        The analogous SQL CASE function overloads them, but this is extremely confusing,
+        so we are calling them "Case" (which tests an expression for equality with various values)
+        and "CaseWhen" (which just has a succession of test expressions that can be anything, like if then ... else)
+        The CaseOperatorDefinition has the logic for both, but CaseWhen has conditional=true,
+        Case has conditional=false
+        -->
+        <bean parent="functionDef" class="com.jaspersoft.commons.dataset.expr.CaseOperatorDefinition">
+            <property name="name" value="Case"/>
+            <property name="aliases">
+                <list>
+                    <value>CASE</value>
+                    <value>case</value>
+                </list>
+            </property>
+            <!-- do case value test -->
+            <property name="conditional" value="false"/>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef" class="com.jaspersoft.commons.dataset.expr.CaseOperatorDefinition">
+            <property name="name" value="CaseWhen"/>
+            <property name="aliases">
+                <list>
+                    <value>CASEWHEN</value>
+                    <value>caseWhen</value>
+                </list>
+            </property>
+            <!-- do case conditional -->
+            <property name="conditional" value="true"/>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef" class="com.jaspersoft.commons.dataset.expr.CaseOperatorDefinition">
+            <property name="name" value="CaseRange"/>
+            <property name="aliases">
+                <list>
+                    <value>caseRange</value>
+                </list>
+            </property>
+            <!-- works like regular case -->
+            <property name="conditional" value="false"/>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- Mid  is the Excell name for 'substring' -->
+        <bean parent="functionDef">
+            <property name="name" value="Mid"/>
+            <property name="alias" value="substr"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                    <value>#{ objectTypeMapper.checkType('Integer') }</value>
+                    <value>#{ objectTypeMapper.checkType('Integer').optional() }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="Least"/>
+            <property name="alias" value="least"/>
+            <property name="properties">
+                <map>
+                    <!-- do NOT show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="Greatest"/>
+            <property name="alias" value="greatest"/>
+            <property name="properties">
+                <map>
+                    <!-- do NOT show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+
+        <!-- dummy concatenate, here solely to provide metadata
+              concatenate has no explicit 'method' named 'concatenate'
+              that defines the function
+        -->
+        <bean parent="functionDef">
+            <property name="name" value="Concatenate"/>
+            <property name="aliases">
+                <list>
+                    <value>concat</value>
+                </list>
+            </property>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Any') }</value>
+                    <value>#{ objectTypeMapper.checkType('Any').varArg() }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+
+        <bean parent="functionDef">
+            <property name="name" value="MonthName"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                </list>
+            </property>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="DayName"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                </list>
+            </property>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="Year"/>
+            <property name="alias" value="year"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="MonthNumber"/>
+            <property name="alias" value="month"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+        <bean parent="functionDef">
+            <property name="name" value="DayNumber"/>
+            <property name="alias" value="day"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                </list>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- hour, minute, and second are pre-existing SQL functions on timestamps that can be used in domains. -->
+        <bean parent="functionDef">
+            <property name="name" value="hour"/>
+            <property name="alias" value="Hour"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="minute"/>
+            <property name="alias" value="Minute"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="second"/>
+            <property name="alias" value="Second"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="dayofmonth"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="dayofweek"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="dayofyear"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="quarter"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="week"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="functionDef">
+            <property name="name" value="formattimestamp"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Timestamp') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <!-- always run in SQL -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- experimental -->
+        <bean parent="functionDef">
+            <property name="name" value="addInterval"/>
+            <property name="javaType" value="java.util.Date"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('DateTime') }</value>
+                    <value>#{ objectTypeMapper.checkType('String') }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <!-- aggregates (tbd: add arg types) -->
+        <!-- sum and average need to go to the next highest type (logic is in AggregateOperatorDefinition) -->
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="Sum"/>
+            <property name="alias" value="sum"/>
+        </bean>
+
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="Average"/>
+            <property name="aliases">
+                <list>
+                    <value>average</value>
+                    <value>avg</value>
+                </list>
+            </property>
+        </bean>
+
+        <bean parent="anyAggregateDef">
+            <property name="name" value="CountAll"/>
+            <property name="javaType" value="java.lang.Long"/>
+            <property name="aliases">
+                <list>
+                    <value>count</value>
+                    <value>Count</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map merge="true">
+                    <entry key="wrapBooleanArgument" value="true"/>
+                </map>
+            </property>
+        </bean>
+
+
+
+
+        <!-- experimental -->
+        <bean parent="anyAggregateDef">
+            <property name="name" value="CountIf"/>
+            <property name="javaType" value="java.lang.Long"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Boolean') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map merge="true">
+                    <!-- don't show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                    <entry key="wrapBooleanArgument" value="true"/>
+                </map>
+            </property>
+            <property name="inMemory" value="true"/>
+        </bean>
+
+        <bean parent="anyAggregateDef">
+            <property name="name" value="CountDistinct"/>
+            <property name="javaType" value="java.lang.Long"/>
+            <property name="aliases">
+                <list>
+                    <value>distinctCount</value>
+                    <value>DistinctCount</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map merge="true">
+                    <entry key="wrapBooleanArgument" value="true"/>
+                </map>
+            </property>
+        </bean>
+
+        <!-- for min and max, type is same as type of argument, which is default behavior -->
+
+        <bean parent="comparableAggregateDef">
+            <property name="name" value="Min"/>
+            <property name="aliases">
+                <list>
+                    <value>min</value>
+                    <value>Lowest</value>
+                    <value>Minimum</value>
+                </list>
+            </property>
+        </bean>
+        <bean parent="comparableAggregateDef">
+            <property name="name" value="Max"/>
+            <property name="aliases">
+                <list>
+                    <value>max</value>
+                    <value>Highest</value>
+                    <value>Maximum</value>
+                </list>
+            </property>
+        </bean>
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="Range"/>
+        </bean>
+        <bean parent="anyAggregateDef">
+            <property name="name" value="Mode"/>
+            <property name="inMemory" value="true"/>
+        </bean>
+        <bean parent="comparableAggregateDef">
+            <property name="name" value="Median"/>
+        </bean>
+
+
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="TimeBalanceFirst"/>
+            <property name="alias" value="timebalancefirst"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <value>#{ objectTypeMapper.checkType('@Date') }</value>
+                    <value>#{ objectTypeMapper.checkType('@String') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+        </bean>
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="TimeBalanceLast"/>
+            <property name="alias" value="timebalancelast"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <value>#{ objectTypeMapper.checkType('@Date') }</value>
+                    <value>#{ objectTypeMapper.checkType('@String') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+        </bean>
+
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="TimeBalanceDefault"/>
+            <property name="alias" value="timebalancedefault"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <!--<value>#{ objectTypeMapper.checkType('@Date') }</value>-->
+                    <value>#{ objectTypeMapper.checkType('@String') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+        </bean>
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="TimeBalanceAverage"/>
+            <property name="alias" value="timebalanceaverage"/>
+            <property name="inMemory" value="true"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <value>#{ objectTypeMapper.checkType('@Date') }</value>
+                    <value>#{ objectTypeMapper.checkType('@String') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+            <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+        </bean>
+
+
+
+        <bean parent="numericAggregateDef">
+            <property name="name" value="StdDevP"/>
+            <property name="javaType" value="java.lang.Double"/>
+            <property name="inMemory" value="true"/>
+        </bean>
+        <bean parent="numericAggregateDef">
+            <property name="name" value="StdDevS"/>
+            <property name="javaType" value="java.lang.Double"/>
+            <property name="inMemory" value="true"/>
+        </bean>
+
+        <!-- asInterval is defined as an aggregate, so that the same function can be called to format
+             things and return a string whether it's detail or agg data
+          -->
+        <bean parent="dateAggregateDef">
+            <property name="name" value="asInterval"/>
+            <property name="operatorClass" value="com.jaspersoft.commons.dataset.expr.GenericFunction"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="properties">
+                <map>
+                    <!-- hide from calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false"/>
+                </map>
+            </property>
+            <property name="inMemory" value="true"/>
+        </bean>
+
+        <!-- date diff functions -->
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInSeconds"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInMinutes"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInHours"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInDays"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInWeeks"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInMonths"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInQuarters"/>
+        </bean>
+        <bean parent="dateDiffFunctionDef">
+            <property name="name" value="dateDiffInYears"/>
+        </bean>
+
+        <!--  re-named date diff functions.
+              As of release 5.6:
+              New name: elapsed<Period>
+        -->
+
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedSeconds"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedMinutes"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedHours"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedDays"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedWeeks"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedMonths"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedQuarters"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedSemis"/>
+        </bean>
+        <bean parent="elapsedTimeFunctionDef">
+            <property name="name" value="ElapsedYears"/>
+        </bean>
+
+
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeMinutes"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeHours"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeDays"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeWeeks"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeMonths"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeQuarters"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeSemis"/>
+        </bean>
+        <bean parent="rangeTimeFunctionDef">
+            <property name="name" value="RangeYears"/>
+        </bean>
+
+        <!-- some other in-memory functions -->
+        <bean parent="functionDef">
+            <property name="name" value="Rank"/>
+            <property name="inMemory" value="true"/>
+            <property name="javaType" value="java.lang.Integer"/>
+            <property name="alias" value="rank"/>
+            <!--  as currently implemented this doesn't behave as a proper aggregate aware measure;
+                  for now, make it backwards compatible -->
+
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('Numeric') }</value>
+                </list>
+            </property>
+        </bean>
+
+        <!-- percent functions -->
+
+        <!--
+             pre-v5.6 percent functions
+
+             'percent' is 'percent of Total'
+
+             we have to retain all old functions here so that we can load
+             old pre-v5.6  Views
+        -->
+        <bean parent="percentFunctionDef">
+            <property name="name" value="percent"/>
+        </bean>
+        <bean parent="percentFunctionDef">
+            <property name="name" value="percentOfRowParent"/>
+        </bean>
+        <bean parent="percentFunctionDef">
+            <property name="name" value="percentOfColumnParent"/>
+        </bean>
+        <bean parent="percentFunctionDef">
+            <property name="name" value="percentOfRow"/>
+        </bean>
+        <bean parent="percentFunctionDef">
+            <property name="name" value="percentOfColumn"/>
+        </bean>
+
+
+        <!--
+              2014-01-23  thorick
+
+              PercentOf function v5.6 and later.
+              PercentOf has become a basic function name
+              with a 'Level' parameter indicating the scope
+              of the base data used in the calculation:
+                  RowGroup, RowTotal, Total, etc...
+        -->
+        <bean parent="percentFunctionDef56">
+            <property name="name" value="PercentOf"/>
+            <!-- PercentOf can have its args pushed down...see PushdownerImpl -->
+            <property name="inMemory" value="false"/>
+        </bean>
+
+        <bean parent="percentFunctionDef56">
+            <property name="name" value="WeightedAverage"/>
+            <property name="argumentTypes">
+                <list>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <value>#{ objectTypeMapper.checkType('@Numeric') }</value>
+                    <value>#{ operatorTypes['level'].optional() }</value>
+                </list>
+            </property>
+        </bean>
+
+        <!-- fallback used when no other defs found
+            Bug 37889:
+            Prior to 5.6, we supported using arbitrary functions in calc fields or filters in a domain schema.
+            These functions would be mapped directly to SQL, so this would work as long as the DB supported the use of that function.
+            To support this functionality, assume that any functions not otherwise defined must be done in the SQL query.
+
+            This may not be enough to get the functions to work, because the default definition might return the wrong type.
+            To support the function, add an extra entry here for the function, and set the javaType property appropriately.
+            See the "hex" function below for an example.
+        -->
+
+        <bean parent="operatorDef">
+            <property name="operatorClass" value="com.jaspersoft.commons.dataset.expr.GenericFunction"/>
+            <property name="name" value="_default"/>
+            <property name="properties">
+                <map>
+                    <!-- set this property so you can validate for invalid functions -->
+                    <entry key="invalid" value="true"/>
+
+                    <!--
+                        http://bugzilla.jaspersoft.com/show_bug.cgi?id=37889
+
+                        reinstate handling of _default by punting and
+                        pushing ANY unknown function operator down
+                        to SQL verbatim
+                    -->
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+        </bean>
+
+
+        <!--  example "hex" function done in SQL ("hex" is MySQL-specific and returns the hex value of an integer as a string)
+            note that in this example, specifying the return 'javaType' property was required for this
+            function to work properly.
+            Some (most ?) cases can be handled without any specially defined operator, like 'hex', by deferring to
+            the operatorDef named '_default'.
+        -->
+        <bean parent="operatorDef">
+            <property name="operatorClass" value="com.jaspersoft.commons.dataset.expr.GenericFunction"/>
+            <property name="name" value="hex"/>
+            <property name="javaType" value="java.lang.String"/>
+            <property name="properties">
+                <map>
+                    <!-- set this property so you can validate for invalid functions -->
+                    <entry key="invalid" value="true"/>
+                    <entry key="alwaysInSQL" value="true"/>
+                </map>
+            </property>
+        </bean>
+
+
+        <bean parent="operatorDef">
+            <property name="operatorClass" value="com.jaspersoft.ji.adhoc_engine.query.AppFilter"/>
+            <property name="name" value="filter"/>
+            <property name="javaType" value="java.lang.Boolean"/>
+            <property name="properties">
+                <map>
+                    <!-- do not show in calc field dialog -->
+                    <entry key="inAvailableFunctions" value="false" />
+                </map>
+            </property>
+            <property name="inMemory" value="false"/>
+        </bean>
+    </util:list>
+
+</beans>
