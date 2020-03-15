@@ -8,30 +8,6 @@ Description: >
 
 Parameters:
 
-    KeyName:
-        Description: Select an existing key pair. You must provide existing key pair to be able to SSH into EC2 instances.
-        Type: AWS::EC2::KeyPair::KeyName
-        MinLength: 1
-        MaxLength: 64
-        AllowedPattern: '[-_ a-zA-Z0-9]*'
-        ConstraintDescription: Must be the name of an existing key pair. It can contain only alphanumeric characters, spaces, dashes and underscores.
-
-    JasperReportsServerVersion:
-        Description: In the AMI you are using. Update AMI and this version number.
-        Type: String
-        MinLength: 1
-        MaxLength: 63
-        Default: '7.5.0'
-        ConstraintDescription: Should be a proper version number.
-
-    VPCID:
-      Type: 'AWS::EC2::VPC::Id'
-      Description: VpcId of your existing Virtual Private Cloud (VPC)
-
-    PrivateSubnet:
-      Description: ID of private subnet for the image creation Workload
-      Type: 'AWS::EC2::Subnet::Id'
-
     JaspersoftForDockerURL:
         Description: URL to a zip file containing TIBCOSoftware/js-docker
         Type: String
@@ -39,15 +15,71 @@ Parameters:
         Default: "https://github.com/TIBCOSoftware/js-docker/zipball/master"
         ConstraintDescription: Can be a release ZIP, or point to a branch zipball, like the default.
 
+    JasperReportsServerVersion:
+        Description: In the AMI you are using. Update AMI and this version number.
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: '7.5.0'
+        ConstraintDescription: A JasperReports Server version number.
+
+    ImageTagPrefix:
+        Description: "Optional. Included in image tag: jasperserver-pro:<ImageTagPrefix><JasperReportsServerVersion>"
+        Type: String
+        MaxLength: 63
+        Default: ''
+
+    JavaBaseImage:
+        Description: "Java base image tag for JasperReports Server cmdline image. JDK 8 or 11 from https://github.com/docker-library/docs/blob/master/openjdk/README.md#supported-tags-and-respective-dockerfile-links"
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: 'amazoncorretto:11'
+        ConstraintDescription: Valid Java 8 or 11 Java image tag.
+
+    TomcatBaseImage:
+        Description: "Java base image tag for JasperReports Server web application image. JDK 8 or 11 from https://hub.docker.com/_/tomcat"
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: 'tomcat:9.0.31-jdk11-corretto'
+        ConstraintDescription: Valid Java 8 or 11 Java + Tomcat 8.5 or 9.0 image tag.
+
+    VPCID:
+      Type: 'AWS::EC2::VPC::Id'
+      Description: Existing VPC to run JasperReports Server instance.
+
+    PrivateSubnet:
+      Type: 'AWS::EC2::Subnet::Id'
+      Description: Subnet within VPC to run JasperReports Server instance.
+
+    KeyName:
+        Description: An existing key pair. Used to SSH into EC2 instances.
+        Type: AWS::EC2::KeyPair::KeyName
+        MinLength: 1
+        MaxLength: 64
+        AllowedPattern: '[-_ a-zA-Z0-9]*'
+        ConstraintDescription: Must be the name of an existing key pair. It can contain only alphanumeric characters, spaces, dashes and underscores.
+
 Metadata: 
     AWS::CloudFormation::Interface: 
       ParameterGroups: 
         - 
           Label: 
-            default: "Network"
+            default: "Container properties"
           Parameters:
-            - VPCID
-            - PrivateSubnet
+          - JasperReportsServerVersion
+          - ImageTagPrefix
+          - JavaBaseImage
+          - TomcatBaseImage
+          - JaspersoftForDockerURL
+        - 
+          Label: 
+            default: "JasperReports Server EC2 Instance"
+          Parameters:
+          - KeyName
+          - VPCID
+          - PrivateSubnet
 
 Conditions:
     HasKeyName:
@@ -134,15 +166,15 @@ Resources:
 
                     cd ..
 
-                    docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro:${JasperReportsServerVersion} .
-                    docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin -t jasperserver-pro-cmdline:${JasperReportsServerVersion} .
+                    docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin --build-arg TOMCAT_BASE_IMAGE=${TomcatBaseImage} -t jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin --build-arg JAVA_BASE_IMAGE=${JavaBaseImage} -t jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion} .
 
                     cd kubernetes
-                    docker build -f Dockerfile-cmdline-k8s -t jasperserver-pro-cmdline:${JasperReportsServerVersion}-k8s .
+                    docker build -f Dockerfile-cmdline-k8s --build-arg JASPERREPORTS_SERVER_IMAGE_TAG=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} .
 
                     #cd ../platforms/aws
-                    #docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:s3-${JasperReportsServerVersion} .
-                    #docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} .
+                    #docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
+                    #docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
       
                     echo 'ECR login...'
                     $(aws ecr get-login --region ${AWS::Region} --no-include-email)
@@ -162,21 +194,21 @@ Resources:
       
                     echo 'Tagging and pushing to ECR...'
       
-                    docker tag jasperserver-pro:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                    docker tag jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion}
 
-                    docker tag jasperserver-pro-cmdline:${JasperReportsServerVersion}-k8s ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}-k8s
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
 
-                    # docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
-                    #docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
+                    # docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    #docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
                     
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${JasperReportsServerVersion}
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion}
 
-                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${JasperReportsServerVersion}-k8s
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
 
-                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:s3-${JasperReportsServerVersion}
-                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:s3-${JasperReportsServerVersion}
+                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
       
                     echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
                     sudo poweroff
