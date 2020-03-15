@@ -6,6 +6,8 @@
 # JasperReports Server command line tools
 
 # for JasperReports Server 7.5
+# ARG JAVA_BASE_IMAGE=amazoncorretto:11
+
 ARG JAVA_BASE_IMAGE=openjdk:11.0-slim
 
 FROM ${JAVA_BASE_IMAGE}
@@ -49,16 +51,18 @@ COPY scripts/*.sh /
 
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils unzip wget  > /dev/null && \
-    rm -rf /var/lib/apt/lists/* && \
+    chmod +x /*.sh && \
+    #apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils unzip wget  > /dev/null && \
+    #rm -rf /var/lib/apt/lists/* && \
+    /installPackagesForJasperserver-pro.sh cmdline > /dev/null && \
+	echo "finished installing packages" && \
+	rm /installPackagesForJasperserver-pro.sh && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
-	echo "Check JAVA environment" && \
     java -version && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
-        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
-    chmod +x /*.sh
+        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
 ENTRYPOINT ["/entrypoint-cmdline.sh"]
 

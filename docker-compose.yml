@@ -1,4 +1,4 @@
-# Copyright (c) 2019. TIBCO Software Inc.
+# Copyright (c) 2019-2020. TIBCO Software Inc.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 
@@ -8,21 +8,23 @@ version: '2'
 
 services:
   jasperserver-pro:
-    image: "jasperserver-pro:${JASPERREPORTS_SERVER_VERSION}"
+    image: "jasperserver-pro:${JASPERREPORTS_SERVER_IMAGE_TAG}"
     
     build:
       context: .
       args:
-        - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
         - "TOMCAT_BASE_IMAGE=${TOMCAT_BASE_IMAGE}"
+        - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
     
     # expose port on the host
     ports:
-      - 8090:8080
-      - 8493:8443
+      - 8080:8080
+      - 8443:8443
     
-    # set depends on js_database Postgresql service
-    # depends_on:
+    depends_on:
+      # does init check
+      - jasperserver-pro-cmdline
+      # depends on jasperserver_pro_repository service if database is in Docker
       # - jasperserver_pro_repository
     
     # point to env file with key=value entries 
@@ -35,13 +37,13 @@ services:
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+      - /path/to/license:/usr/local/share/jasperserver-pro/license 
       
       # zip files in alphabetical order exploded into webapps/jasperserver-pro
-      #- jrs_customization:/usr/local/share/jasperserver-pro/customization
+      #- /path/to/customization:/usr/local/share/jasperserver-pro/customization
       
       # zip files in alphabetical order exploded into $CATALINA_HOME
-      #- jrs_tomcat_customization:/usr/local/share/jasperserver-pro/tomcat-customization
+      #- /path/to/tomcat/customization:/usr/local/share/jasperserver-pro/tomcat-customization
       
       # SSL .keystore files in this volume loaded into /root.
       # needs KS_PASSWORD environment variable set
@@ -50,12 +52,12 @@ services:
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore:/usr/local/share/jasperserver-pro/keystore
+      - /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
       
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
       #- jrs_deploy_customization:/usr/local/share/jasperserver-pro/deploy-customization
-      #- /C/Users/swood/Documents/Docker/additional:/usr/local/share/jasperserver-pro/deploy-customization
+      #- /path/to/additional:/usr/local/share/jasperserver-pro/deploy-customization
       
       # include a new version of a JDBC driver for repository databases supported by 
       # JasperReports Server.
@@ -80,15 +82,16 @@ services:
     cpu_shares: 256
   
   jasperserver-pro-cmdline:
-    image: "jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_VERSION}"
+    image: "jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_IMAGE_TAG}"
     
     build:
       context: .
       dockerfile: Dockerfile-cmdline
       args:
+        - "JAVA_BASE_IMAGE=${JAVA_BASE_IMAGE}"
         - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
     
-    # set depends on PostgreSQL service
+    # depends on jasperserver_pro_repository service if database is in Docker
     # depends_on:
       # - jasperserver_pro_repository
     
@@ -102,26 +105,15 @@ services:
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
-      
-      # zip files in alphabetical order exploded into webapps/jasperserver-pro
-      #- jrs_customization:/usr/local/share/jasperserver-pro/customization
-      
-      # zip files in alphabetical order exploded into $CATALINA_HOME
-      #- jrs_tomcat_customization:/usr/local/share/jasperserver-pro/tomcat-customization
-      
-      # SSL .keystore files in this volume loaded into /root.
-      # needs KS_PASSWORD environment variable set
-      #- ssl_certificate:/usr/local/share/jasperserver-pro/ssl-certificate
+      - /path/to/license:/usr/local/share/jasperserver-pro/license 
 
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore:/usr/local/share/jasperserver-pro/keystore
+      - /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
       
-      # default_master_additional.properties file added to default_master.properties
-      # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
-      #- /C/Users/swood/Documents/Docker/additional:/usr/local/share/jasperserver-pro/deploy-customization
+      # Import/export volumes. Passed as parameter to import/export command
+      #- /path/to/export-import:/usr/local/share/jasperserver-pro/import
       
       # include a new version of a JDBC driver for repository databases supported by 
       # JasperReports Server.
@@ -130,19 +122,6 @@ services:
       # set environment property:
       # maven.jdbc.version=<version # of JDBC driver>
       # have a look at buildomatic/conf_source/db/<dbType> for db.properties for a dbType
-      
-      # for Mac OS you may want to define local path for volume mounts. 
-      # Note that defining path for a named volume is not supported 
-      # by Compose. For example:
-      # - /some-local-path:/usr/local/tomcat/webapps/jasperserver-pro
-      # - ~/jasperserver-pro/license:/usr/local/share/jasperserver-pro/license
-      # - /tmp/customization:/usr/local/share/jasperserver-pro/customization
-      #
-      # Under Docker for Windows, volumes have to be under the logged in user's User area
-      #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license
-      
-      # for import/export
-      #- /C/Users/swood/Documents/Docker/jrs-import:/usr/local/share/jasperserver-pro/import
 
     mem_limit: 3g
     mem_reservation: 1g

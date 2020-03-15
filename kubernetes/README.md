@@ -62,6 +62,12 @@ In this directory, run:
 
 `docker build -f Dockerfile-cmdline-k8s -t jasperserver-pro-cmdline:k8s-<version> .`
 
+| Environment Variable Name | Notes |
+| ------------ | ------------- |
+| `JASPERREPORTS_SERVER_IMAGE_TAG` | Tag of jasperserver-pro-cmdline image to base this image on. `jasperserver-pro-cmdline:<JASPERREPORTS_SERVER_IMAGE_TAG>` Default: `7.5.0` |
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: `7.5.0` | 
+
+
 # Configure the JasperReports Server service
 
 By default, this is a basic deployment, standing up a single instance service, exposed to the outside world through a LoadBalancer.
@@ -218,9 +224,11 @@ for the web application:
           readOnly: true
 ```
 
-# Additional environment variables
+# Additional runtime environment variables
 
-For the cmdline:
+See runtime environment variables for the main jasperservr-pro-cmdline image in master README.
+
+For the jasperservr-pro-cmdline:k8s image:
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |

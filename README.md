@@ -151,7 +151,7 @@ For the JasperReports Server Web app (WAR):
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
-| `TOMCAT_BASE_IMAGE` | The Docker image version of Tomcat that is certified for the version of JasperReports Server being deployed. Default: "tomcat:9.0.27-jdk11-openjdk" which is for JasperReports Server 7.5.0. |
+| `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default: "tomcat:9.0.31-jdk11-openjdk". |
 | `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: 7.5.0 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
 | `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
@@ -166,6 +166,7 @@ For the cmdline:
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
+| `JAVA_BASE_IMAGE` | Java Docker image certified for the version of JasperReports Server being deployed.  Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. JDK 8 or 11 from https://github.com/docker-library/docs/blob/master/openjdk/README.md#supported-tags-and-respective-dockerfile-links Default openjdk:11.0-slim |
 | `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: 7.5.0 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
 |`POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html  |

@@ -10,6 +10,8 @@
 # ARG TOMCAT_BASE_IMAGE=tomcat:9.0.17-jre8
 
 # Certified version of Tomcat for JasperReports Server 7.5.0 commercial editions
+# ARG TOMCAT_BASE_IMAGE=tomcat:9.0-jdk11-corretto
+
 ARG TOMCAT_BASE_IMAGE=tomcat:9.0.27-jdk11-openjdk
 FROM ${TOMCAT_BASE_IMAGE}
 
@@ -57,35 +59,31 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-s
 
 COPY scripts/* /
 
-RUN echo "apt-get" && \
-    echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-    apt-get install -y unzip xmlstarlet  > /dev/null && \
-    rm -rf /var/lib/apt/lists/* && \
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+    chmod +x /*.sh && \
+#    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
+#    apt-get install -y unzip xmlstarlet  > /dev/null && \
+#    rm -rf /var/lib/apt/lists/* && \
+    /installPackagesForJasperserver-pro.sh > /dev/null && \
+	echo "finished installing packages" && \
+	rm /installPackagesForJasperserver-pro.sh && \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
-    #echo "unzip JasperReports Server WAR to Tomcat" && \
-    #unzip -o -q /usr/src/jasperreports-server/jasperserver-pro.war \
-    #    -d $CATALINA_HOME/webapps/jasperserver-pro > /dev/null && \
-    #rm -f /usr/src/jasperreports-server/jasperserver-pro.war && \
-    #
     chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
     chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
     java -version && \
 # Extract phantomjs, move to /usr/local/share/phantomjs, link to /usr/local/bin.
 # Comment out if phantomjs not required.
-    # echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" \
         -O /tmp/phantomjs.tar.bz2 --no-verbose && \
     tar -xjf /tmp/phantomjs.tar.bz2 -C /tmp && \
     rm -f /tmp/phantomjs.tar.bz2 && \
     mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
     ln -sf /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin && \
-    rm -rf /tmp/* && \
 # In case you wish to download from a different location you can manually
 # download the archive and copy from resources/ at build time. Note that you
 # also # need to comment out the preceding RUN command
@@ -94,9 +92,8 @@ RUN echo "apt-get" && \
 #    rm -f /tmp/phantomjs.tar.bz2 && \
 #    mv /tmp/phantomjs*linux-x86_64 /usr/local/share/phantomjs && \
 #    ln -sf /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin && \
-#    rm -rf /tmp/*
+    rm -rf /tmp/* && \
     #
-    # echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
 #
@@ -124,8 +121,7 @@ RUN echo "apt-get" && \
         -v "${KS_PASSWORD}"\
     --insert '$connector-ssl' --type attr -n keystoreFile \
         -v "/root/.keystore.p12" \
-    ${CATALINA_HOME}/conf/server.xml && \
-    chmod +x /*.sh
+    ${CATALINA_HOME}/conf/server.xml
 
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"

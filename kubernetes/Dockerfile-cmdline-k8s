@@ -3,22 +3,21 @@
 # JasperReports Server command line image, saving keystore changes to a secret.
 # Leverages base JRS image of same version
 
+ARG JASPERREPORTS_SERVER_IMAGE_TAG=7.5.0
+
+FROM jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_IMAGE_TAG}
+
 ARG JASPERREPORTS_SERVER_VERSION=7.5.0
 
-FROM jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_VERSION}
-
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION}
 
 COPY scripts /
 
 # load kubectl
-RUN apt-get update > /dev/null && \
-    apt-get install -y apt-transport-https curl gnupg jq > /dev/null && \
-    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
-    apt-get update > /dev/null && \
-    apt-get install -y kubectl && \
-    chmod +x /*.sh
+RUN chmod +x /*.sh && \
+    /installPackagesForJasperserver-pro.sh > /dev/null && \
+	echo "finished installing packages" && \
+	rm /installPackagesForJasperserver-pro.sh
 
 ENTRYPOINT ["/entrypoint-cmdline-k8s.sh"]
 
