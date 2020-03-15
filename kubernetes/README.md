@@ -226,9 +226,9 @@ for the web application:
 
 # Additional runtime environment variables
 
-See runtime environment variables for the main jasperservr-pro-cmdline image in master README.
+See runtime environment variables for the main jasperserver-pro-cmdline image in the master README for this repository.
 
-For the jasperservr-pro-cmdline:k8s image:
+For the jasperserver-pro-cmdline:k8s image:
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |

@@ -22,11 +22,11 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 80
-    targetPort: 80
+    port: 8080
+    targetPort: 8080
   - name: https
-    port: 443
-    targetPort: 443
+    port: 8443
+    targetPort: 8443
   selector:
     app: jasperserver-pro
   type: LoadBalancer
@@ -53,12 +53,12 @@ spec:
             name: jasper-config
         image: jasperserver-pro:7.5.0
         name: jasperserver-pro
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           name: http
           protocol: TCP
-        - containerPort: 443
+        - containerPort: 8443
           name: https
           protocol: TCP
         resources:
@@ -84,7 +84,7 @@ spec:
             name: jasper-config
         image: jasperserver-pro-cmdline:k8s-7.5.0
         name: init
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
             #cpu: 200m
