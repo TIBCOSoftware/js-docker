@@ -32,7 +32,7 @@ COPY resources/TIB_js-jrs_*_bin.zip /tmp/jasperserver.zip
 RUN echo "apt-get" && \
     echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-	apt-get install -y postgresql-client mysql-client git unzip xmlstarlet vim openjdk-8-jdk ant > /dev/null && \
+	apt-get install -y postgresql-client wget curl lsof procps psmisc less procps mysql-client git unzip xmlstarlet vim openjdk-8-jdk ant > /dev/null && \
     rm -rf /var/lib/apt/lists/* && \
 	rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
@@ -120,6 +120,8 @@ COPY formatting/BaseGroovyColumn.groovy /usr/local/tomcat/webapps/jasperserver-p
 COPY driver/mariadb-java-client-1.6.3.jar /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar
 RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
 	chmod +x /usr/src/jasperreports-server/jasperserver.license
 

@@ -77,7 +77,7 @@ setup_jasperserver() {
 
   # execute buildomatic js-ant targets for installing/configuring
   # JasperReports Server.
-  
+
   cd /usr/src/jasperreports-server/buildomatic/
   
   for i in $@; do
