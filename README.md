@@ -6,25 +6,24 @@
 1. [Prerequisites](#prerequisites)
 1. [Installation](#installation)
    1. [Get the JasperReports Server container configuration](#get-the-js-docker-dockerfile-and-supporting-resources)
-   1. [Repository structure](#the-installed-repository-structure)
-   1. [Building images with the JasperReports Server WAR file installer](#building-images-with-the-jasperreports-server-war-file-installer)
-   1. [Deploy JasperReports Server to AWS container services](#deploy-to-aws-ecs-and-eks)
-1. [docker build time environment variables](#docker-build-time-environment-variables)
+   1. [js-docker Repository structure](#the-installed-repository-structure)
+   1. [Building JasperReports Server images](#building-jasperreports-server-images)
+     1. [Prepare the resources for the images](#prepare-the-resources-for-the-images)
+     1. [docker build time environment variables](#docker-build-time-environment-variables)
+     1. [Build the images](#build-the-images)
 1. [docker run time environment variables](#docker-run-time-environment-variables)
 1. [Configuring JasperReports Server with volumes](#configuring-jasperreports-server-with-volumes)
    1. [Using data volumes](#using-data-volumes)
    1. [JasperReports Server use of volumes](#jasperreports-server-use-of-volumes)
    1. [Setting volumes](#setting-volumes)
    1. [Paths to data volumes on Mac and Windows](#paths-to-data-volumes-on-mac-and-windows)
-1. [Build and run](#build-and-run)
-   1. [Building and running with docker-compose](#building-and-running-with-docker-compose)
-   1. [Using a pre-existing PostgreSQL database in Docker](#using-a-pre-existing-postgresql-instance-in-docker)
-   1. [Creating a new PostgreSQL database](#creating-a-new-postgresql-database)
 1. [Initializing the JasperReport Server Repository](#initializing-the-jasperreport-server-repository)
+   1. [Using a pre-existing database server](#using-a-pre-existing-database)
+   1. [Using a database container](#using-a-database-container)
+1. [Building and running with docker-compose](#building-and-running-with-docker-compose)
 1. [Import and Export for the JasperReports Server repository](#import-and-export) 
    1. [Export from a JasperReports Server repository](#exporting-to-a-jasperreports-server-repository)
    1. [Import into a JasperReports Server repository](#importing-from-a-jasperreports-server-repository)
-   1. [Import/Export on AWS](#exporting-from-a-jasperreports-server-repository)
 1. [JasperReports Server logs](#jasperreports-server-logs)
 1. [Logging in to JasperReports Server](#logging-in-to-jasperreports-server)
 1. [Troubleshooting](#troubleshooting)
@@ -37,7 +36,7 @@
 
 # Introduction
 
-This distribution includes `Dockerfile`s and supporting files for building, configuring, and running TIBCO JasperReports&reg; Server commercial editions in containers.  This sample can be used as is or modified to meet the needs of your environment. 
+This distribution includes `Dockerfile`s and supporting files for building, configuring, and running TIBCO JasperReports&reg; Server commercial editions in containers. Orchestration via Kubernetes, AWS and Helm are outlined as options.  These samples can be used as is or modified to meet the needs of your environment. 
 The distribution can be downloaded from [https://github.com/TIBCOSoftware/js-docker](#https://github.com/TIBCOSoftware/js-docker).
 
 This configuration has been certified using
@@ -151,8 +150,8 @@ For the JasperReports Server Web app (WAR):
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
-| `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default: "tomcat:9.0.31-jdk11-openjdk". |
-| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: 7.5.0 | 
+| `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default for 7.5: "tomcat:9.0.31-jdk11-openjdk". |
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default for JasperReports Server: 7.5.0 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
 | `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
 | `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
@@ -281,6 +280,7 @@ For example, to access a license on a local directory on Mac:
 
 ```console
 docker run --name new-jrs -v /<path>/resources/license:/usr/local/share/jasperreports-pro/license \
+   -v /<path>/resources/keystore:/usr/local/share/jasperreports-pro/keystore \
   -p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e \
   DB_PASSWORD=postgres -d jasperserver-pro:X.X.
 ```
@@ -297,81 +297,12 @@ Windows paths need some help with a Docker Compose environment setting
 ```console
 COMPOSE_CONVERT_WINDOWS_PATHS=1
 ```
-# Build and run
-
-## Building and running with docker-compose
-
-`docker-compose.yml` provides a sample [Compose](https://docs.docker.com/compose/compose-file/) implementation of JasperReports Server with PostgreSQL server, configured with volumes for JasperReports Server web application and license, with pre-setup network and mapped ports. There is also a pre-configured `.env` file for use with docker-compose.
-
-To build and run using `docker-compose.yml`, execute the following commands in the root directory of your repository.
-
-```console
-$ docker-compose build
-$ docker-compose run jasperserver-pro-cmdline
-$ docker-compose up -d jasperserver-pro
-```
-
-Note that you should set the amount of memory and CPU that each JasperReports Server container uses. The options below in the `docker-compose.yml` are recommended as starting points, and may need to be increased if the container is under heavy load. The `entrypoint.sh` configures the underlying Java memory settings according to the container memory settings.
-
-```console
-    mem_limit: 3g
-    mem_reservation: 1g
-    cpu_shares: 250
-```
-
-## Using a pre-existing database
-
-To build and run a JasperReports Server container with a pre-existing PostgreSQL instance, execute these commands in your repository:
-
-```console
-$ docker build -t jasperserver-pro:X.X.X 
-
-$ docker run --name some-jasperserver -p 8080:8080 
-
--e DB_HOST=some-external-host -e DB_USER=username 
-
--e DB_PASSWORD=password -d jasperserver-pro:X.X.X
-```
-
-Where
-- `jasperserver-pro:X.X.X` is the image name and version tag for your build. This image will be used to create containers
-- `some-jasperserver` is the name of the new JasperReports Server container
-- `some-external-host` is the hostname, fully qualified domain name (FQDN), or IP address of your database server
-- `username` and `password` are the user credentials for your repository database server
-
-## Creating a new PostgreSQL database in Docker
-
-To build and run JasperReports Server with a new database container, you can use linking.
-
-```console
-$ docker run --name some-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -d postgres:10
-
-$ docker build -t jasperserver-pro:X.X.X 
-
-$ docker run --name some-jasperserver --link some-postgres:postgres 
-
-   -p 8080:8080 -e DB_HOST=some-postgres -e DB_USER=db_username 
-
-   -e DB_PASSWORD=db_password -d jasperserver-pro:X.X.
-```
-
-Where
-
-- `some-postgres` is the name of your new database container
-- `username` and `password` are the user credentials to use for the new PostgreSQL container and JasperReports Server container
-- `postgres:10` [PostgreSQL 10](https://hub.docker.com/_/postgres/) is the PostgreSQL image from Docker Hub. This can be replaced with other database types that match the dbType environment variable
-- `jasperserver-pro:X.X.X` is the image name and version tag for your build. This image will be used to create containers
-- `some-jasperserver` is the name of the new JasperReports Server container
--  `db_username` and `db_password` are the user credentials for accessing the database server. Database settings should be modified for your setup
-
-You can do the same with MySQL, Oracle, SQL Server and DB2.
-
-The `docker-compose.yml` shows how to launch Jasperreports Server automatically with a PostgreSQL repository running in Docker. By default, this `docker-compose.yml`
-uses the `.env` file for configuration purposes. There is also a `.env-mysql` to show how an external MySQL database running on the default 3306 port can be used as a repository.
 
 # Initializing the JasperReport Server Repository
 
-Set the dbType and DB_\* environment variables as outlined above. The default command of the cmdline container - `init` - will detect whether the repository host exists and can be connected to, and whether the repository database exists in the host, and create them as needed. The `JRS_LOAD_SAMPLES` environment variable can be set to `true` to load the JasperReports Server samples and their underlying databases into the repoitory database.
+Set the dbType and DB_\* environment variables as outlined above. PostgreSQL (default), MySQL, Oracle, SQL Server and DB2 can be configured as repository databases.
+
+The default command of the cmdline container - `init` - will detect whether the repository host exists and can be connected to, and whether the repository database exists in the host, and create them as needed. The `JRS_LOAD_SAMPLES` environment variable can be set to `true` to load the JasperReports Server samples and their underlying databases into the repository database.
 
 Also there is the standalone `init` command for the image that allows you to pre-create the repository database and samples.
 
@@ -379,6 +310,10 @@ Also there is the standalone `init` command for the image that allows you to pre
 docker run --rm 
 
   --env-file .env -e DB_HOST=jasperserver_pro_repository  
+  
+  -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license
+  
+  -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore
 
   --name jasperserver-pro-init 
 
@@ -391,10 +326,96 @@ The JasperReports Server samples can be loaded via the `init` command without se
 docker run --rm 
 
   --env-file .env -e DB_HOST=jasperserver_pro_repository  
+  
+  -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license
+  
+  -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore
 
   --name jasperserver-pro-init 
 
-  jasperserver-pro-cmdline:X.X.X init sample
+  jasperserver-pro-cmdline:X.X.X init samples
+```
+
+## Using a pre-existing database
+
+To run a JasperReports Server container with a pre-existing PostgreSQL instance, execute these commands:
+
+```console
+$ docker run --name some-jasperserver-cmdline \
+             -e DB_HOST=some-external-host \
+             -e DB_USER=username -e DB_PASSWORD=password \
+             -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
+             -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+             jasperserver-pro-cmdline:X.X.X
+
+$ docker run --name some-jasperserver \
+   -p 8080:8080 -e DB_HOST=some-external-host -e DB_USER=username \
+   -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
+   -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+   -e DB_PASSWORD=password -d jasperserver-pro:X.X.X
+```
+
+Where
+- `jasperserver-pro-cmdline:X.X.X` is the image name and version tag of the jasperserver-pro-cmdline image you built. This image will be used to create containers.
+- `some-jasperserver-cmdline` is the name of the new JasperReports Server cmdline container
+- `jasperserver-pro:X.X.X` is the image name and version tag of the jasperserver-pro web application image you built. This image will be used to create containers.
+- `some-jasperserver` is the name of the new JasperReports Server web application container
+- `some-external-host` is the hostname, fully qualified domain name (FQDN), or IP address of your database server
+- `username` and `password` are the user credentials for your repository database server
+
+## Using a database container
+
+Use linking to run JasperReports Server with the repository database in a container.
+
+```console
+$ docker run --name some-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -d postgres:10
+
+$ docker run --name some-jasperserver-cmdline \
+            --link some-postgres:postgres \
+             -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
+             -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+             -e DB_HOST=some-postgres \
+             -e DB_USER=username -e DB_PASSWORD=password \
+             jasperserver-pro-cmdline:X.X.X
+
+$ docker run --name some-jasperserver --link some-postgres:postgres \
+   -p 8080:8080 -e DB_HOST=some-postgres -e DB_USER=db_username \
+   -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
+   -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+   -e DB_PASSWORD=db_password -d jasperserver-pro:X.X.
+```
+
+Where
+
+- `some-postgres` is the name of your new database container
+- `username` and `password` are the user credentials to use for the new PostgreSQL container and JasperReports Server container
+- `postgres:10` [PostgreSQL 10](https://hub.docker.com/_/postgres/) is the PostgreSQL image from Docker Hub. This can be replaced with other database types that match the dbType environment variable
+- `jasperserver-pro-cmdline:X.X.X` is the image name and version tag of the jasperserver-pro-cmdline image you built. This image will be used to create containers.
+- `some-jasperserver-cmdline` is the name of the new JasperReports Server cmdline container
+- `jasperserver-pro:X.X.X` is the image name and version tag for your build. This image will be used to create containers
+- `some-jasperserver` is the name of the new JasperReports Server container
+-  `db_username` and `db_password` are the user credentials for accessing the database server. Database settings should be modified for your setup
+
+# Building and running with docker-compose
+
+`docker-compose.yml` provides a sample [Compose](https://docs.docker.com/compose/compose-file/) implementation of JasperReports Server with PostgreSQL server, configured with volumes for JasperReports Server web application and license, with pre-setup network and mapped ports. There is also a pre-configured `.env` file for use with docker-compose.
+
+To build and run using `docker-compose.yml`, execute the following commands in the root directory of your repository.
+
+```console
+$ docker-compose build
+$ docker-compose run jasperserver-pro-cmdline
+$ docker-compose up -d jasperserver-pro
+```
+
+There is also a `.env-mysql` to show how an external MySQL database running on the default 3306 port can be used as a repository.
+
+Note that you should set the amount of memory and CPU that each JasperReports Server container uses. The options below in the `docker-compose.yml` are recommended as starting points, and may need to be increased if the container is under heavy load. The `entrypoint.sh` configures the underlying Java memory settings according to the container memory settings.
+
+```console
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpu_shares: 250
 ```
 
 # Import and Export
@@ -438,9 +459,9 @@ See [Jaspersoft Documentation](https://community.jaspersoft.com/documentation an
 
     --network js-docker_default -e DB_HOST=jasperserver_pro_repository  
 
-	--name jasperserver-pro-export 
+    --name jasperserver-pro-export 
 
-	jasperserver-pro-cmdline:X.X.X export /usr/local/share/jasperserver-pro/export
+    jasperserver-pro-cmdline:X.X.X export /usr/local/share/jasperserver-pro/export
   ```
 
   1. Use an external repository database. Note the DB_HOST settings
@@ -501,11 +522,11 @@ And do either:
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/import 
 
-	--network js-docker_default -e DB_HOST=jasperserver_pro_repository  
+    --network js-docker_default -e DB_HOST=jasperserver_pro_repository  
 
-	--name jasperserver-pro-import 
+    --name jasperserver-pro-import 
 
-	jasperserver-pro:X.X.X import /usr/local/share/jasperserver-pro/import
+    jasperserver-pro:X.X.X import /usr/local/share/jasperserver-pro/import
   ```
 
   1. Use an external repository database. Note the DB_HOST setting.
@@ -515,11 +536,11 @@ And do either:
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/import 
 
-	-e DB_HOST=domain.or.IP.where.database.is  
+    -e DB_HOST=domain.or.IP.where.database.is  
 
-	--name jasperserver-import 
+    --name jasperserver-import 
 
-	jasperserver-pro:X.X.X import /usr/local/share/jasperserver-pro/import
+    jasperserver-pro:X.X.X import /usr/local/share/jasperserver-pro/import
   ```
 
 After an import run, for _each_ volume passed in:
