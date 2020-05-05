@@ -242,9 +242,9 @@ For the JasperReports Server Web app (WAR):
 
 | Description | Path to override in container | Notes |
 | ------------ | ------------- | ------------ |
-| License | `/usr/local/share/jasperreports-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
+| License | `/usr/local/share/jasperserver-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
 | Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the repository database. |
-| JasperReports Server customizations | `/usr/local/share/jasperreports-pro/customization` | Zip files. If a zip file contains `install.sh`, it will be unzipped and executed - useful for hotfixes or config changes in the image. Zip files that do not contain `install.sh` will be unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
+| JasperReports Server customizations | `/usr/local/share/jasperserver-pro/customization` | Zip files. If a zip file contains `install.sh`, it will be unzipped and executed - useful for hotfixes or config changes in the image. Zip files that do not contain `install.sh` will be unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
@@ -254,7 +254,7 @@ For the cmdline:
 
 | Description | Path to override in container | Notes |
 | ------------ | ------------- | ------------ |
-| License | `/usr/local/share/jasperreports-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
+| License | `/usr/local/share/jasperserver-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
 | Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the database. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/<dbType>/jdbc | Override JDBC drivers within the image for the repository. Valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
@@ -267,7 +267,7 @@ docker-compose
 
 ```
    volumes
-      - jrs_license:/usr/local/share/jasperreports-pro/license
+      - jrs_license:/usr/local/share/jasperserver-pro/license
 ```
 
 If you update the files in a volume listed above, you will need to restart the container, as these are only processed at container start time.
@@ -279,8 +279,8 @@ You can mount a volume to a directory on your local machine.
 For example, to access a license on a local directory on Mac:
 
 ```console
-docker run --name new-jrs -v /<path>/resources/license:/usr/local/share/jasperreports-pro/license \
-   -v /<path>/resources/keystore:/usr/local/share/jasperreports-pro/keystore \
+docker run --name new-jrs -v /<path>/resources/license:/usr/local/share/jasperserver-pro/license \
+   -v /<path>/resources/keystore:/usr/local/share/jasperserver-pro/keystore \
   -p 8080:8080 -e DB_HOST=172.17.10.182 -e DB_USER=postgres -e \
   DB_PASSWORD=postgres -d jasperserver-pro:X.X.
 ```
@@ -311,9 +311,9 @@ docker run --rm
 
   --env-file .env -e DB_HOST=jasperserver_pro_repository  
   
-  -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license
+  -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license
   
-  -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore
+  -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore
 
   --name jasperserver-pro-init 
 
@@ -327,9 +327,9 @@ docker run --rm
 
   --env-file .env -e DB_HOST=jasperserver_pro_repository  
   
-  -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license
+  -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license
   
-  -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore
+  -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore
 
   --name jasperserver-pro-init 
 
@@ -344,14 +344,14 @@ To run a JasperReports Server container with a pre-existing PostgreSQL instance,
 $ docker run --name some-jasperserver-cmdline \
              -e DB_HOST=some-external-host \
              -e DB_USER=username -e DB_PASSWORD=password \
-             -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
-             -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+             -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license \
+             -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore \
              jasperserver-pro-cmdline:X.X.X
 
 $ docker run --name some-jasperserver \
    -p 8080:8080 -e DB_HOST=some-external-host -e DB_USER=username \
-   -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
-   -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+   -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license \
+   -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore \
    -e DB_PASSWORD=password -d jasperserver-pro:X.X.X
 ```
 
@@ -372,16 +372,16 @@ $ docker run --name some-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD
 
 $ docker run --name some-jasperserver-cmdline \
             --link some-postgres:postgres \
-             -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
-             -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+             -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license \
+             -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore \
              -e DB_HOST=some-postgres \
              -e DB_USER=username -e DB_PASSWORD=password \
              jasperserver-pro-cmdline:X.X.X
 
 $ docker run --name some-jasperserver --link some-postgres:postgres \
    -p 8080:8080 -e DB_HOST=some-postgres -e DB_USER=db_username \
-   -v /path/to/directoryContainingLicense:/usr/local/share/jasperreports-pro/license \
-   -v /path/to/directoryForKeystores:/usr/local/share/jasperreports-pro/keystore \
+   -v /path/to/directoryContainingLicense:/usr/local/share/jasperserver-pro/license \
+   -v /path/to/directoryForKeystores:/usr/local/share/jasperserver-pro/keystore \
    -e DB_PASSWORD=db_password -d jasperserver-pro:X.X.
 ```
 
