@@ -113,6 +113,12 @@
             <map>
                 <entry>
                     <key>
+                        <value>ERAMON_ADMIN</value>
+                    </key>
+                    <value>ROLE_ADMINISTRATOR</value>
+                </entry>
+                <entry>
+                    <key>
                         <value>ERAMON_MANDANT9999</value>
                     </key>
                     <value>ERAMON_ROLE_MANDANT9999|*</value>
