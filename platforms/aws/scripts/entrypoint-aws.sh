@@ -7,7 +7,8 @@
 # Wraps the jasperserver-pro entrypoint.sh to load license and
 # other config files from a given S3 bucket
 
-. ./common-environment-aws.sh
+#. ./common-environment-aws.sh - fixed the ./ -> /
+. /common-environment-aws.sh
 
 initialize_from_S3
 BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint.sh}

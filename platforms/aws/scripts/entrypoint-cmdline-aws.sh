@@ -7,19 +7,19 @@
 # Wraps the jasperserver-pro entrypoint.sh to load license and
 # other config files from a given S3 bucket
 
-. ./common-environment-aws.sh
+. /common-environment-aws.sh
 
 BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
 
 
 case "$1" in
   init)
-	createBucketFolder(${S3_DEFAULT_MASTER})
-	createBucketFolder(${S3_LICENSE})
-	createBucketFolder(${S3_KEYSTORE})
-	createBucketFolder(${S3_CUSTOMIZATION})
-	createBucketFolder(${S3_TOMCAT_CUSTOMIZATION})
-	createBucketFolder(${S3_SSL_CERTIFICATE})
+	createBucketFolder ${S3_DEFAULT_MASTER}
+	createBucketFolder ${S3_LICENSE}
+	createBucketFolder ${S3_KEYSTORE}
+	createBucketFolder ${S3_CUSTOMIZATION}
+	createBucketFolder ${S3_TOMCAT_CUSTOMIZATION}
+	createBucketFolder ${S3_SSL_CERTIFICATE}
 
     initialize_from_S3
 
