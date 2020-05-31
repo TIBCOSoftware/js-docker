@@ -61,18 +61,16 @@ COPY scripts/* /
 
 RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     chmod +x /*.sh && \
-#    apt-get update > /dev/null && apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-#    apt-get install -y unzip xmlstarlet  > /dev/null && \
-#    rm -rf /var/lib/apt/lists/* && \
     /installPackagesForJasperserver-pro.sh > /dev/null && \
 	echo "finished installing packages" && \
-	rm /installPackagesForJasperserver-pro.sh && \
+	rm /installPackagesForJasperserver*.sh && \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
+	mv /js-ant /usr/src/jasperreports-server/buildomatic && \
     chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
     chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
     java -version && \

@@ -15,15 +15,23 @@
 # Sets script to fail if any command fails.
 set -e
 
-# make buildomatic not ask interactive questions
-export BUILDOMATIC_MODE=script
-
 BUILDOMATIC_HOME=${BUILDOMATIC_HOME:-/usr/src/jasperreports-server/buildomatic}
 MOUNTS_HOME=${MOUNTS_HOME:-/usr/local/share/jasperserver-pro}
 
 KEYSTORE_PATH=${KEYSTORE_PATH:-${MOUNTS_HOME}/keystore}
 export ks=$KEYSTORE_PATH
 export ksp=$KEYSTORE_PATH
+
+# make buildomatic not ask interactive questions
+export BUILDOMATIC_MODE=script
+
+# Add Java options to suppress Groovy related warning message for Jaspersoft running Java 11
+
+# additional options for Java, used by tomcat and import/export
+JAVA_OPTS="$JAVA_OPTS @/java11.opts"
+
+# additional options for Ant used by buildomatic
+ANT_OPTS="$ANT_OPTS @/java11.opts"
 
 initialize_deploy_properties() {
   # license could fail

@@ -15,6 +15,37 @@ set -e
 
 . /common-environment.sh
 
+apply_customizations() {
+  # unpack zips (if exist) from path
+  # ${MOUNTS_HOME}/customization
+  # to buildomatic area
+  BUILDOMATIC_CUSTOMIZATION=${BUILDOMATIC_CUSTOMIZATION:-${MOUNTS_HOME}/buildomatic_customization}
+  if [ -d "$BUILDOMATIC__CUSTOMIZATION" ]; then
+	  echo "Deploying Customizations from $BUILDOMATIC__CUSTOMIZATION"
+
+	  BUILDOMATIC__CUSTOMIZATION_FILES=`find $BUILDOMATIC__CUSTOMIZATION -iname "*zip" \
+		-exec readlink -f {} \; | sort -V`
+	  # find . -path ./lower -prune -o -name "*txt"
+	  for customization in $BUILDOMATIC__CUSTOMIZATION_FILES; do
+		if [[ -f "$customization" ]]; then
+		  if unzip -l $customization | grep install.sh ; then
+			echo "Installing ${customization##*/}"
+			mkdir -p "/tmp/buildomatic-installs/${customization##*/}"
+			unzip -o -q "$customization" -d "/tmp/buildomatic-installs/${customization##*/}"
+			cd "/tmp/buildomatic-installs/${customization##*/}"
+			chmod +x -R *.sh
+			./install.sh
+			cd ..
+			rm -rf "${customization##*/}"
+		  else
+			echo "Unzipping $customization into $BUILDOMATIC_HOME"
+			unzip -o -q "$customization" -d $BUILDOMATIC_HOME
+		  fi
+		fi
+	  done
+  fi
+}
+
 # tests for JasperReports Server repository, and foodmart and sugarcrm sample databases
 # and creates them if needed
 init_databases() {
@@ -314,6 +345,7 @@ export() {
     done
 }
 
+apply_customizations
 
 initialize_deploy_properties
 

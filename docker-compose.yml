@@ -25,21 +25,27 @@ services:
       # does init check
       - jasperserver-pro-cmdline
       # depends on jasperserver_pro_repository service if database is in Docker
-      # - jasperserver_pro_repository
+      - jasperserver_pro_repository
     
     # point to env file with key=value entries 
     env_file: .env
     
     # setting following values here will override settings from env_file
-    #environment:
-      #- DB_HOST=jasperserver_pro_repository
-      # - JRS_LOAD_SAMPLES=true
+    environment:
+      - DB_HOST=jasperserver_pro_repository
 
     volumes:
-      # where jasperserver.license file is. Otherwise uses temporary license
-      - /path/to/license:/usr/local/share/jasperserver-pro/license 
+      # Required. Where jasperserver.license file is.
+      #- /path/to/license:/usr/local/share/jasperserver-pro/license 
+      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+
+      # As of JasperReports Server 7.5, this volume is required:
+      #   - saves .jrsks and .jrsksp files if they are created
+      #   - provides access to pre-existing keystore related files
+      #- /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
+      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore 
       
-      # zip files in alphabetical order exploded into webapps/jasperserver-pro
+      # zip files in alphabetical order exploded into webapps/jasperserver-pro or running embedded install.sh
       #- /path/to/customization:/usr/local/share/jasperserver-pro/customization
       
       # zip files in alphabetical order exploded into $CATALINA_HOME
@@ -48,11 +54,6 @@ services:
       # SSL .keystore files in this volume loaded into /root.
       # needs KS_PASSWORD environment variable set
       #- ssl_certificate:/usr/local/share/jasperserver-pro/ssl-certificate
-
-      # As of JasperReports Server 7.5, this volume :
-      #   - saves .jrsks and .jrsksp files if they are created
-      #   - provides access to pre-existing keystore related files
-      - /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
       
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
@@ -77,7 +78,7 @@ services:
       # Under Docker for Windows, volumes have to be under the logged in user's User area
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license 
 
-    mem_limit: 3g
+    mem_limit: 4g
     mem_reservation: 1g
     cpu_shares: 256
   
@@ -92,26 +93,31 @@ services:
         - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
     
     # depends on jasperserver_pro_repository service if database is in Docker
-    # depends_on:
-      # - jasperserver_pro_repository
+    depends_on:
+      - jasperserver_pro_repository
     
     # point to env file with key=value entries 
     env_file: .env
     
     # setting following values here will override settings from env_file
-    #environment:
-      #- DB_HOST=jasperserver_pro_repository
-      #- JRS_LOAD_SAMPLES=true
+    environment:
+      - DB_HOST=jasperserver_pro_repository
+      - JRS_LOAD_SAMPLES=true
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      - /path/to/license:/usr/local/share/jasperserver-pro/license 
+      #- /path/to/license:/usr/local/share/jasperserver-pro/license 
+      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
 
-      # As of JasperReports Server 7.5, this volume :
+      # As of JasperReports Server 7.5, this volume is required:
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
+      #- /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
+      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore 
       
+      # zip files in alphabetical order exploded into buildomatic or running embedded install.sh
+      #- /path/to/buildomatic_customization:/usr/local/share/jasperserver-pro/buildomatic_customization
+     
       # Import/export volumes. Passed as parameter to import/export command
       #- /path/to/export-import:/usr/local/share/jasperserver-pro/import
       
@@ -123,19 +129,19 @@ services:
       # maven.jdbc.version=<version # of JDBC driver>
       # have a look at buildomatic/conf_source/db/<dbType> for db.properties for a dbType
 
-    mem_limit: 3g
-    mem_reservation: 1g
+    mem_limit: 2g
+    mem_reservation: 256m
     cpu_shares: 256
  
  # repository and sample databases too in an image if configured
  # can make this a dependency for the instances above
-  # jasperserver_pro_repository:
-    # image: postgres:10
-    # env_file: .env
+  jasperserver_pro_repository:
+    image: postgres:10
+    env_file: .env
     
-    # volumes:
-      # - postgres-10-data:/var/lib/postgresql/data
+    volumes:
+      - postgres-10-data:/var/lib/postgresql/data
 
 # if using PostgreSQL in a container and persisting the databases
-# volumes:
-  # postgres-10-data:
+volumes:
+  postgres-10-data:

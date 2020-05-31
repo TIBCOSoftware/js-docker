@@ -15,6 +15,9 @@ set -e
 
 run_jasperserver() {
 
+  # Apply customization zips if present
+  apply_customizations
+
   test_database_connection
   
   # Because default_master.properties could change on any launch,
@@ -24,9 +27,6 @@ run_jasperserver() {
 
   # setup phantomjs
   config_phantomjs
-
-  # Apply customization zips if present
-  apply_customizations
 
   # If JRS_HTTPS_ONLY is set, sets JasperReports Server to
   # run only in HTTPS. Update keystore and password if given
@@ -47,6 +47,7 @@ run_jasperserver() {
   
   JAVA_MIN_RAM_PCT=${JAVA_MIN_RAM_PERCENTAGE:-33.3}
   JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
+  
   JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT"
   
   echo "JAVA_OPTS = $JAVA_OPTS"
