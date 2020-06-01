@@ -75,6 +75,10 @@ spec:
         - mountPath: /usr/local/share/jasperserver-pro/keystore
           name: keystore-files-secret
           readOnly: true
+# Add if additional default_master.propeties in a Secret
+#        - mountPath: /usr/local/share/jasperserver-pro/deploy-customization
+#          name: jasperserver-pro-additional-master-secret
+#          readOnly: true
         - mountPath: /usr/local/share/jasperserver-pro
           name: jasperserver-pro-volume
           readOnly: true
@@ -97,8 +101,12 @@ spec:
           name: license
           readOnly: true
         - mountPath: /usr/local/share/jasperserver-pro-secrets/jasperserver-pro-jrsks
-          name: keystore-files-secret
+          name: jasperserver-pro-keystore-files-secret
           readOnly: true
+# Add if buildmatic additional default_master.propeties are in a Secret
+#        - mountPath: /usr/local/share/jasperserver-pro/buildomatic-customization
+#          name: jasperserver-pro-buildmatic-additional-master-secret
+#          readOnly: true
         - mountPath: /usr/local/share/jasperserver-pro
           name: jasperserver-pro-volume
           readOnly: false
@@ -107,8 +115,14 @@ spec:
       - name: license
         secret:
           secretName: jasperserver-pro-license
-      - name: keystore-files-secret
+      - name: jasperserver-pro-keystore-files-secret
         secret:
           secretName: jasperserver-pro-jrsks
+#      - name: jasperserver-pro-additional-master-secret
+#        secret:
+#          secretName: jasperserver-pro-additional-master
+#      - name: jasperserver-pro-additional-master-secret
+#        secret:
+#          secretName: jasperserver-pro-buildomatic-additional-master
       - name: jasperserver-pro-volume
         emptyDir: {}

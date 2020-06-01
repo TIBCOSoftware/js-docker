@@ -79,7 +79,7 @@ The init-container in the Service, which runs a cmdline image, ensures that the 
   - You can set the NodePort the Server will run on or change the network access as you see fit.
 - Decide on secrets and volumes below.
 
-# Secrets and Volumes
+# Keystores in Secrets and Volumes
 
 Your JasperReports Server license is in a secret.
 
@@ -223,6 +223,22 @@ for the web application:
           mountPath: "/usr/local/share/jasperserver-pro"
           readOnly: true
 ```
+
+# Additional default_master.properties in a Secret
+
+As noted in the main [README](https://github.com/TIBCOSoftware/js-docker#configuring_jasperreports_server_with_volumes) you can add additional
+configuration properties by mapping the `/usr/local/share/jasperserver-pro/deploy-customization` and `/usr/local/share/jasperserver-pro/buildomatic-customization`
+volumes. The properties files can be the same. They can also be stored in Secrets.
+
+Create the secrets:
+
+```
+kubectl create secret generic jasperserver-pro-additional-master -n jaspersoft --from-file=default_master_additional.properties=default_master_additional.properties
+
+kubectl create secret generic jasperserver-pro-buildomatic-additional-master -n jaspersoft --from-file=default_master_additional.properties=default_master_buildomatic_additional.properties
+```
+
+Update the `secrets.yaml` and `jasperreports-server-service-deployment.yaml` to use these properties secrets.
 
 # Additional runtime environment variables
 
