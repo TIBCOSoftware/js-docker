@@ -16,6 +16,7 @@ S3_DEFAULT_MASTER=${S3_DEFAULT_MASTER:-$S3_BUCKET_NAME/default-master}
 S3_LICENSE=${S3_LICENSE:-$S3_BUCKET_NAME/license}
 S3_KEYSTORE=${S3_KEYSTORE:-$S3_BUCKET_NAME/keystore}
 S3_CUSTOMIZATION=${S3_CUSTOMIZATION:-$S3_BUCKET_NAME/customization}
+S3_BUILDOMATIC_CUSTOMIZATION=${S3_BUILDOMATIC_CUSTOMIZATION:-$S3_BUCKET_NAME/buildomatic-customization}
 S3_TOMCAT_CUSTOMIZATION=${S3_TOMCAT_CUSTOMIZATION:-$S3_BUCKET_NAME/tomcat-customization}
 S3_SSL_CERTIFICATE=${S3_SSL_CERTIFICATE:-$S3_BUCKET_NAME/ssl-certificate}
 
@@ -86,6 +87,11 @@ initialize_from_S3() {
   # get list of JRS customization zips into ${MOUNTS_HOME}/customization
   if aws s3 ls s3://${S3_CUSTOMIZATION} --recursive ; then
     aws s3 cp s3://${S3_CUSTOMIZATION} ${MOUNTS_HOME}/customization --recursive
+  fi
+ 
+  # get list of JRS customization zips into ${MOUNTS_HOME}/customization
+  if aws s3 ls s3://${S3_BUILDOMATIC_CUSTOMIZATION} --recursive ; then
+    aws s3 cp s3://${S3_BUILDOMATIC_CUSTOMIZATION} ${MOUNTS_HOME}/buildomatic-customization --recursive
   fi
 
   # get list of Tomcat customization zips into ${MOUNTS_HOME}/tomcat-customization

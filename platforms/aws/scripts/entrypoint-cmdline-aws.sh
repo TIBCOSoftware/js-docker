@@ -18,6 +18,7 @@ case "$1" in
 	createBucketFolder ${S3_LICENSE}
 	createBucketFolder ${S3_KEYSTORE}
 	createBucketFolder ${S3_CUSTOMIZATION}
+	createBucketFolder ${S3_BUILDOMATIC_CUSTOMIZATION}
 	createBucketFolder ${S3_TOMCAT_CUSTOMIZATION}
 	createBucketFolder ${S3_SSL_CERTIFICATE}
 
