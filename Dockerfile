@@ -57,20 +57,20 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperrepor
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
 
-COPY scripts/* /
+COPY scripts /
 
 RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     chmod +x /*.sh && \
     /installPackagesForJasperserver-pro.sh > /dev/null && \
 	echo "finished installing packages" && \
-	rm /installPackagesForJasperserver*.sh && \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
     #
-	mv /js-ant /usr/src/jasperreports-server/buildomatic && \
+	cp -R /buildomatic /usr/src/jasperreports-server/buildomatic && \
+	rm /installPackagesForJasperserver*.sh && rm -rf /buildomatic && \
     chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
     chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
     java -version && \

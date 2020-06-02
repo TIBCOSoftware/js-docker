@@ -458,6 +458,8 @@ See [Jaspersoft Documentation](https://community.jaspersoft.com/documentation an
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/export 
 
+    -v /path/to/a/volume-license:/usr/local/share/jasperserver-pro/license -v /path/to/a/volume-keystore:/usr/local/share/jasperserver-pro/keystore
+
     --network js-docker_default -e DB_HOST=jasperserver_pro_repository  
 
     --name jasperserver-pro-export 
@@ -471,6 +473,8 @@ See [Jaspersoft Documentation](https://community.jaspersoft.com/documentation an
   docker run --rm 
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/import 
+
+    -v /path/to/a/volume-license:/usr/local/share/jasperserver-pro/license -v /path/to/a/volume-keystore:/usr/local/share/jasperserver-pro/keystore
 
     -e DB_HOST=domain.or.IP.where.repository.database.is  
 
@@ -523,6 +527,8 @@ And do either:
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/import 
 
+    -v /path/to/a/volume-license:/usr/local/share/jasperserver-pro/license -v /path/to/a/volume-keystore:/usr/local/share/jasperserver-pro/keystore
+
     --network js-docker_default -e DB_HOST=jasperserver_pro_repository  
 
     --name jasperserver-pro-import 
@@ -536,6 +542,8 @@ And do either:
   docker run --rm 
 
     -v /path/to/a/volume:/usr/local/share/jasperserver-pro/import 
+
+    -v /path/to/a/volume-license:/usr/local/share/jasperserver-pro/license -v /path/to/a/volume-keystore:/usr/local/share/jasperserver-pro/keystore
 
     -e DB_HOST=domain.or.IP.where.database.is  
 

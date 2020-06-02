@@ -25,13 +25,28 @@ export ksp=$KEYSTORE_PATH
 # make buildomatic not ask interactive questions
 export BUILDOMATIC_MODE=script
 
+# Set Java options.
+# using G1GC - default Java GC in later versions of Java 8 and Java 11
+
+# setting heap based on info:
+# https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e 
+# https://stackoverflow.com/questions/49854237/is-xxmaxramfraction-1-safe-for-production-in-a-containered-environment
+# https://www.oracle.com/technetwork/java/javase/8u191-relnotes-5032181.html
+  
+# Assuming we are using a Java 8 version beyond 8u191 or Java 11, we can use the Java 10+ JAVA_OPTS
+# for containers
+# Assuming a minimum of 3GB for the container => a max of 2.4GB for heap
+# defaults to 33/3% Min, 80% Max
+
+export JAVA_MIN_RAM_PCT=${JAVA_MIN_RAM_PERCENTAGE:-33.3}
+export JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
+
 # Add Java options to suppress Groovy related warning message for Jaspersoft running Java 11
 
-# additional options for Java, used by tomcat and import/export
-JAVA_OPTS="$JAVA_OPTS @/java11.opts"
+export JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT  @/java11.opts"
 
 # additional options for Ant used by buildomatic
-ANT_OPTS="$ANT_OPTS @/java11.opts"
+export ANT_OPTS="$ANT_OPTS @/java11.opts"
 
 initialize_deploy_properties() {
   # license could fail

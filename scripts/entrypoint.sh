@@ -32,25 +32,6 @@ run_jasperserver() {
   # run only in HTTPS. Update keystore and password if given
   config_ports_and_ssl
 
-  # Set Java options for Tomcat.
-  # using G1GC - default Java GC in later versions of Java 8 and Java 11
-  
-  # setting heap based on info:
-  # https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e 
-  # https://stackoverflow.com/questions/49854237/is-xxmaxramfraction-1-safe-for-production-in-a-containered-environment
-  # https://www.oracle.com/technetwork/java/javase/8u191-relnotes-5032181.html
-  
-  # Assuming we are using a Java 8 version beyond 8u191 or Java 11, we can use the Java 10+ JAVA_OPTS
-  # for containers
-  # Assuming a minimum of 3GB for the container => a max of 2.4GB for heap
-  # defaults to 33/3% Min, 80% Max
-  
-  JAVA_MIN_RAM_PCT=${JAVA_MIN_RAM_PERCENTAGE:-33.3}
-  JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
-  
-  JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT"
-  
-  echo "JAVA_OPTS = $JAVA_OPTS"
   # start tomcat
   exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
 }
