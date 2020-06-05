@@ -8,7 +8,8 @@ version: '2'
 
 services:
   jasperserver-pro:
-    image: "jasperserver-pro:${JASPERREPORTS_SERVER_IMAGE_TAG}"
+    # image: "jasperserver-pro:${JASPERREPORTS_SERVER_IMAGE_TAG}"
+    image: "${IMAGE_REPOSITORY}${JASPERREPORTS_SERVER_APP_IMAGE_NAME}:${JASPERREPORTS_SERVER_IMAGE_TAG}"
     
     build:
       context: .
@@ -83,7 +84,8 @@ services:
     cpu_shares: 256
   
   jasperserver-pro-cmdline:
-    image: "jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_IMAGE_TAG}"
+    # image: "jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_IMAGE_TAG}"
+    image: "${IMAGE_REPOSITORY}${JASPERREPORTS_SERVER_CMDLINE_IMAGE_NAME}:${JASPERREPORTS_SERVER_IMAGE_TAG}"
     
     build:
       context: .
