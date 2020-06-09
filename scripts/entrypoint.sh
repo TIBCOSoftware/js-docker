@@ -27,8 +27,12 @@ run_jasperserver() {
 
   execute_buildomatic deploy-webapp-pro
 
-  # integrate Chromium as the JavaScript rendering engine
-  config_chromium
+  if [ "$JAVASCRIPT_RENDERING_ENGINE" == "chromium" ]; then
+  # set Chromium as the JavaScript rendering engine
+    config_chromium
+  else
+    config_phantomjs
+  fi
 
   # If JRS_HTTPS_ONLY is set, sets JasperReports Server to
   # run only in HTTPS. Update keystore and password if given
@@ -37,8 +41,6 @@ run_jasperserver() {
   # start tomcat
   exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
 }
-
-
 
 config_chromium() {
   # if chromium is installed, update JasperReports Server config.
@@ -60,6 +62,29 @@ config_chromium() {
 	echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >> $CATALINA_HOME/webapps/jasperserver-pro//WEB-INF/classes/jasperreports.properties
   else
     echo "Chromium not available. Headless browser functionality will fail."
+  fi
+}
+
+config_phantomjs() {
+  # if phantomjs binary is present, update JasperReports Server config.
+  if [[ -x "/usr/local/bin/phantomjs" ]]; then
+    PATH_PHANTOM='\/usr\/local\/bin\/phantomjs'
+    PATTERN1='com.jaspersoft.jasperreports'
+    PATTERN2='phantomjs.executable.path'
+    cd $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF
+    sed -i -r "s/(.*)($PATTERN1.highcharts.$PATTERN2=)(.*)/\2$PATH_PHANTOM/" \
+      classes/jasperreports.properties
+    sed -i -r "s/(.*)($PATTERN1.fusion.$PATTERN2=)(.*)/\2$PATH_PHANTOM/" \
+      classes/jasperreports.properties
+    sed -i -r "s/(.*)(phantomjs.binary=)(.*)/\2$PATH_PHANTOM/" \
+      js.config.properties
+	# fix for Debian Buster https://github.com/kelaberetiv/TagUI/issues/787
+	touch /tmp/openssl.cnf
+    export OPENSSL_CONF="/tmp/openssl.cnf"
+  elif [[ "$(ls -A /usr/local/share/phantomjs)" ]]; then
+    echo "Warning: /usr/local/bin/phantomjs is not executable, \
+but /usr/local/share/phantomjs exists. PhantomJS \
+is not correctly configured."
   fi
 }
 

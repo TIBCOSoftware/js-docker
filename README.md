@@ -157,9 +157,10 @@ For the JasperReports Server Web app (WAR):
 | `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 |  | A self signed SSL certificate is defined for Tomcat. |
-|`DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
-|`KS_PASSWORD` | SSL Keystore password. Default: "changeit" |
-|`POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html  |
+| `DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
+| `KS_PASSWORD` | SSL Keystore password. Default: "changeit" |
+| `POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html  |
+| `JAVASCRIPT_RENDERING_ENGINE` | Default: chromium. if not chromium, phantomjs will be installed. |
 
 For the cmdline:
 

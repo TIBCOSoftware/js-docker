@@ -16,6 +16,7 @@ services:
       args:
         - "TOMCAT_BASE_IMAGE=${TOMCAT_BASE_IMAGE}"
         - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
+        - "JAVASCRIPT_RENDERING_ENGINE=${JAVASCRIPT_RENDERING_ENGINE}"
     
     # expose port on the host
     ports:
