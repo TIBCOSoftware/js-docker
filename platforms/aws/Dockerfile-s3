@@ -8,22 +8,12 @@ FROM jasperserver-pro:${JASPERREPORTS_SERVER_VERSION}
 
 ENV JASPERREPORTS_SERVER_VERSION        ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
 
-COPY scripts /
+COPY scripts /usr/src/jasperreports-server/scripts/
 
-# load AWS CLI
-RUN apt-get update > /dev/null && \
-    apt-get install -y --no-install-recommends apt-utils  > /dev/null && \
-    apt-get install -y \
-        python3 \
-        python3-pip \
-        groff \
-        less > /dev/null && \
-    pip3 install awscli --upgrade && \
-    rm -rf /var/lib/apt/lists/* && \
-    chmod +x /*.sh && \
-    ls -lsa /
+RUN chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
+    /usr/src/jasperreports-server/scripts/installPackagesForJasperserver-pro-s3.sh
 
-ENTRYPOINT ["/entrypoint-aws.sh"]
+ENTRYPOINT ["/usr/src/jasperreports-server/scripts/entrypoint-aws.sh"]
 
 # Default action executed by entrypoint script.
 CMD ["run"]

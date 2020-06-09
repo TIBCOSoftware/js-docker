@@ -26,8 +26,6 @@ ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jaspe
 # COPY the buildomatic, command line scripts and supporting resources
 # from the JasperReports Server WAR file installer into the image
 
-RUN mkdir -p /usr/src/jasperreports-server
-
 # Ant
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/apache-ant /usr/src/jasperreports-server/apache-ant/
 
@@ -47,15 +45,14 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/install_resources /usr/src/jasp
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
 
-COPY scripts /
+# js-docker specific scripts and resources
+COPY scripts /usr/src/jasperreports-server/scripts/
 
-RUN echo "apt-get" && \
-    echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    chmod +x /*.sh && \
-    /installPackagesForJasperserver-pro-cmdline.sh && \
+RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
+    chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
+    /usr/src/jasperreports-server/scripts/installPackagesForJasperserver-pro-cmdline.sh && \
 	echo "finished installing packages" && \
-	cp -R /buildomatic /usr/src/jasperreports-server/buildomatic && \
-	rm /installPackagesForJasperserver*.sh && rm -rf /buildomatic && \
+	cp -R /usr/src/jasperreports-server/scripts/buildomatic /usr/src/jasperreports-server/buildomatic && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
 	chmod +x /usr/src/jasperreports-server/buildomatic/bin/*.sh && \
 	chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
@@ -63,7 +60,7 @@ RUN echo "apt-get" && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
-ENTRYPOINT ["/entrypoint-cmdline.sh"]
+ENTRYPOINT ["/usr/src/jasperreports-server/scripts/entrypoint-cmdline.sh"]
 
 # Default action executed by entrypoint script.
 CMD ["init"]
