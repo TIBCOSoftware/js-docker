@@ -11,7 +11,9 @@
 # Sets script to fail if any command fails.
 set -e
 
-. /common-environment.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+. $DIR/common-environment.sh
 
 run_jasperserver() {
 
@@ -25,8 +27,8 @@ run_jasperserver() {
 
   execute_buildomatic deploy-webapp-pro
 
-  # setup phantomjs
-  config_phantomjs
+  # integrate Chromium as the JavaScript rendering engine
+  config_chromium
 
   # If JRS_HTTPS_ONLY is set, sets JasperReports Server to
   # run only in HTTPS. Update keystore and password if given
@@ -38,23 +40,26 @@ run_jasperserver() {
 
 
 
-config_phantomjs() {
-  # if phantomjs binary is present, update JasperReports Server config.
-  if [[ -x "/usr/local/bin/phantomjs" ]]; then
-    PATH_PHANTOM='\/usr\/local\/bin\/phantomjs'
-    PATTERN1='com.jaspersoft.jasperreports'
-    PATTERN2='phantomjs.executable.path'
-    cd $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF
-    sed -i -r "s/(.*)($PATTERN1.highcharts.$PATTERN2=)(.*)/\2$PATH_PHANTOM/" \
-      classes/jasperreports.properties
-    sed -i -r "s/(.*)($PATTERN1.fusion.$PATTERN2=)(.*)/\2$PATH_PHANTOM/" \
-      classes/jasperreports.properties
-    sed -i -r "s/(.*)(phantomjs.binary=)(.*)/\2$PATH_PHANTOM/" \
-      js.config.properties
-  elif [[ "$(ls -A /usr/local/share/phantomjs)" ]]; then
-    echo "Warning: /usr/local/bin/phantomjs is not executable, \
-but /usr/local/share/phantomjs exists. PhantomJS \
-is not correctly configured."
+config_chromium() {
+  # if chromium is installed, update JasperReports Server config.
+  if hash chrome 2>/dev/null; then
+    CHROMIUM_CMD=chrome
+  elif hash chromium 2>/dev/null; then
+    CHROMIUM_CMD=chromium
+  elif hash chromium-browser 2>/dev/null; then
+    CHROMIUM_CMD=chromium-browser
+  else
+    CHROMIUM_CMD=Not
+  fi
+  
+  if [ "$CHROMIUM_CMD" != "Not" ]; then
+    echo "$CHROMIUM_CMD available. Configuring JasperReports Server to use it"
+    sed -i -r "s/^chrome.path=(.*)/chrome.path=$CHROMIUM_CMD/" \
+      $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/js.config.properties
+	cat $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/js.config.properties | grep chrome.path=
+	echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >> $CATALINA_HOME/webapps/jasperserver-pro//WEB-INF/classes/jasperreports.properties
+  else
+    echo "Chromium not available. Headless browser functionality will fail."
   fi
 }
 
@@ -94,11 +99,11 @@ config_ports_and_ssl() {
 		  for keystore in $CERT_PATH_FILES; do
 			if [[ -f "$keystore" ]]; then
 			  echo "Deploying SSL Keystore $keystore"
-			  cp "${keystore}" /root
+			  cp "${keystore}" $CATALINA_HOME/conf
 			  xmlstarlet ed --inplace --subnode "/Server/Service/Connector[@port='${HTTPS_PORT:-8443}']" --type elem \ 
 					--var connector-ssl '$prev' \
 				--update '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
-				--update '$connector-ssl' --type attr -n keystoreFile  -v "/root/${keystore}" \
+				--update '$connector-ssl' --type attr -n keystoreFile  -v "$CATALINA_HOME/conf/${keystore}" \
 				--update '$connector-ssl' --type attr -n keystorePass  -v "${KS_PASSWORD:-changeit}" \
 				${CATALINA_HOME}/conf/server.xml
 			  echo "Deployed SSL ${keystore} keystore"
