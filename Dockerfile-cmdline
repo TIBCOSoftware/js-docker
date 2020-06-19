@@ -45,7 +45,7 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperrepor
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/jdbc-dep /usr/src/jasperreports-server/buildomatic/bin/jdbc-dep/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/install_resources /usr/src/jasperreports-server/buildomatic/install_resources/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/lib /usr/src/jasperreports-server/buildomatic/lib/
 
 COPY scripts /
 
