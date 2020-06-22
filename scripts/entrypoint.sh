@@ -321,6 +321,7 @@ config_ssl() {
   # if $JRS_HTTPS_ONLY is set in environment to true, disable HTTP support
   # in JasperReports Server.
   JRS_HTTPS_ONLY=${JRS_HTTPS_ONLY:-false}
+  SERVER_XML_USE_SECURE=${SERVER_XML_USE_SECURE:-false}
 
   if "$JRS_HTTPS_ONLY" = "true" ; then
     echo "Setting HTTPS only within JasperReports Server"
@@ -333,6 +334,10 @@ config_ssl() {
     sed -i "s/8080/${HTTPS_PORT:-8443}/g" js.quartz.properties
   else
     echo "NOT! Setting HTTPS only within JasperReports Server. Should actually turn it off, but cannot."
+    if "$SERVER_XML_USE_SECURE" = "true" ; then
+        echo "Setting 8080 to go through secure connection"
+        xmlstarlet ed --inplace --append "/Server/Service/Connector[@port='8080']" --type attr -n scheme -v "https" --append "/Server/Service/Connector[@port='8080']" --type attr -n secure -v "true" ${CATALINA_HOME}/conf/server.xml
+    fi
   fi
 
   KEYSTORE_PATH=${KEYSTORE_PATH:-/usr/local/share/jasperserver-pro/keystore}
