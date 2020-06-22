@@ -1,0 +1,26 @@
+
+
+# JasperReports Server command line image, saving keystore changes to a secret.
+# Leverages base JRS image of same version
+
+ARG JASPERREPORTS_SERVER_IMAGE_TAG=7.5.0
+
+FROM jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_IMAGE_TAG}
+
+ARG JASPERREPORTS_SERVER_VERSION=7.5.0
+
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION}
+
+COPY scripts /
+
+# load kubectl
+RUN chmod +x /*.sh && \
+    /installPackagesForJasperserver-pro.sh > /dev/null && \
+	echo "finished installing packages" && \
+	rm /installPackagesForJasperserver-pro.sh
+
+ENTRYPOINT ["/entrypoint-cmdline-k8s.sh"]
+
+# Default action executed by entrypoint script.
+CMD ["init"]
+
