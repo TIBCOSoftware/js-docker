@@ -353,6 +353,7 @@ initialize_deploy_properties
   cat >> ${BUILDOMATIC_HOME}/default_master.properties\
 <<-_EOL_
 appServerType=skipAppServerCheck
+admin.jdbcUrl=jdbc:mysql://$DB_HOST:$DB_PORT/jasperserver_connect_check
 _EOL_
 
 case "$1" in

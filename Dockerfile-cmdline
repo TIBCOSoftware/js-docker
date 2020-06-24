@@ -8,16 +8,10 @@
 # for JasperReports Server 7.5
 # ARG JAVA_BASE_IMAGE=amazoncorretto:11
 
-ARG JAVA_BASE_IMAGE=openjdk:11.0-slim
-
-FROM ${JAVA_BASE_IMAGE}
-
-ARG POSTGRES_JDBC_DRIVER_VERSION
-ARG JASPERREPORTS_SERVER_VERSION
-ARG EXPLODED_INSTALLER_DIRECTORY
+FROM tomcat:9.0.27-jdk11-openjdk
 
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.1}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
 
 # This Dockerfile requires an exploded JasperReports Server WAR file installer file 
@@ -62,6 +56,25 @@ RUN echo "apt-get" && \
     java -version && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
+
+# permanently copy license ERAMON - verify copy & run Befehle
+COPY license/jasperserver.license /usr/src/jasperreports-server/jasperserver.license
+# copy cipher class
+COPY security/java/MyCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar
+# copy auth-config
+COPY security/config/applicationContext-externalAuth-preauth.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml
+# copy formatting definition for FormatValueByUnit
+COPY formatting/applicationContext-el-operators.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml
+# copy groovy function for FormatValueByUnit
+COPY formatting/BaseGroovyColumn.groovy /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy
+# copy MySQL driver
+COPY driver/mariadb-java-client-1.6.3.jar /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar
+RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
+	chmod +x /usr/src/jasperreports-server/jasperserver.license
 
 ENTRYPOINT ["/entrypoint-cmdline.sh"]
 

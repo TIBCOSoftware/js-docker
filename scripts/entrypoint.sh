@@ -174,8 +174,11 @@ apply_customizations() {
 	fi
 }
 
+echo "about to initialize deploy properties"
 
 initialize_deploy_properties
+
+echo "deploy properties initialized"
 
 case "$1" in
   run)
