@@ -58,7 +58,7 @@ RUN echo "apt-get" && \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
 # permanently copy license ERAMON - verify copy & run Befehle
-COPY license/jasperserver.license /usr/src/jasperreports-server/jasperserver.license
+COPY license/jasperserver.license /usr/local/share/jasperserver-pro/license/jasperserver.license
 # copy cipher class
 COPY security/java/MyCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar
 # copy auth-config

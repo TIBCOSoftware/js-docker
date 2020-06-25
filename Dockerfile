@@ -112,7 +112,7 @@ RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
     ${CATALINA_HOME}/conf/server.xml
 
 # permanently copy license ERAMON - verify copy & run Befehle
-COPY license/jasperserver.license /usr/src/jasperreports-server/jasperserver.license
+COPY license/jasperserver.license /usr/local/share/jasperserver-pro/license/jasperserver.license
 # copy cipher class
 COPY security/java/MyCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar
 # copy auth-config
