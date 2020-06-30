@@ -128,7 +128,7 @@ RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
-	chmod +x /usr/src/jasperreports-server/jasperserver.license
+	chmod +x /usr/local/share/jasperserver-pro/license/jasperserver.license
 
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"
