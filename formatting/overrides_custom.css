@@ -1,0 +1,23 @@
+/*
+.overrides_custom css
+
+Place styles for simple UI customization in this file.
+
+This file is loaded after all other CSS, so selectors here will win in case of conflict with default rules.
+
+Using this file to customize is the method most likely to conserve your customizations even if markup changes in future product releases.
+
+Extensive customizations may be easier to implement by replacing one or more of the standard theme files in your custom theme folder.
+
+However, if future product releases place styles for new markup components into the files you have replaced, your theme will not have these new styles,
+and therefore, will not display the new components correctly.
+
+*/
+
+.schedulerApp .singleReportView .list .button[name="backButton"] {
+    display: none;
+}
+
+.holidayCalendar {
+    display: none;
+}
