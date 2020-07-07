@@ -42,7 +42,7 @@ case "$PACKAGE_MGR" in
 		;;
 	"apt_get" )
 		apt-get update
-		apt-get install -y --no-install-recommends apt-utils unzip wget curl lsof procps psmisc less procps mysql-client vim xmlstarlet
+		apt-get install -y --no-install-recommends apt-utils unzip wget curl lsof procps psmisc less procps mysql-client telnet vim xmlstarlet
 		#apt-get install -y unzip xmlstarlet 
 		rm -rf /var/lib/apt/lists/*
 		;;
