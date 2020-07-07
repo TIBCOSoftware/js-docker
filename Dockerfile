@@ -121,6 +121,8 @@ COPY security/config/applicationContext-externalAuth-preauth.xml /usr/local/tomc
 COPY formatting/applicationContext-el-operators.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml
 # copy groovy function for FormatValueByUnit
 COPY formatting/BaseGroovyColumn.groovy /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy
+# hide holiday calendar and schedule overview backbutton
+COPY formatting/overrides_custom.css /usr/local/tomcat/webapps/jasperserver-pro/themes/default/overrides_custom.css
 # copy MySQL driver
 COPY driver/mariadb-java-client-1.6.3.jar /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar
 RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar && \
@@ -128,6 +130,7 @@ RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/themes/default/overrides_custom.css && \
 	chmod +x /usr/local/share/jasperserver-pro/license/jasperserver.license
 
 # Expose ports. Note that you must do one of the following:
