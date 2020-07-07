@@ -18,6 +18,9 @@ run_jasperserver() {
   # Apply customization zips if present
   apply_customizations
 
+  # Apply ERAMON customizations
+  apply_eramon_customizations
+
   test_database_connection
   
   # Because default_master.properties could change on any launch,
@@ -172,6 +175,12 @@ apply_customizations() {
 		fi
 	  done
 	fi
+}
+
+apply_eramon_customizations() {
+    echo "Adjusting JasperReports Server Settings for ERAMON"
+    cd $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF
+    xmlstarlet ed -L -N x="http://java.sun.com/xml/ns/javaee" -u "//x:session-timeout" --value 0 web.xml
 }
 
 echo "about to initialize deploy properties"
