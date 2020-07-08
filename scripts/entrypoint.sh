@@ -18,9 +18,6 @@ run_jasperserver() {
   # Apply customization zips if present
   apply_customizations
 
-  # Apply ERAMON customizations
-  apply_eramon_customizations
-
   test_database_connection
   
   # Because default_master.properties could change on any launch,
@@ -34,6 +31,9 @@ run_jasperserver() {
   # If JRS_HTTPS_ONLY is set, sets JasperReports Server to
   # run only in HTTPS. Update keystore and password if given
   config_ports_and_ssl
+
+  # Apply ERAMON customizations
+  apply_eramon_customizations
 
   # start tomcat
   exec env JAVA_OPTS="$JAVA_OPTS" catalina.sh run
@@ -180,7 +180,25 @@ apply_customizations() {
 apply_eramon_customizations() {
     echo "Adjusting JasperReports Server Settings for ERAMON"
     cd $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF
+    # set session timeout to 0 to enable never being logged out
     xmlstarlet ed -L -N x="http://java.sun.com/xml/ns/javaee" -u "//x:session-timeout" --value 0 web.xml
+    # enable saving to host system
+    xmlstarlet ed -L -N b="http://www.springframework.org/schema/beans" -u "//b:property[@name='enableSaveToHostFS']/@value" --value true applicationContext.xml
+
+    echo "Adjusting mail settings"
+    cd $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF
+
+    SMTP_MAIL_SERVER=${SMTP_MAIL_SERVER:-mail.example.com}
+    SMTP_MAIL_USER=${SMTP_MAIL_USER:-admin}
+    SMTP_MAIL_PASSWORD=${SMTP_MAIL_PASSWORD:-password}
+    SMTP_MAIL_FROM=${SMTP_MAIL_SERVER:-reporting@example.com}
+    SMTP_MAIL_DEPLOYMENT_URI=${SMTP_MAIL_DEPLOYMENT_URI:-http://localhost:8080/jasperserver-pro}
+
+    sed -i "/report.scheduler.web.deployment.uri/c\report.scheduler.web.deployment.uri=$SMTP_MAIL_DEPLOYMENT_URI" js.quartz.properties
+    sed -i "/report.scheduler.mail.sender.host/c\report.scheduler.mail.sender.host=$SMTP_MAIL_SERVER" js.quartz.properties
+    sed -i "/report.scheduler.mail.sender.username/c\report.scheduler.mail.sender.username=$SMTP_MAIL_USER" js.quartz.properties
+    sed -i "/report.scheduler.mail.sender.password/c\report.scheduler.mail.sender.password=$SMTP_MAIL_PASSWORD" js.quartz.properties
+    sed -i "/report.scheduler.mail.sender.from/c\report.scheduler.mail.sender.from=$SMTP_MAIL_FROM" js.quartz.properties
 }
 
 echo "about to initialize deploy properties"

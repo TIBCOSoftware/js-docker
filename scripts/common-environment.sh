@@ -85,10 +85,10 @@ dbPassword=$DB_PASSWORD
 js.dbName=$DB_NAME
 foodmart.dbName=foodmart
 sugarcrm.dbName=sugarcrm
-admin.jdbcUrl=jdbc:mysql://$DB_HOST:$DB_PORT/jasperserver_connect_check
 webAppName=jasperserver-pro
 ks=$KEYSTORE_PATH
 ksp=$KEYSTORE_PATH
+admin.jdbcUrl=jdbc:mysql://$DB_HOST:$DB_PORT/jasperserver_connect_check
 _EOL_
 
   # set the JDBC_DRIVER_VERSION if it is passed in.
