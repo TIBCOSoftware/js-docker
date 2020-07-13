@@ -111,6 +111,9 @@ RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
         -v "/root/.keystore.p12" \
     ${CATALINA_HOME}/conf/server.xml
 
+# permanently copy keystore files ERAMON
+COPY security/.jrsks /usr/local/share/jasperserver-pro/keystore/.jrsks
+COPY security/.jrsksp /usr/local/share/jasperserver-pro/keystore/.jrsks
 # permanently copy license ERAMON - verify copy & run Befehle
 COPY license/jasperserver.license /usr/local/share/jasperserver-pro/license/jasperserver.license
 # copy cipher class

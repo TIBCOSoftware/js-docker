@@ -57,6 +57,9 @@ RUN echo "apt-get" && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
         -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 
+# permanently copy keystore files ERAMON
+COPY security/.jrsks /usr/local/share/jasperserver-pro/keystore/.jrsks
+COPY security/.jrsksp /usr/local/share/jasperserver-pro/keystore/.jrsks
 # permanently copy license ERAMON - verify copy & run Befehle
 COPY license/jasperserver.license /usr/local/share/jasperserver-pro/license/jasperserver.license
 # copy cipher class
