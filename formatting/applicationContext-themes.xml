@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved.
+  ~ http://www.jaspersoft.com.
+  ~
+  ~ Unless you have purchased a commercial license agreement from Jaspersoft,
+  ~ the following license terms apply:
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+    <!-- To run the theme from the file system, uncomment the two beans below and comment out the three following beans
+         Notes:
+               0. this mode is convenient for designing/debugging a theme
+               1. in this mode you cannot change themes dynamically
+               2. you must have a directory under /webapp/themes/[themeName] with a name that matches the value for the property 'defaultTheme'
+               3. you must have the file /main/webappAdditions/classes/themes/[themeName].properties where there is a correct name/value pair
+                  for each required theme file, e.g. theme.css=themes/[themeName]/theme.css
+
+     -->
+
+    <bean id="themeResolver" class="org.springframework.web.servlet.theme.FixedThemeResolver">
+        <property name="defaultThemeName" value="default"/>
+    </bean>
+
+    <bean id="themeSource" class="org.springframework.ui.context.support.ResourceBundleThemeSource">
+        <property name="basenamePrefix" value="themes."/>
+    </bean>
+
+
+    <!-- To run the themes from the repository, uncomment the three beans below and comment out the two beans above -->
+
+    <!--
+        <bean id="themeResolver" class="com.jaspersoft.jasperserver.war.themes.JSThemeResolver"  lazy-init="true">
+            <property name="defaultThemeName">
+                <util:property-path path="configurationBean.themeDefaultName"/>
+            </property>
+            <property name="delegate" ref="jsThemeResolver"/>
+        </bean>
+
+        <bean id="jsThemeResolver" class="com.jaspersoft.jasperserver.war.themes.MTThemeResolver"  lazy-init="true">
+            <property name="defaultThemeName">
+                <util:property-path path="configurationBean.themeDefaultName"/>
+            </property>
+            <property name="tenantService" ref="${bean.hibernateTenantService}" />
+        </bean>
+
+        <bean id="themeSource" class="com.jaspersoft.jasperserver.war.themes.RepositoryFolderThemeSourceImpl"  lazy-init="true">
+            <property name="themeCache" ref="themeCache"/>
+        </bean>
+    -->
+        <bean id="themeUtils" class="com.jaspersoft.jasperserver.war.themes.ThemeUtils" lazy-init="true">
+            <property name="configuration" ref="configurationBean" />
+        </bean>
+
+        <bean id="themeCache" class="com.jaspersoft.jasperserver.war.themes.ThemeCache" lazy-init="true">
+            <property name="repositoryService" ref="unsecureRepositoryService"/>
+            <property name="userAndRoleConfiguration" ref="configurationBean" />
+            <property name="repositoryConfiguration" ref="configurationBean" />
+            <property name="tenantService" ref="${bean.hibernateTenantService}" />
+            <property name="refreshThemeAfterUpdateInSeconds" value="5" />
+            <property name="themeUtils" ref="themeUtils" />
+        </bean>
+
+        <bean id="themeService" class="com.jaspersoft.jasperserver.war.themes.ThemeServiceImpl" lazy-init="true">
+            <property name="tenantService" ref="${bean.tenantService}" />
+            <property name="configuration" ref="configurationBean" />
+            <property name="repositoryService" ref="${bean.repositoryService}" />
+            <property name="resourceFactory" ref="mappingResourceFactory" />
+        </bean>
+
+        <bean id="themeContextFilter" class="com.jaspersoft.jasperserver.war.themes.ThemeContextFilter" lazy-init="true">
+            <property name="themeResolver" ref="themeResolver" />
+            <property name="themeSource" ref="themeSource" />
+        </bean>
+
+    </beans>

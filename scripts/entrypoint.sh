@@ -191,7 +191,7 @@ apply_eramon_customizations() {
     SMTP_MAIL_SERVER=${SMTP_MAIL_SERVER:-mail.example.com}
     SMTP_MAIL_USER=${SMTP_MAIL_USER}
     SMTP_MAIL_PASSWORD=${SMTP_MAIL_PASSWORD}
-    SMTP_MAIL_FROM=${SMTP_MAIL_SERVER:-reporting@example.com}
+    SMTP_MAIL_FROM=${SMTP_MAIL_FROM:-reporting@example.com}
     SMTP_MAIL_DEPLOYMENT_URI=${SMTP_MAIL_DEPLOYMENT_URI:-http://localhost:8080/jasperserver-pro}
 
     sed -i "/report.scheduler.web.deployment.uri/c\report.scheduler.web.deployment.uri=$SMTP_MAIL_DEPLOYMENT_URI" js.quartz.properties
