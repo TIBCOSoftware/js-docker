@@ -111,12 +111,17 @@ RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
         -v "/root/.keystore.p12" \
     ${CATALINA_HOME}/conf/server.xml
 
+# permanently copy keystore files ERAMON
+COPY security/.jrsks /usr/local/share/jasperserver-pro/keystore/.jrsks
+COPY security/.jrsksp /usr/local/share/jasperserver-pro/keystore/.jrsksp
 # permanently copy license ERAMON - verify copy & run Befehle
 COPY license/jasperserver.license /usr/local/share/jasperserver-pro/license/jasperserver.license
 # copy cipher class
 COPY security/java/MyCipher.jar /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar
 # copy auth-config
 COPY security/config/applicationContext-externalAuth-preauth.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml
+# copy configuration for fixed jasper theme
+COPY formatting/applicationContext-themes.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-themes.xml
 # copy formatting definition for FormatValueByUnit
 COPY formatting/applicationContext-el-operators.xml /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml
 # copy groovy function for FormatValueByUnit
@@ -127,6 +132,7 @@ COPY formatting/overrides_custom.css /usr/local/tomcat/webapps/jasperserver-pro/
 COPY driver/mariadb-java-client-1.6.3.jar /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar
 RUN chmod +x /usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc/mariadb-java-client-1.6.3.jar && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-externalAuth-preauth.xml && \
+	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-themes.xml && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/applicationContext-el-operators.xml && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/groovy/groovy_column/BaseGroovyColumn.groovy && \
 	chmod +x /usr/local/tomcat/webapps/jasperserver-pro/WEB-INF/lib/MyCipher.jar && \
