@@ -174,14 +174,14 @@ apply_customizations() {
             if [[ -f "$JRS_CUSTOMIZATION_ZIP" ]]; then
               echo "Unzipping $JRS_CUSTOMIZATION_ZIP of $customization into JasperReports Server webapp"
               unzip -o -q "$JRS_CUSTOMIZATION_ZIP" -d $CATALINA_HOME/webapps/jasperserver-pro/
-            fi
-            if [[ -f "$BUILDOMATIC_CUSTOMIZATION_ZIP" ]]; then
+            elif [[ -f "$BUILDOMATIC_CUSTOMIZATION_ZIP" ]]; then
               echo "Unzipping $BUILDOMATIC_CUSTOMIZATION_ZIP of $customization into Buildomatic folder"
               unzip -o -q "$BUILDOMATIC_CUSTOMIZATION_ZIP" -d "$BUILDOMATIC_TEMP"
               if [[ -d "$BUILDOMATIC_TEMP/buildomatic" ]]; then
-                cp -r "$BUILDOMATIC_TEMP/buildomatic/*" "$BUILDOMATIC_HOME"
+                echo "nested buildomatic path"
+                cp -r $BUILDOMATIC_TEMP/buildomatic/* $BUILDOMATIC_HOME
               else
-                cp -r "$BUILDOMATIC_TEMP/*" "$BUILDOMATIC_HOME"
+                cp -r $BUILDOMATIC_TEMP/* $BUILDOMATIC_HOME
               fi
             fi
           fi
