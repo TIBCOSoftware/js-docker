@@ -136,6 +136,7 @@ apply_customizations() {
   # $CATALINA_HOME/webapps/jasperserver-pro/
   # file sorted with natural sort
   JRS_CUSTOMIZATION=${JRS_CUSTOMIZATION:-${MOUNTS_HOME}/customization}
+  JRS_CUSTOMIZATION_ZIP=${JRS_CUSTOMIZATION_ZIP:-jasperserver-pro.zip}
   if [ -d "$JRS_CUSTOMIZATION" ]; then
 	  echo "Deploying Customizations from $JRS_CUSTOMIZATION"
 
@@ -144,20 +145,48 @@ apply_customizations() {
 	  # find . -path ./lower -prune -o -name "*txt"
 	  for customization in $JRS_CUSTOMIZATION_FILES; do
 		if [[ -f "$customization" ]]; then
-		  if unzip -l $customization | grep install.sh ; then
-			echo "Installing ${customization##*/}"
-			mkdir -p "/tmp/jrs-installs/${customization##*/}"
-			unzip -o -q "$customization" -d "/tmp/jrs-installs/${customization##*/}"
-			cd "/tmp/jrs-installs/${customization##*/}"
-			chmod +x -R *.sh
-			./install.sh
-			cd ..
-			rm -rf "${customization##*/}"
-		  else
-			echo "Unzipping $customization into JasperReports Server webapp"
-			unzip -o -q "$customization" \
-				-d $CATALINA_HOME/webapps/jasperserver-pro/
-		  fi
+      if unzip -l $customization | grep "$JRS_CUSTOMIZATION_ZIP" ; then
+        echo "New Hotfix format - extracting zip-files"
+        mkdir -p "/tmp/jrs-installs/hotfix"
+        unzip -o -q "$customization" -d "/tmp/jrs-installs/hotfix"
+        cd "/tmp/jrs-installs/hotfix"
+        if [[ -f "$JRS_CUSTOMIZATION_ZIP" ]]; then
+          echo "found $JRS_CUSTOMIZATION_ZIP"
+          if unzip -l $JRS_CUSTOMIZATION_ZIP | grep install.sh ; then
+            echo "Installing ${customization##*/}"
+            mkdir -p "/tmp/jrs-installs/hotfix/jasperserver"
+            unzip -o -q "$JRS_CUSTOMIZATION_ZIP" -d "/tmp/jrs-installs/hotfix/jasperserver"
+            cd "/tmp/jrs-installs/hotfix/jasperserver"
+            chmod +x -R *.sh
+            ./install.sh
+            cd ..
+            rm -rf "jasperserver"
+          else
+            echo "Unzipping $JRS_CUSTOMIZATION_ZIP of $customization into JasperReports Server webapp"
+            unzip -o -q "$JRS_CUSTOMIZATION_ZIP" -d $CATALINA_HOME/webapps/jasperserver-pro/
+          fi
+        else
+          echo "could not find $JRS_CUSTOMIZATION_ZIP - this could be a problem - pls check $customization manually"
+        fi
+        cd ..
+        rm -rf "${customization##*/}"
+      else
+        echo "old hotfix format - just extract to customization"
+        if unzip -l $customization | grep install.sh ; then
+        echo "Installing ${customization##*/}"
+        mkdir -p "/tmp/jrs-installs/${customization##*/}"
+        unzip -o -q "$customization" -d "/tmp/jrs-installs/${customization##*/}"
+        cd "/tmp/jrs-installs/${customization##*/}"
+        chmod +x -R *.sh
+        ./install.sh
+        cd ..
+        rm -rf "${customization##*/}"
+        else
+        echo "Unzipping $customization into JasperReports Server webapp"
+        unzip -o -q "$customization" \
+          -d $CATALINA_HOME/webapps/jasperserver-pro/
+        fi
+      fi
 		fi
 	  done
   fi
