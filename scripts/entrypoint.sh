@@ -136,28 +136,75 @@ apply_customizations() {
   # $CATALINA_HOME/webapps/jasperserver-pro/
   # file sorted with natural sort
   JRS_CUSTOMIZATION=${JRS_CUSTOMIZATION:-${MOUNTS_HOME}/customization}
+  JRS_CUSTOMIZATION_ZIP=${JRS_CUSTOMIZATION_ZIP:-jasperserver-pro.zip}
+  BUILDOMATIC_CUSTOMIZATION_ZIP=${BUILDOMATIC_CUSTOMIZATION_ZIP:-js-install.zip}
+  BUILDOMATIC_TEMP=${BUILDOMATIC_TEMP:-/tmp/jrs-installs/hotfix/buildomatic}
   if [ -d "$JRS_CUSTOMIZATION" ]; then
 	  echo "Deploying Customizations from $JRS_CUSTOMIZATION"
 
 	  JRS_CUSTOMIZATION_FILES=`find $JRS_CUSTOMIZATION -iname "*zip" \
 		-exec readlink -f {} \; | sort -V`
-	  # find . -path ./lower -prune -o -name "*txt"
+
 	  for customization in $JRS_CUSTOMIZATION_FILES; do
 		if [[ -f "$customization" ]]; then
-		  if unzip -l $customization | grep install.sh ; then
-			echo "Installing ${customization##*/}"
-			mkdir -p "/tmp/jrs-installs/${customization##*/}"
-			unzip -o -q "$customization" -d "/tmp/jrs-installs/${customization##*/}"
-			cd "/tmp/jrs-installs/${customization##*/}"
-			chmod +x -R *.sh
-			./install.sh
-			cd ..
-			rm -rf "${customization##*/}"
-		  else
-			echo "Unzipping $customization into JasperReports Server webapp"
-			unzip -o -q "$customization" \
-				-d $CATALINA_HOME/webapps/jasperserver-pro/
-		  fi
+      # new hotfix format
+      if unzip -l $customization | grep "$JRS_CUSTOMIZATION_ZIP" ; then
+
+        echo "New Hotfix format - extracting zip-file"
+        mkdir -p "/tmp/jrs-installs/hotfix"
+        unzip -o -q "$customization" -d "/tmp/jrs-installs/hotfix"
+        cd "/tmp/jrs-installs/hotfix"
+        #we should only have two here - still reading the whole dir
+        JRS_CUSTOMIZATION_PACKAGES=`find "/tmp/jrs-installs/hotfix" -iname "*zip" \
+        -exec readlink -f {} \; | sort -V`
+        for package in $JRS_CUSTOMIZATION_PACKAGES; do
+          if unzip -l $package | grep install.sh ; then
+            ## if this package has an install.sh just extract and launch that and pray
+            echo "Installing $package of ${customization##*/}"
+            mkdir -p "/tmp/jrs-installs/hotfix/install"
+            unzip -o -q "$package" -d "/tmp/jrs-installs/hotfix/install"
+            cd "/tmp/jrs-installs/hotfix/install"
+            chmod +x -R *.sh
+            ./install.sh
+            cd ..
+            rm -rf "install"
+          else
+            ## if there is no install.sh present - just extract to different dirs depending on filename
+            ### determine if it's buildomatic or server-file
+            if [[ -f "$JRS_CUSTOMIZATION_ZIP" ]]; then
+              echo "Unzipping $JRS_CUSTOMIZATION_ZIP of $customization into JasperReports Server webapp"
+              unzip -o -q "$JRS_CUSTOMIZATION_ZIP" -d $CATALINA_HOME/webapps/jasperserver-pro/
+            elif [[ -f "$BUILDOMATIC_CUSTOMIZATION_ZIP" ]]; then
+              echo "Unzipping $BUILDOMATIC_CUSTOMIZATION_ZIP of $customization into Buildomatic folder"
+              unzip -o -q "$BUILDOMATIC_CUSTOMIZATION_ZIP" -d "$BUILDOMATIC_TEMP"
+              if [[ -d "$BUILDOMATIC_TEMP/buildomatic" ]]; then
+                echo "nested buildomatic path"
+                cp -r $BUILDOMATIC_TEMP/buildomatic/* $BUILDOMATIC_HOME
+              else
+                cp -r $BUILDOMATIC_TEMP/* $BUILDOMATIC_HOME
+              fi
+            fi
+          fi
+        done
+        cd ..
+        rm -rf "/tmp/jrs-installs/hotfix"
+      else
+        echo "old hotfix format - just extract or install customization"
+        if unzip -l $customization | grep install.sh ; then
+        echo "Installing ${customization##*/}"
+        mkdir -p "/tmp/jrs-installs/${customization##*/}"
+        unzip -o -q "$customization" -d "/tmp/jrs-installs/${customization##*/}"
+        cd "/tmp/jrs-installs/${customization##*/}"
+        chmod +x -R *.sh
+        ./install.sh
+        cd ..
+        rm -rf "${customization##*/}"
+        else
+        echo "Unzipping $customization into JasperReports Server webapp"
+        unzip -o -q "$customization" \
+          -d $CATALINA_HOME/webapps/jasperserver-pro/
+        fi
+      fi
 		fi
 	  done
   fi
