@@ -20,6 +20,9 @@ apply_customizations() {
   # ${MOUNTS_HOME}/customization
   # to buildomatic area
   BUILDOMATIC_CUSTOMIZATION=${BUILDOMATIC_CUSTOMIZATION:-${MOUNTS_HOME}/buildomatic_customization}
+  JRS_CUSTOMIZATION_ZIP=${JRS_CUSTOMIZATION_ZIP:-jasperserver-pro.zip}
+  BUILDOMATIC_CUSTOMIZATION_ZIP=${BUILDOMATIC_CUSTOMIZATION_ZIP:-js-install.zip}
+  BUILDOMATIC_TEMP=${BUILDOMATIC_TEMP:-/tmp/buildomatic-installs/hotfix/buildomatic}
   if [ -d "$BUILDOMATIC__CUSTOMIZATION" ]; then
 	  echo "Deploying Customizations from $BUILDOMATIC__CUSTOMIZATION"
 
@@ -28,19 +31,64 @@ apply_customizations() {
 	  # find . -path ./lower -prune -o -name "*txt"
 	  for customization in $BUILDOMATIC__CUSTOMIZATION_FILES; do
 		if [[ -f "$customization" ]]; then
-		  if unzip -l $customization | grep install.sh ; then
-			echo "Installing ${customization##*/}"
-			mkdir -p "/tmp/buildomatic-installs/${customization##*/}"
-			unzip -o -q "$customization" -d "/tmp/buildomatic-installs/${customization##*/}"
-			cd "/tmp/buildomatic-installs/${customization##*/}"
-			chmod +x -R *.sh
-			./install.sh
-			cd ..
-			rm -rf "${customization##*/}"
-		  else
-			echo "Unzipping $customization into $BUILDOMATIC_HOME"
-			unzip -o -q "$customization" -d $BUILDOMATIC_HOME
-		  fi
+
+
+      # new hotfix format
+      if unzip -l $customization | grep "$JRS_CUSTOMIZATION_ZIP" ; then
+        echo "New Hotfix format - extracting zip-file"
+        mkdir -p "/tmp/buildomatic-installs/hotfix"
+        unzip -o -q "$customization" -d "/tmp/buildomatic-installs/hotfix"
+        cd "/tmp/buildomatic-installs/hotfix"
+        #we should only have two here - still reading the whole dir
+        JRS_CUSTOMIZATION_PACKAGES=`find "/tmp/buildomatic-installs/hotfix" -iname "*zip" \
+        -exec readlink -f {} \; | sort -V`
+        for package in $JRS_CUSTOMIZATION_PACKAGES; do
+          if unzip -l $package | grep install.sh ; then
+            ## if this package has an install.sh just extract and launch that and pray
+            echo "Installing $package of ${customization##*/}"
+            mkdir -p "/tmp/buildomatic-installs/hotfix/install"
+            unzip -o -q "$package" -d "/tmp/buildomatic-installs/hotfix/install"
+            cd "/tmp/buildomatic-installs/hotfix/install"
+            chmod +x -R *.sh
+            ./install.sh
+            cd ..
+            rm -rf "install"
+          else
+            ## if there is no install.sh present - just extract to different dirs depending on filename
+            ### determine if it's buildomatic or server-file
+            if [[ -f "$JRS_CUSTOMIZATION_ZIP" ]]; then
+              echo "Unzipping $JRS_CUSTOMIZATION_ZIP of $customization into JasperReports Server webapp"
+              unzip -o -q "$JRS_CUSTOMIZATION_ZIP" -d $CATALINA_HOME/webapps/jasperserver-pro/
+            elif [[ -f "$BUILDOMATIC_CUSTOMIZATION_ZIP" ]]; then
+              echo "Unzipping $BUILDOMATIC_CUSTOMIZATION_ZIP of $customization into Buildomatic folder"
+              unzip -o -q "$BUILDOMATIC_CUSTOMIZATION_ZIP" -d "$BUILDOMATIC_TEMP"
+              if [[ -d "$BUILDOMATIC_TEMP/buildomatic" ]]; then
+                echo "nested buildomatic path"
+                cp -r $BUILDOMATIC_TEMP/buildomatic/* $BUILDOMATIC_HOME
+              else
+                cp -r $BUILDOMATIC_TEMP/* $BUILDOMATIC_HOME
+              fi
+            fi
+          fi
+        done
+        cd ..
+        rm -rf "/tmp/buildomatic-installs/hotfix"
+      else
+        echo "old hotfix format - just extract or install customization"
+        if unzip -l $customization | grep install.sh ; then
+        echo "Installing ${customization##*/}"
+        mkdir -p "/tmp/buildomatic-installs/${customization##*/}"
+        unzip -o -q "$customization" -d "/tmp/buildomatic-installs/${customization##*/}"
+        cd "/tmp/buildomatic-installs/${customization##*/}"
+        chmod +x -R *.sh
+        ./install.sh
+        cd ..
+        rm -rf "${customization##*/}"
+        else
+        echo "Unzipping $customization into $BUILDOMATIC_HOME"
+        unzip -o -q "$customization" -d $BUILDOMATIC_HOME
+        fi
+      fi
 		fi
 	  done
   fi
