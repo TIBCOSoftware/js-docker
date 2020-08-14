@@ -33,10 +33,10 @@ ENV HTTPS_PORT          ${HTTPS_PORT:-8443}
 ENV JAVASCRIPT_RENDERING_ENGINE  ${JAVASCRIPT_RENDERING_ENGINE:-chromium}
 
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.8.0}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
 
-# This Dockerfile requires an exploded JasperReports Server WAR file installer file 
+# This Dockerfile requires an exploded JasperReports Server WAR file installer file
 # EXPLODED_INSTALLER_DIRECTORY (default jasperreports-server-bin/) directory below the Dockerfile.
 
 # deploy the WAR to Tomcat
@@ -57,7 +57,7 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperrepor
 
 # supporting resources
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/lib /usr/src/jasperreports-server/buildomatic/lib/
 
 # js-docker specific scripts and resources
 COPY scripts /usr/src/jasperreports-server/scripts/
@@ -88,10 +88,10 @@ RUN chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
         -keypass "${KS_PASSWORD}" \
         -keystore $CATALINA_HOME/conf/.keystore.p12 && \
     keytool -list -keystore $CATALINA_HOME/conf/.keystore.p12 -storepass "${KS_PASSWORD}" -storetype PKCS12 && \
-    xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \ 
+    xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \
         -n Connector -v "" --var connector-ssl '$prev' \
     --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT}" \
-    --insert '$connector-ssl' --type attr -n protocol -v \ 
+    --insert '$connector-ssl' --type attr -n protocol -v \
         "org.apache.coyote.http11.Http11NioProtocol" \
     --insert '$connector-ssl' --type attr -n maxThreads -v "150" \
     --insert '$connector-ssl' --type attr -n SSLEnabled -v "true" \

@@ -8,7 +8,7 @@
 # for JasperReports Server 7.5
 # ARG JAVA_BASE_IMAGE=amazoncorretto:11
 
-ARG JAVA_BASE_IMAGE=openjdk:11.0-slim
+ARG JAVA_BASE_IMAGE=openjdk:11.0
 
 FROM ${JAVA_BASE_IMAGE}
 
@@ -17,7 +17,7 @@ ARG JASPERREPORTS_SERVER_VERSION
 ARG EXPLODED_INSTALLER_DIRECTORY
 
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.8.0}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
 
 # This Dockerfile requires an exploded JasperReports Server WAR file installer file 
@@ -43,7 +43,7 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperrepor
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/jdbc-dep /usr/src/jasperreports-server/buildomatic/bin/jdbc-dep/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/install_resources /usr/src/jasperreports-server/buildomatic/install_resources/
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/lib /usr/src/jasperreports-server/buildomatic/lib/
 
 # js-docker specific scripts and resources
 COPY scripts /usr/src/jasperreports-server/scripts/

@@ -17,7 +17,7 @@ services:
         - "TOMCAT_BASE_IMAGE=${TOMCAT_BASE_IMAGE}"
         - "JASPERREPORTS_SERVER_VERSION=${JASPERREPORTS_SERVER_VERSION}"
         - "JAVASCRIPT_RENDERING_ENGINE=${JAVASCRIPT_RENDERING_ENGINE}"
-    
+
     # expose port on the host
     ports:
       - 8080:8080
@@ -39,13 +39,13 @@ services:
     volumes:
       # Required. Where jasperserver.license file is.
       #- /path/to/license:/usr/local/share/jasperserver-pro/license 
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+      - ./license:/usr/local/share/jasperserver-pro/license
 
       # As of JasperReports Server 7.5, this volume is required:
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
       #- /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore 
+      - ./keystore:/usr/local/share/jasperserver-pro/keystore
       
       # zip files in alphabetical order exploded into webapps/jasperserver-pro or running embedded install.sh
       #- /path/to/customization:/usr/local/share/jasperserver-pro/customization
@@ -110,13 +110,13 @@ services:
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
       #- /path/to/license:/usr/local/share/jasperserver-pro/license 
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+      - ./license:/usr/local/share/jasperserver-pro/license
 
       # As of JasperReports Server 7.5, this volume is required:
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
       #- /path/to/keystore:/usr/local/share/jasperserver-pro/keystore
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore 
+      - ./keystore:/usr/local/share/jasperserver-pro/keystore
       
       # zip files in alphabetical order exploded into buildomatic or running embedded install.sh
       #- /path/to/buildomatic_customization:/usr/local/share/jasperserver-pro/buildomatic_customization
