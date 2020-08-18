@@ -12,7 +12,10 @@
 # Certified version of Tomcat for JasperReports Server 7.5.0 commercial editions
 # ARG TOMCAT_BASE_IMAGE=tomcat:9.0-jdk11-corretto
 
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.27-jdk11-openjdk
+# Certified version of Tomcat for JasperReports Server 7.8.0 commercial editions
+# ARG TOMCAT_BASE_IMAGE=tomcat:9.0.37-jdk11-corretto
+
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.37-jdk11-openjdk
 FROM ${TOMCAT_BASE_IMAGE}
 
 ARG DN_HOSTNAME

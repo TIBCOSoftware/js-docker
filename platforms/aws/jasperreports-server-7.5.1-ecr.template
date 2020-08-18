@@ -20,7 +20,7 @@ Parameters:
         Type: String
         MinLength: 1
         MaxLength: 63
-        Default: '7.5.0'
+        Default: '7.5.1'
         ConstraintDescription: A JasperReports Server version number.
 
     ImageTagPrefix:

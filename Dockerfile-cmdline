@@ -5,7 +5,7 @@
 # set certified JRE image version for the
 # JasperReports Server command line tools
 
-# for JasperReports Server 7.5
+# for JasperReports Server 7.5.0 and 7.8.0
 # ARG JAVA_BASE_IMAGE=amazoncorretto:11
 
 ARG JAVA_BASE_IMAGE=openjdk:11.0

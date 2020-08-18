@@ -43,7 +43,7 @@ The following software is required or recommended:
   - EKS
   - run CloudFormation templates
   - subscribe to AWS Marketplace listings  
-- [kubernetes](https://kubernetes.io/) version 1.10 or higher
+- [kubernetes](https://kubernetes.io/) version 1.17 or higher
 - Bastion EC2 instance to run kubectl commands
 - (*optional*) Preconfigured PostgreSQL database in RDS
 
@@ -52,6 +52,8 @@ The following software is required or recommended:
 The CloudFormation templates attached here:
 - jasperreports-server-7.2.0-ecr.template
 - jasperreports-server-7.5.0-ecr.template
+- jasperreports-server-7.5.1-ecr.template
+- jasperreports-server-7.8.0-ecr.template
 
 create the JasperReports Server images:
 - jasperserver-pro:<version>
