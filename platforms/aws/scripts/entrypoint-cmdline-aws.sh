@@ -7,9 +7,11 @@
 # Wraps the jasperserver-pro entrypoint.sh to load license and
 # other config files from a given S3 bucket
 
-. /common-environment-aws.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
+. $DIR/common-environment-aws.sh
+
+BASE_ENTRYPOINT_PATH=${DIR}/${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
 
 
 case "$1" in
@@ -24,7 +26,7 @@ case "$1" in
 
     initialize_from_S3
 
-    ( ${BASE_ENTRYPOINT} "$@" )
+    ( ${BASE_ENTRYPOINT_PATH} "$@" )
     ;;
 
   import)
@@ -49,7 +51,7 @@ case "$1" in
             aws s3 cp s3://${bucketAndFolder} /tmp/${bucketAndFolder} --recursive
             #ls /tmp/${bucketAndFolder}
 
-            ( ${BASE_ENTRYPOINT} import "/tmp/${bucketAndFolder}/${importFileName}" )
+            ( ${BASE_ENTRYPOINT_PATH} import "/tmp/${bucketAndFolder}/${importFileName}" )
 
             # copy results back into s3 ${bucketAndFolder}
             aws s3 cp /tmp/${bucketAndFolder} s3://${bucketAndFolder}/ --recursive
@@ -64,7 +66,7 @@ case "$1" in
         ;;
       mnt)
         shift 1
-        ( ${BASE_ENTRYPOINT} import "$@" )
+        ( ${BASE_ENTRYPOINT_PATH} import "$@" )
         ;;
     esac
     ;;
@@ -90,7 +92,7 @@ case "$1" in
             echo "Exporting to s3: ${bucketAndFolder}"
             mkdir -p /tmp/${bucketAndFolder}
             aws s3 cp s3://${bucketAndFolder}/${exportFileName} /tmp/${bucketAndFolder}
-            ( ${BASE_ENTRYPOINT} export "/tmp/${bucketAndFolder}/${exportFileName}" )
+            ( ${BASE_ENTRYPOINT_PATH} export "/tmp/${bucketAndFolder}/${exportFileName}" )
             # copy export results into ${bucketAndFolder}
             aws s3 cp /tmp/${bucketAndFolder} s3://${bucketAndFolder} --recursive
             aws s3 rm s3://${bucketAndFolder}/${exportFileName}
@@ -102,7 +104,7 @@ case "$1" in
         ;;
       mnt)
         shift 1
-        ( ${BASE_ENTRYPOINT} export "$@" )
+        ( ${BASE_ENTRYPOINT_PATH} export "$@" )
         ;;
     esac
     ;;

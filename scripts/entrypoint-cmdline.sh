@@ -13,7 +13,9 @@
 # Sets script to fail if any command fails.
 set -e
 
-. /common-environment.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+. $DIR/common-environment.sh
 
 apply_customizations() {
   # unpack zips (if exist) from path

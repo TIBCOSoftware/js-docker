@@ -23,13 +23,13 @@ case "$PACKAGE_MGR" in
 		yum -y update
 		yum -y install yum-utils wget unzip
 		;;
-	"rpm" )
-		echo "Installed nothing via rpm"
-		;;
 	"zypper" )
 		zypper refresh && \
 		zypper -n install wget unzip && \
 		zypper clean -a
+		;;
+	"rpm" )
+		echo "Installed nothing via rpm"
 		;;
 	"apt_get" )
 		apt-get update

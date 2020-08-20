@@ -1,5 +1,5 @@
 Description: >
-    TIBCO JasperReports Server BYOL 7.5.1 for Docker.
+    TIBCO JasperReports Server BYOL 7.8.0 for Docker.
 
     This template launches a base TIBCO JasperReports Server BYOL docker image, creates ECR repos 'jasperserver-pro' and 'jasperserver-pro-cmdline'and pushes base docker images into the ECR repo.
 
@@ -20,7 +20,7 @@ Parameters:
         Type: String
         MinLength: 1
         MaxLength: 63
-        Default: '7.5.1'
+        Default: '7.8.0'
         ConstraintDescription: A JasperReports Server version number.
 
     ImageTagPrefix:
@@ -35,15 +35,15 @@ Parameters:
         MinLength: 1
         MaxLength: 63
         Default: 'amazoncorretto:11'
-        ConstraintDescription: Valid Java 8 or 11 Java image tag.
+        ConstraintDescription: Valid Java 11 Java image tag.
 
     TomcatBaseImage:
         Description: "Java base image tag for JasperReports Server web application image. JDK 8 or 11 from https://hub.docker.com/_/tomcat"
         Type: String
         MinLength: 1
         MaxLength: 63
-        Default: 'tomcat:9.0.31-jdk11-corretto'
-        ConstraintDescription: Valid Java 8 or 11 Java + Tomcat 8.5 or 9.0 image tag.
+        Default: 'tomcat:9.0.37-jdk11-corretto'
+        ConstraintDescription: Valid Java 11 + Tomcat 9.0 image tag.
 
     VPCID:
       Type: 'AWS::EC2::VPC::Id'
@@ -156,7 +156,7 @@ Resources:
                     #sudo usermod -aG docker $USER
                     
                     echo 'Installing JasperReports Server images for version ${JasperReportsServerVersion}'
-                    cd /usr/share/jrs_dist/
+                        cd /usr/share/jrs_dist/
 
                     echo 'Get js-docker from TIBCOSoftware Github'
                     wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
