@@ -67,7 +67,7 @@ To create these images , take the ECR template as per the required version of Ja
 - Upload the jasperreports-server-<version>-ecr.template template
 - Provide the correct github branch url for JaspersoftForDockerURL
 - fill all other parameters as per the requirement 
-- click create stack
+- click create stack 
 
 Once stack creation completed , it will generate docker images in ECR repository in your account
 
