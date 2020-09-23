@@ -172,9 +172,9 @@ Resources:
                     cd kubernetes
                     docker build -f Dockerfile-cmdline-k8s --build-arg JASPERREPORTS_SERVER_IMAGE_TAG=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} .
 
-                    #cd ../platforms/aws
-                    #docker build -f Dockerfile-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
-                    #docker build -f Dockerfile-cmdline-s3 --build-arg JasperReportsServerVersion=${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
+                    cd ../platforms/aws
+                    docker build -f Dockerfile-s3 --build-arg JASPERREPORTS_SERVER_VERSION=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline-s3 --build-arg JASPERREPORTS_SERVER_VERSION=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
       
                     echo 'ECR login...'
                     $(aws ecr get-login --region ${AWS::Region} --no-include-email)
@@ -199,16 +199,16 @@ Resources:
 
                     docker tag jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
 
-                    # docker tag jasperserver-pro:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
-                    #docker tag jasperserver-pro-cmdline:s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                     docker tag jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
                     
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion}
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion}
 
                     docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
 
-                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
-                    #docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
       
                     echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
                     sudo poweroff
