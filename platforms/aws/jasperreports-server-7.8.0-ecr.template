@@ -89,41 +89,43 @@ Mappings:
 
   AWSRegionAMI:
     us-east-1:
-      "64": ami-085073c7503e9cebc
+      "64": ami-06ed3fd089c8e62f5
     us-east-2:
-      "64": ami-03e33bd3aad546580
+      "64": ami-0355f6d73d5fae73a
     us-west-1:
-      "64": ami-04deddbf105df1f76
+      "64": ami-0001470d19f9a6405
     us-west-2:
-      "64": ami-048f31028a7a47b44
+      "64": ami-060f780bf2d6d376a
     ca-central-1  :
-      "64": ami-01925746112ad77eb
+      "64": ami-09a9f2133758f756e
     eu-central-1  :
-      "64": ami-0bce92d3a935c22f8
+      "64": ami-04b28d05825ee91bb
     eu-west-1:
-      "64": ami-092a8fb23acf1fa37
+      "64": ami-0fd13a289d081dc3d
     eu-west-2:
-      "64": ami-0396fc7f1a7b8c430
+      "64": ami-03c3c1fde3b77b77a
     eu-west-3:
-      "64": ami-0b890c40b6483650c
+      "64": ami-01a516917af8fa78f
     eu-north-1:
-      "64": ami-09b87c5927be2c67f
+      "64": ami-0adb3b3512c53ea84
     ap-southeast-1:
-      "64": ami-0a7f3890751d5882d
+      "64": ami-0ad88e26054d6c830
     ap-southeast-2:
-      "64": ami-00bcbc190704a2354
+      "64": ami-0f4986d48d5541b72
     ap-south-1:
-      "64": ami-040536c6b5be75071
+      "64": ami-09f1c9c9ea7ad7467
     ap-northeast-1:
-      "64": ami-088b2db9fb85f95ad
+      "64": ami-0a97c312878973887
     ap-northeast-2:
-      "64": ami-00107a237d5fb4dad
+      "64": ami-01cf7a60a1037b9e2
+    ap-northeeast-3:
+      "64": ami-058a3ca662374270c
     sa-east-1:
-      "64": ami-0c93d8527c7e7834b
+      "64": ami-0cce5bd1e6ba2a8c3
     us-gov-east-1 :
-      "64": ami-5cac432d
+      "64": ami-0d95a1d045c867695
     us-gov-west-1 :
-      "64": ami-fb320e9a
+      "64": ami-094b49d82d41681c9
 
 Resources:
 
@@ -141,7 +143,7 @@ Resources:
             BlockDeviceMappings: 
               - DeviceName: "/dev/xvda"
                 Ebs: 
-                  VolumeSize: "15"
+                  VolumeSize: "50"
             IamInstanceProfile: !Ref ECRInstanceProfile
             InstanceInitiatedShutdownBehavior: stop
             SubnetId: !Ref PrivateSubnet
@@ -227,7 +229,7 @@ Resources:
                     "Statement": [{
                         "Action": "sts:AssumeRole",
                         "Effect": "Allow",
-                        "Principal": { 
+                        "Principal": {
                             "Service": "ec2.amazonaws.com" 
                         }
                     }]
