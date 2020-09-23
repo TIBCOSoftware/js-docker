@@ -59,24 +59,23 @@ create the JasperReports Server images:
 - jasperserver-pro:<version>
 - jasperserver-pro-cmdline:<version>
 - jasperserver-pro-cmdline:<version>-k8s
+- jasperserver-pro:s3-<version>
+- jasperserver-pro-cmdline:s3-<version>
 
-To create these stacks, you need to go to the AWS Marketplace and subscribe to TIBCO Jaspersoft Reporting and Analytics (BYOL).
-- Find via the listings via: https://aws.amazon.com/marketplace/search/results?x=0&y=0&searchTerms=jaspersoft+byol
-- Login to your AWS account as a user with the ability to subscribe to Marketplace listings.
-- Continue to Subscribe
-- Accept terms and conditions
-- Do not launch instances
+To create these images , take the ECR template as per the required version of Jasper reports server
+- Login to your AWS account 
+- Upload the jasperreports-server-<version>-ecr.template template
+- Provide the correct github branch url for JaspersoftForDockerURL
+- fill all other parameters as per the requirement 
+- click create stack 
 
-Create a stack for the desired version of JasperReports Server, based on the templates here. These templates:
-- Launch a JasperReports Server BYOL instance
-- Install Docker
-- Download the master branch of https://github.com/TIBCOSoftware/js-docker
-- Build 
-  - jasperserver-pro:<version>
-  - jasperserver-pro-cmdline:<version>
-  - jasperserver-pro-cmdline:<version>-k8s
-    - note that the JasperReports Server image is confiured to run on port 80 in the template
-- Create ECR repositories for the current AWS account and region if they do not exist
+Once stack creation completed , it will generate docker images in ECR repository in your account
+
+Repository Names:
+- jasperserver-pro
+- jasperserver-pro-cmdline
+
+Create ECR repositories for the current AWS account and region if they do not exist
   - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
   - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
 - Tag and push the versions of the images to the ECR repositories
