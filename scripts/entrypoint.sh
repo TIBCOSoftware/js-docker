@@ -17,15 +17,15 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 run_jasperserver() {
 
-  # Apply customization zips if present
-  apply_customizations
-
   test_database_connection
 
   # Because default_master.properties could change on any launch,
   # always do deploy-webapp-pro.
 
   execute_buildomatic deploy-webapp-pro
+
+  # Apply customization zips if present
+  apply_customizations
 
   # set Chromium as the JavaScript rendering engine
   config_chromium
@@ -74,7 +74,7 @@ config_ports_and_ssl() {
       -exec readlink -f {} \;)
 
     # update the keystore and password if there
-    if [[ $CERT_PATH_FILES -ne 0 ]]; then
+    if [[ ${#CERT_PATH_FILES} -ne 0 ]]; then
       # will only be one, if at all
       for keystore in $CERT_PATH_FILES; do
         if [[ -f "$keystore" ]]; then
