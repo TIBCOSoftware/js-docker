@@ -2,7 +2,7 @@
 # JasperReports Server image loading resources from S3.
 # Leverages base JRS image of same version
 
-# ARG JASPERREPORTS_SERVER_VERSION=7.8.0
+ARG JASPERREPORTS_SERVER_VERSION=7.8.0
 
 FROM jasperserver-pro:${JASPERREPORTS_SERVER_VERSION}
 
