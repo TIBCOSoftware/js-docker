@@ -1,0 +1,279 @@
+Description: >
+    TIBCO JasperReports Server BYOL 7.8.0 for Docker.
+
+    This template launches a base TIBCO JasperReports Server BYOL docker image, creates ECR repos 'jasperserver-pro' and 'jasperserver-pro-cmdline'and pushes base docker images into the ECR repo.
+
+    If you update this template for another JasperReports Server version, change the AWSRegionToAMI mapping below.
+    Copyright 2019-2020, TIBCO Software Inc. All Rights Reserved.
+
+Parameters:
+
+    JaspersoftForDockerURL:
+        Description: URL to a zip file containing TIBCOSoftware/js-docker
+        Type: String
+        MaxLength: 100
+        Default: "https://github.com/TIBCOSoftware/js-docker/zipball/master"
+        ConstraintDescription: Can be a release ZIP, or point to a branch zipball, like the default.
+
+    JasperReportsServerVersion:
+        Description: In the AMI you are using. Update AMI and this version number.
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: '7.8.0'
+        ConstraintDescription: A JasperReports Server version number.
+
+    ImageTagPrefix:
+        Description: "Optional. Included in image tag: jasperserver-pro:<ImageTagPrefix><JasperReportsServerVersion>"
+        Type: String
+        MaxLength: 63
+        Default: ''
+
+    JavaBaseImage:
+        Description: "Java base image tag for JasperReports Server cmdline image. JDK 8 or 11 from https://github.com/docker-library/docs/blob/master/openjdk/README.md#supported-tags-and-respective-dockerfile-links"
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: 'amazoncorretto:11'
+        ConstraintDescription: Valid Java 11 Java image tag.
+
+    TomcatBaseImage:
+        Description: "Java base image tag for JasperReports Server web application image. JDK 8 or 11 from https://hub.docker.com/_/tomcat"
+        Type: String
+        MinLength: 1
+        MaxLength: 63
+        Default: 'tomcat:9.0.37-jdk11-corretto'
+        ConstraintDescription: Valid Java 11 + Tomcat 9.0 image tag.
+
+    VPCID:
+      Type: 'AWS::EC2::VPC::Id'
+      Description: Existing VPC to run JasperReports Server instance.
+
+    PrivateSubnet:
+      Type: 'AWS::EC2::Subnet::Id'
+      Description: Subnet within VPC to run JasperReports Server instance.
+
+    KeyName:
+        Description: An existing key pair. Used to SSH into EC2 instances.
+        Type: AWS::EC2::KeyPair::KeyName
+        MinLength: 1
+        MaxLength: 64
+        AllowedPattern: '[-_ a-zA-Z0-9]*'
+        ConstraintDescription: Must be the name of an existing key pair. It can contain only alphanumeric characters, spaces, dashes and underscores.
+
+Metadata: 
+    AWS::CloudFormation::Interface: 
+      ParameterGroups: 
+        - 
+          Label: 
+            default: "Container properties"
+          Parameters:
+          - JasperReportsServerVersion
+          - ImageTagPrefix
+          - JavaBaseImage
+          - TomcatBaseImage
+          - JaspersoftForDockerURL
+        - 
+          Label: 
+            default: "JasperReports Server EC2 Instance"
+          Parameters:
+          - KeyName
+          - VPCID
+          - PrivateSubnet
+
+Conditions:
+    HasKeyName:
+      !Not [!Equals [!Ref KeyName, ""]]
+
+Mappings:
+
+  AWSRegionAMI:
+    us-east-1:
+      "64": ami-06ed3fd089c8e62f5
+    us-east-2:
+      "64": ami-0355f6d73d5fae73a
+    us-west-1:
+      "64": ami-0001470d19f9a6405
+    us-west-2:
+      "64": ami-060f780bf2d6d376a
+    ca-central-1  :
+      "64": ami-09a9f2133758f756e
+    eu-central-1  :
+      "64": ami-04b28d05825ee91bb
+    eu-west-1:
+      "64": ami-0fd13a289d081dc3d
+    eu-west-2:
+      "64": ami-03c3c1fde3b77b77a
+    eu-west-3:
+      "64": ami-01a516917af8fa78f
+    eu-north-1:
+      "64": ami-0adb3b3512c53ea84
+    ap-southeast-1:
+      "64": ami-0ad88e26054d6c830
+    ap-southeast-2:
+      "64": ami-0f4986d48d5541b72
+    ap-south-1:
+      "64": ami-09f1c9c9ea7ad7467
+    ap-northeast-1:
+      "64": ami-0a97c312878973887
+    ap-northeast-2:
+      "64": ami-01cf7a60a1037b9e2
+    ap-northeeast-3:
+      "64": ami-058a3ca662374270c
+    sa-east-1:
+      "64": ami-0cce5bd1e6ba2a8c3
+    us-gov-east-1 :
+      "64": ami-0d95a1d045c867695
+    us-gov-west-1 :
+      "64": ami-094b49d82d41681c9
+
+Resources:
+
+#################### EC2 Instance for pushing JasperReports Server base images to ECR ####################
+
+    FirstEC2Instance:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: !FindInMap 
+              - AWSRegionAMI
+              - !Ref 'AWS::Region'
+              - '64'
+            InstanceType: m5.large
+            KeyName: !If [HasKeyName, !Ref KeyName, !Ref "AWS::NoValue"]
+            BlockDeviceMappings: 
+              - DeviceName: "/dev/xvda"
+                Ebs: 
+                  VolumeSize: "50"
+            IamInstanceProfile: !Ref ECRInstanceProfile
+            InstanceInitiatedShutdownBehavior: stop
+            SubnetId: !Ref PrivateSubnet
+            UserData: 
+                Fn::Base64: !Sub |
+                    #!/bin/bash
+                    echo 'JasperReports Server-Containers-AWS: Start of EC2 Instance UserData execution...'
+                    echo "Install Docker..."
+                    sudo yum update
+                    sudo yum -y install docker unzip
+                    sudo service docker start
+                    #sudo usermod -aG docker $USER
+                    
+                    echo 'Installing JasperReports Server images for version ${JasperReportsServerVersion}'
+                        cd /usr/share/jrs_dist/
+
+                    echo 'Get js-docker from TIBCOSoftware Github'
+                    wget "${JaspersoftForDockerURL}" -O js-dockerrepo.zip --no-verbose
+                    unzip -q js-dockerrepo.zip
+                    mv $(ls -d TIBCOSoftware-js-docker*/)/* .
+
+                    echo 'unzip WAR from jasperreports-server-bin'
+                    cd jasperreports-server-bin
+                    mkdir jasperserver-pro
+                    unzip -q jasperserver-pro.war -d jasperserver-pro
+
+                    cd ..
+
+                    docker build -f Dockerfile --build-arg HTTP_PORT=80 --build-arg HTTPS_PORT=443 --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin --build-arg TOMCAT_BASE_IMAGE=${TomcatBaseImage} -t jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline --build-arg EXPLODED_INSTALLER_DIRECTORY=jasperreports-server-bin --build-arg JAVA_BASE_IMAGE=${JavaBaseImage} -t jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion} .
+
+                    cd kubernetes
+                    docker build -f Dockerfile-cmdline-k8s --build-arg JASPERREPORTS_SERVER_IMAGE_TAG=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} .
+
+                    cd ../platforms/aws
+                    docker build -f Dockerfile-s3 --build-arg JASPERREPORTS_SERVER_VERSION=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
+                    docker build -f Dockerfile-cmdline-s3 --build-arg JASPERREPORTS_SERVER_VERSION=${ImageTagPrefix}${JasperReportsServerVersion} -t jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} .
+      
+                    echo 'ECR login...'
+                    $(aws ecr get-login --region ${AWS::Region} --no-include-email)
+                    echo 'Create image repositories ...'
+                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro | grep repositoryUri; then
+                        echo 'jasperserver-pro ECR Repository already exists, skipping repository creation...'
+                    else 
+                        echo 'jasperserver-pro ECR Repository does not exist, creating...'
+                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
+                    fi
+                    if aws ecr describe-repositories --region ${AWS::Region} --repository-names jasperserver-pro-cmdline | grep repositoryUri; then
+                        echo 'jasperserver-pro-cmdline ECR Repository already exists, skipping repository creation...'
+                    else 
+                        echo 'jasperserver-pro-cmdline ECR Repository does not exist, creating...'
+                        aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
+                    fi
+      
+                    echo 'Tagging and pushing to ECR...'
+      
+                    docker tag jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion}
+
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
+
+                    docker tag jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    docker tag jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion} ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}${JasperReportsServerVersion}
+
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}k8s-${JasperReportsServerVersion}
+
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+                    docker push ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/jasperserver-pro-cmdline:${ImageTagPrefix}s3-${JasperReportsServerVersion}
+      
+                    echo 'JasperReports Server-Containers-AWS: End of EC2 Instance UserData execution, shutting down...'
+                    sudo poweroff
+
+    ECRRole:
+        Type: AWS::IAM::Role
+        Properties: 
+            Path: /
+            RoleName: !Sub ${AWS::StackName}-ECRRole-${AWS::Region}
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Action": "sts:AssumeRole",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "ec2.amazonaws.com" 
+                        }
+                    }]
+                }
+            Policies: 
+                - PolicyName: jrs-image-init-service
+                  PolicyDocument: |
+                    {
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "ecr:*",
+                                "s3:*",
+                                "logs:*"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+
+    ECRInstanceProfile: 
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Path: /
+            Roles: 
+                - !Ref ECRRole
+
+
+#################### Output Section ####################
+Outputs:
+
+    jasperserverProECR:
+        Description: Amazon ECR (Amazon EC2 Container Registry) for JasperReports Server images.
+        Value: !Join
+            - ''
+            -
+                - 'https://console.aws.amazon.com/ecr/home?region='
+                - !Ref 'AWS::Region'
+                - '#/repositories/jasperserver-pro#images'
+
+    jasperserverProCmdlineECR:
+        Description: Amazon ECR (Amazon EC2 Container Registry)) for JasperReports Server command line images.
+        Value: !Join
+            - ''
+            -
+                - 'https://console.aws.amazon.com/ecr/home?region='
+                - !Ref 'AWS::Region'
+                - '#/repositories/jasperserver-pro-cmdline#images'

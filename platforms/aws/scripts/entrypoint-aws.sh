@@ -8,14 +8,18 @@
 # other config files from a given S3 bucket
 
 #. ./common-environment-aws.sh - fixed the ./ -> /
-. /common-environment-aws.sh
+#. /common-environment-aws.sh
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+. $DIR/common-environment-aws.sh
 
 initialize_from_S3
-BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint.sh}
+BASE_ENTRYPOINT_PATH=${DIR}/${BASE_ENTRYPOINT:-/entrypoint.sh}
 
 case "$1" in
   run)
-    ( ${BASE_ENTRYPOINT} "$@" )
+    ( ${BASE_ENTRYPOINT_PATH} "$@" )
     ;;
 
   *)

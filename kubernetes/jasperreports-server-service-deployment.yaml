@@ -31,7 +31,7 @@ spec:
     app: jasperserver-pro
   type: LoadBalancer
 ---
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -41,6 +41,9 @@ metadata:
 spec:
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: jasperserver-pro
   template:
     metadata:
       labels:
@@ -51,7 +54,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro:7.5.0
+        image: jasperserver-pro:7.5.plus
         name: jasperserver-pro
         imagePullPolicy: IfNotPresent
         ports:
@@ -73,7 +76,7 @@ spec:
           name: license
           readOnly: true
         - mountPath: /usr/local/share/jasperserver-pro/keystore
-          name: keystore-files-secret
+          name: jasperserver-pro-keystore-files-secret
           readOnly: true
 # Add if additional default_master.propeties in a Secret
 #        - mountPath: /usr/local/share/jasperserver-pro/deploy-customization
@@ -86,7 +89,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro-cmdline:k8s-7.5.0
+        image: jasperserver-pro-cmdline:k8s-7.5.plus
         name: init
         imagePullPolicy: IfNotPresent
         resources:

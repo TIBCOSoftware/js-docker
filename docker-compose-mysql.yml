@@ -35,7 +35,7 @@ services:
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+      - ./license:/usr/local/share/jasperserver-pro/license
       
       # zip files in alphabetical order exploded into webapps/jasperserver-pro
       #- jrs_customization:/usr/local/share/jasperserver-pro/customization
@@ -50,7 +50,7 @@ services:
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore
+      - ./keystore:/usr/local/share/jasperserver-pro/keystore
       
       # include a new version of a JDBC driver for repository databases supported by 
       # JasperReports Server.
@@ -59,7 +59,7 @@ services:
       # set environment property:
       # maven.jdbc.version=<version # of JDBC driver>
       # have a look at buildomatic/conf_source/db/<dbType> for db.properties for a dbType
-      - /C/Users/swood/Documents/Docker/mysql:/usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc 
+      # - ./mysql:/usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc
       
       # for Mac OS you may want to define local path for volume mounts. 
       # Note that defining path for a named volume is not supported 
@@ -98,7 +98,7 @@ services:
 
     volumes:
       # where jasperserver.license file is. Otherwise uses temporary license
-      - /C/Users/swood/Documents/License:/usr/local/share/jasperserver-pro/license 
+      - ./license:/usr/local/share/jasperserver-pro/license
       
       # zip files in alphabetical order exploded into webapps/jasperserver-pro
       #- jrs_customization:/usr/local/share/jasperserver-pro/customization
@@ -113,7 +113,7 @@ services:
       # As of JasperReports Server 7.5, this volume :
       #   - saves .jrsks and .jrsksp files if they are created
       #   - provides access to pre-existing keystore related files
-      - /C/Users/swood/Documents/Docker/keystore-container-deployment:/usr/local/share/jasperserver-pro/keystore
+      - ./keystore:/usr/local/share/jasperserver-pro/keystore
       
       # default_master_additional.properties file added to default_master.properties
       # see "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide
@@ -126,7 +126,7 @@ services:
       # set environment property:
       # maven.jdbc.version=<version # of JDBC driver>
       # have a look at buildomatic/conf_source/db/<dbType> for db.properties for a dbType
-      - /C/Users/swood/Documents/Docker/mysql:/usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc 
+      # - ./mysql:/usr/src/jasperreports-server/buildomatic/conf_source/db/mysql/jdbc
       
       # for Mac OS you may want to define local path for volume mounts. 
       # Note that defining path for a named volume is not supported 
@@ -139,7 +139,7 @@ services:
       #  - /C/Users/aUser/Documents/License:/usr/local/share/jasperserver-pro/license
       
       # for import/export
-      - /C/Users/swood/Documents/Docker/jrs-import:/usr/local/share/jasperserver-pro/import
+      #- ./jrs-import:/usr/local/share/jasperserver-pro/import
 
     mem_limit: 3g
     mem_reservation: 1g
