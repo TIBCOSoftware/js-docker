@@ -153,8 +153,8 @@ For the JasperReports Server Web app (WAR):
 | `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default for 7.5: "tomcat:9.0.31-jdk11-openjdk". |
 | `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default for JasperReports Server: 7.5.0 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
-| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih right port number if any non default port is used. Default: "8080" |
-| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih right port number if any non default port is used. Default: "8443" |
+| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: "8080" |
+| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: "8443" |
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 |  | A self signed SSL certificate is defined for Tomcat. |
 |`DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
@@ -192,8 +192,8 @@ This image does not create the repository and keystore files. See cmdline below.
 | `DB_USER` | database username. Default: postgres |
 | `DB_PASSWORD` | database password. Default: postgres |
 | `DB_NAME` | JasperReports Server repository schema name in the database. Default: "jasperserver"  | 
-| `HTTP_PORT` | HTTP port Tomcat runs on. Default: HTTP_PORT in image |
-| `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: HTTPS_PORT in image |
+| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: HTTP_PORT in image |
+| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: HTTPS_PORT in image |
 | `JAVA_OPTS` | Command line options passed to Java. Optional. The Java heap size of JasperReports Server is automatically managed to conform to the container size. |  
 | `JAVA_MIN_RAM_PERCENTAGE` | Java heap minimum percentage in the container. Default: 33.3% |
 | `JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
