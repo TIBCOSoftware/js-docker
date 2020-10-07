@@ -153,8 +153,8 @@ For the JasperReports Server Web app (WAR):
 | `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default for 7.5: "tomcat:9.0.31-jdk11-openjdk". |
 | `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default for JasperReports Server: 7.5.0 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
-| `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
-| `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
+| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih right port number if any non default port is used. Default: "8080" |
+| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih right port number if any non default port is used. Default: "8443" |
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 |  | A self signed SSL certificate is defined for Tomcat. |
 |`DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
@@ -249,6 +249,8 @@ For the JasperReports Server Web app (WAR):
 | SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/dbType/jdbc | Override JDBC drivers within the image for the repository. Valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
+Note: Tomcat and JasperReports server customizations are applied after deploying the JasperReports Server Application in tomcat.
+
 
 For the cmdline:
 
