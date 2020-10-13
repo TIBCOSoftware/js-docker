@@ -52,11 +52,12 @@ The following software is required or recommended:
 The CloudFormation templates attached here:
 - jasperreports-server-7.2.0-ecr.template
 - jasperreports-server-7.5.0-ecr.template
+- jasperreports-server-7.5.1-ecr.template
 
 create the JasperReports Server images:
-- jasperserver-pro:<version>
-- jasperserver-pro-cmdline:<version>
-- jasperserver-pro-cmdline:<version>-k8s
+- jasperserver-pro:<jrs_version>
+- jasperserver-pro-cmdline:<jrs_version>
+- jasperserver-pro-cmdline:<jrs_version>-k8s
 
 To create these stacks, you need to go to the AWS Marketplace and subscribe to TIBCO Jaspersoft Reporting and Analytics (BYOL).
 - Find via the listings via: https://aws.amazon.com/marketplace/search/results?x=0&y=0&searchTerms=jaspersoft+byol
