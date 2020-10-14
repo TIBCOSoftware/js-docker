@@ -51,7 +51,7 @@ The following software is required or recommended:
 - (*Recommended*) for development - they include Kubernetes:
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-- (*optional*)[kubernetes](https://kubernetes.io/) version 1.10 or higher
+- (*optional*)[kubernetes](https://kubernetes.io/) version 1.19 or higher
 - (*optional*) Preconfigured PostgreSQL 9, 10 or 11 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at run time.
 
 # Build the Kubernetes specific command line image
@@ -138,7 +138,7 @@ And then use the secret with the containers. For the init container, use the cmd
 ```
       initContainers:
       - name: init
-        image: jasperserver-pro-cmdline:k8s-7.8``.0
+        image: jasperserver-pro-cmdline:k8s-7.8.0
         env:
           #- name: KEYSTORE_SECRET_NAME
           #  value: "jasperserver-pro-jrsks"
@@ -261,7 +261,7 @@ Or run the PostgreSQL repository inside k8s, which is the default approach taken
 - edit `repository-database.yaml` to suit your environment.
   - This creates a persistent volume and the `postgresql` service in k8s 
   - set volume name, username, password, use secrets etc according to your requirements
-- use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yaml`
+- use kubectl to create the postgresql service: `kubectl apply -f repository-database.yaml`
 
 See the main README for details on how to use other databases for the repository apart from PostgreSQL.
 

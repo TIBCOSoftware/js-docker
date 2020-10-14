@@ -20,7 +20,7 @@ rules:
   resourceNames: [ "jasperserver-pro-jrsks" ]
   verbs: ["get", "create", "update", "patch"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: use-secrets-binding
