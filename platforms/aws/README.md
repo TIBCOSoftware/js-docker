@@ -56,11 +56,11 @@ The CloudFormation templates attached here:
 - jasperreports-server-7.8.0-ecr.template
 
 create the JasperReports Server images:
-- jasperserver-pro:<version>
-- jasperserver-pro-cmdline:<version>
-- jasperserver-pro-cmdline:<version>-k8s
-- jasperserver-pro:s3-<version>
-- jasperserver-pro-cmdline:s3-<version>
+- jasperserver-pro:<jrs_version>
+- jasperserver-pro-cmdline:<jrs_version>
+- jasperserver-pro-cmdline:<jrs_version>-k8s
+- jasperserver-pro:s3-<jrs_version>
+- jasperserver-pro-cmdline:s3-<jrs_version>
 
 To create these images , take the ECR template as per the required version of Jasper reports server
 - Login to your AWS account 
