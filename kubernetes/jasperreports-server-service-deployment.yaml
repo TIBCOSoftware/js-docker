@@ -54,7 +54,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro:7.5.plus
+        image: jasperserver-pro:7.8.0
         name: jasperserver-pro
         imagePullPolicy: IfNotPresent
         ports:
@@ -89,7 +89,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro-cmdline:k8s-7.5.plus
+        image: jasperserver-pro-cmdline:k8s-7.8.0
         name: init
         imagePullPolicy: IfNotPresent
         resources:
