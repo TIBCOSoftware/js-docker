@@ -150,11 +150,11 @@ For the JasperReports Server Web app (WAR):
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
-| `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default for 7.5: "tomcat:9.0.31-jdk11-openjdk". |
-| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default for JasperReports Server: 7.5.0 | 
+| `TOMCAT_BASE_IMAGE` | Tomcat Docker image certified for the version of JasperReports Server being deployed. Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. Default for 7.5.1: "tomcat:9.0.31-jdk11-openjdk". |
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default for JasperReports Server: 7.5.1 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
-| `HTTP_PORT` | HTTP port Tomcat runs on. Default: "8080" |
-| `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: "8443" |
+| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: "8080" |
+| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: "8443" |
 | `JRS_HTTPS_ONLY` | Enables HTTPS-only mode. Default: false. |
 |  | A self signed SSL certificate is defined for Tomcat. |
 |`DN_HOSTNAME` | Self signed certificate host name. Default: "localhost.localdomain" |
@@ -166,15 +166,15 @@ For the cmdline:
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
 | `JAVA_BASE_IMAGE` | Java Docker image certified for the version of JasperReports Server being deployed.  Linux images using apt-get (Debian) or yum (CentOS, Redhat, Corretto/Amazon Linux 2) package managers. JDK 8 or 11 from https://github.com/docker-library/docs/blob/master/openjdk/README.md#supported-tags-and-respective-dockerfile-links Default openjdk:11.0-slim |
-| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: 7.5.0 | 
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: 7.5.1 | 
 | `EXPLODED_INSTALLER_DIRECTORY` | Directory below the Dockerfiles where the WAR file installer has been prepared as above. Default: resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin
 |`POSTGRES_JDBC_DRIVER_VERSION` | Default: 42.2.5. If you change this, the new version will be downloaded from https://jdbc.postgresql.org/download.html  |
 
 ### Build the images
 
-`docker build -t jasperserver-pro:7.5.0 .`
+`docker build -t jasperserver-pro:7.5.1 .`
 
-`docker build -t jasperserver-pro-cmdline:7.5.0 -f Dockerfile-cmdline .`
+`docker build -t jasperserver-pro-cmdline:7.5.1 -f Dockerfile-cmdline .`
 
 # docker run time environment variables
 
@@ -192,8 +192,8 @@ This image does not create the repository and keystore files. See cmdline below.
 | `DB_USER` | database username. Default: postgres |
 | `DB_PASSWORD` | database password. Default: postgres |
 | `DB_NAME` | JasperReports Server repository schema name in the database. Default: "jasperserver"  | 
-| `HTTP_PORT` | HTTP port Tomcat runs on. Default: HTTP_PORT in image |
-| `HTTPS_PORT` | HTTPS port Tomcat runs on. Default: HTTPS_PORT in image |
+| `HTTP_PORT` | HTTP port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: HTTP_PORT in image |
+| `HTTPS_PORT` | HTTPS port Tomcat runs on and .env file should be updated wih correct port number if any non default port is used. Default: HTTPS_PORT in image |
 | `JAVA_OPTS` | Command line options passed to Java. Optional. The Java heap size of JasperReports Server is automatically managed to conform to the container size. |  
 | `JAVA_MIN_RAM_PERCENTAGE` | Java heap minimum percentage in the container. Default: 33.3% |
 | `JAVA_MAX_RAM_PERCENTAGE` | Java heap maximum percentage in the container. Default: 80.0% |
@@ -243,19 +243,21 @@ For the JasperReports Server Web app (WAR):
 | Description | Path to override in container | Notes |
 | ------------ | ------------- | ------------ |
 | License | `/usr/local/share/jasperserver-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
-| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the repository database. |
+| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5.1, which will create these files on this volume if they do not exist when initializing the repository database. |
 | JasperReports Server customizations | `/usr/local/share/jasperserver-pro/customization` | Zip files. If a zip file contains `install.sh`, it will be unzipped and executed - useful for hotfixes or config changes in the image. Zip files that do not contain `install.sh` will be unzipped into `${CATALINA_HOME}/webapps/jasperserver-pro`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | Tomcat level customizations | `/usr/local/share/jasperserver-pro/tomcat-customization` | Zip files that are unzipped into `${CATALINA_HOME}`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |
 | SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/dbType/jdbc | Override JDBC drivers within the image for the repository. Valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
+Note: Tomcat and JasperReports server customizations are applied after deploying the JasperReports Server Application in tomcat.
+
 
 For the cmdline:
 
 | Description | Path to override in container | Notes |
 | ------------ | ------------- | ------------ |
 | License | `/usr/local/share/jasperserver-pro/license` | REQUIRED. Path to contain `jasperserver.license` file to use. |
-| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5, which will create these files on this volume if they do not exist when initializing the database. |
+| Encryption keystore files | `/usr/local/share/jasperserver-pro/keystore` | REQUIRED.  .jrsks and .jrsksp files used to encrypt sensitive values. This volume is required for use with JRS 7.5.1, which will create these files on this volume if they do not exist when initializing the database. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/<dbType>/jdbc | Override JDBC drivers within the image for the repository. Valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
 | Buildomatic customizations | `/usr/local/share/jasperserver-pro/buildomatic_customization` | Zip files. If a zip file contains `install.sh`, it will be unzipped and executed - useful for hotfixes or config changes in the image. Zip files that do not contain `install.sh` will be unzipped into `${BUILDOMATIC_HOME}`. Files are processed in alphabetical order, so duplicate file names within zips can be overridden. |

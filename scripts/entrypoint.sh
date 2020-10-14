@@ -15,8 +15,6 @@ set -e
 
 run_jasperserver() {
 
-  # Apply customization zips if present
-  apply_customizations
 
   test_database_connection
   
@@ -24,6 +22,9 @@ run_jasperserver() {
   # always do deploy-webapp-pro.
 
   execute_buildomatic deploy-webapp-pro
+
+  # Apply customization zips if present
+  apply_customizations
 
   # setup phantomjs
   config_phantomjs
@@ -89,7 +90,7 @@ config_ports_and_ssl() {
 		-exec readlink -f {} \;`
 	  
 	  # update the keystore and password if there
-	  if [[ $CERT_PATH_FILES -ne 0 ]]; then
+	  if [[ ${#CERT_PATH_FILES} -ne 0 ]]; then
 		  # will only be one, if at all
 		  for keystore in $CERT_PATH_FILES; do
 			if [[ -f "$keystore" ]]; then
