@@ -142,4 +142,5 @@ spec:
 #        secret:
 #          secretName: jasperserver-pro-buildomatic-additional-master
       - name: jasperserver-pro-volume
-        emptyDir: {}
+        hostpath:
+           path: /mnt/jasperser-pro-customization
