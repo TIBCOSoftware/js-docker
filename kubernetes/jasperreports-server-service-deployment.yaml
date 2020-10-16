@@ -54,7 +54,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro:7.5.plus
+        image: jasperserver-pro:7.8.0
         name: jasperserver-pro
         imagePullPolicy: IfNotPresent
         ports:
@@ -85,11 +85,25 @@ spec:
         - mountPath: /usr/local/share/jasperserver-pro
           name: jasperserver-pro-volume
           readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /jasperserver-pro/login.html
+            port: 8080
+          failureThreshold: 20
+          periodSeconds: 10
+          initialDelaySeconds: 60
+        readinessProbe:
+            httpGet:
+              path: /jasperserver-pro/login.html
+              port: 8080
+            failureThreshold: 20
+            periodSeconds: 10
+          initialDelaySeconds: 60
       initContainers:
       - envFrom:
         - configMapRef:
             name: jasper-config
-        image: jasperserver-pro-cmdline:k8s-7.5.plus
+        image: jasperserver-pro-cmdline:k8s-7.8.0
         name: init
         imagePullPolicy: IfNotPresent
         resources:
@@ -128,4 +142,5 @@ spec:
 #        secret:
 #          secretName: jasperserver-pro-buildomatic-additional-master
       - name: jasperserver-pro-volume
-        emptyDir: {}
+        hostpath:
+           path: /mnt/jasperser-pro-customization
