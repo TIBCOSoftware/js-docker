@@ -83,7 +83,7 @@ The init-container in the Service, which runs a cmdline image, ensures that the 
 
 Your JasperReports Server license is in a secret.
 
-`kubectl create secret generic jasperserver-pro-license --from-file=jasperserver.license=./jasperserver.license`
+`kubectl create secret generic jasperserver-pro-license --from-file=jasperserver.license=./jasperserver.license -n jaspersoft`
 
 Use the secret as a volume in both the init and main containers.
 
