@@ -99,7 +99,7 @@ spec:
             port: 8080
           failureThreshold: 10
           periodSeconds: 10
-          initialDelaySeconds: 60
+          initialDelaySeconds: 90
       initContainers:
       - envFrom:
         - configMapRef:
