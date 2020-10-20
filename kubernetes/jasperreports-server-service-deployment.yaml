@@ -39,6 +39,7 @@ metadata:
   name: jasperserver-pro
   namespace: jaspersoft
 spec:
+  replicas: 2
   strategy:
     type: Recreate
   selector:
