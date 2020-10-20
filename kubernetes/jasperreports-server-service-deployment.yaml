@@ -91,13 +91,13 @@ spec:
             port: 8080
           failureThreshold: 20
           periodSeconds: 10
-          initialDelaySeconds: 60
+          initialDelaySeconds: 300
         readinessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
-              port: 8080
-            failureThreshold: 20
-            periodSeconds: 10
+          httpGet:
+            path: /jasperserver-pro/login.html
+            port: 8080
+          failureThreshold: 10
+          periodSeconds: 10
           initialDelaySeconds: 60
       initContainers:
       - envFrom:
@@ -142,5 +142,5 @@ spec:
 #        secret:
 #          secretName: jasperserver-pro-buildomatic-additional-master
       - name: jasperserver-pro-volume
-        hostpath:
+        hostPath:
            path: /mnt/jasperser-pro-customization
