@@ -23,10 +23,10 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 80
+      targetPort: 8080
       protocol: TCP
     - name: https
-      port: 443
+      port: 8443
       targetPort: 443
       protocol: TCP
   selector:
@@ -41,7 +41,7 @@ metadata:
   name: jasperserver-pro
   namespace: jaspersoft
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: Recreate
   selector:
