@@ -89,19 +89,17 @@ spec:
               name: jasperserver-pro-volume
               readOnly: true
           livenessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
+            tcpSocket:
               port: 8080
             failureThreshold: 20
             periodSeconds: 10
             initialDelaySeconds: 300
           readinessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
+            tcpSocket:
               port: 8080
             failureThreshold: 10
             periodSeconds: 10
-            initialDelaySeconds: 60
+            initialDelaySeconds: 90
       initContainers:
         - envFrom:
             - configMapRef:
