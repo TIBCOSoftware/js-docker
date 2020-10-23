@@ -25,7 +25,7 @@ The following software's are required
 
 To verify the cluste setup run `kubectl get svc` and it will list the ClusterIP and it will confirm the cluster is ready.
  
- Once Cluster is ready and the [Js-Docker Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/ENGINFRA-8743-K8s-Fix/kubernetes) for JRS deployment in EKS.
+ Once Cluster is ready and see the [Js-Docker/Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/ENGINFRA-8743-K8s-Fix/kubernetes) for JRS deployment in EKS.
  
  Note: It is a basic cluster setup and for advanced security features and some other configuration , refer the [Official AWS Docs](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
 
