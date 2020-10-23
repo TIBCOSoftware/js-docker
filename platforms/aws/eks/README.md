@@ -3,12 +3,12 @@
 # Table of contents
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
-1. [EKS Cluster setup](#EKS Cluster setup)
+1. [EKS Cluster setup](#eks-cluster-setup)
 
 # Introduction
  These EKS configuration files help to create a EKS cluster setup.
 
-# prerequisites
+# Prerequisites
 The following software's are required 
 - AWS Account
 - AWS administrative access. To manage:
