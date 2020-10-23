@@ -19,11 +19,11 @@ The following software's are required
 # EKS Cluster setup
  To Setup a EKS cluster run below command .
  `eksctl create cluster -f eksclustersetup.yaml`. Modify the **eksclustersetup.yaml** file as per the need. 
- It will take 15 to 20 minutes to setup a cluster along the managed node groups. 
+ It will take 15 to 20 minutes to setup a cluster along with the managed node groups. 
  
  By default it will create a cluster with single Node with  two private and two public subnets in a separate VPC.
 
-To verify the cluste setup run `kubectl get svc` and it will list the ClusterIP and it will confirm the cluster is ready.
+To verify the cluste setup run `kubectl get svc` and it will list the ClusterIP and it will confirm that the cluster is ready.
  
  Once Cluster is ready and see the [Js-Docker/Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/ENGINFRA-8743-K8s-Fix/kubernetes) for JRS deployment in EKS.
  
