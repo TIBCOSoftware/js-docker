@@ -82,7 +82,7 @@ Create ECR repositories for the current AWS account and region if they do not ex
 
 # Deployment to EKS
 
-General deployment into EKS is documented here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+General setup of  EKS cluster documented in [aws/eks  in js-docker](https://github.com/TIBCOSoftware/js-docker/tree/master/platforms/aws/eks) 
 
 JasperReports Server deploys into EKS as per the instructions for Kubernetes [js-docker for Kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
 

@@ -23,11 +23,9 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8080
       protocol: TCP
     - name: https
-      port: 8443
-      targetPort: 443
+      port: 443
       protocol: TCP
   selector:
     app: jasperserver-pro
@@ -90,14 +88,14 @@ spec:
               readOnly: true
           livenessProbe:
             tcpSocket:
-              port: 8080
+              port: 80
             failureThreshold: 20
             periodSeconds: 10
             initialDelaySeconds: 300
           readinessProbe:
             tcpSocket:
-              port: 8080
-            failureThreshold: 10
+              port: 80
+            failureThreshold: 15
             periodSeconds: 10
             initialDelaySeconds: 90
       initContainers:
