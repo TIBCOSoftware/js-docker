@@ -52,7 +52,7 @@ spec:
         app: jasperserver-pro
       namespace: jaspersoft
     spec:
-      replicas: 2
+      replicas: 1
       containers:
         - envFrom:
             - configMapRef:
