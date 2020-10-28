@@ -13,11 +13,12 @@ The following software's are required
 - AWS Account
 - AWS administrative access. To manage:
   - EKS
-  - run CloudFormation templates
+  - Run CloudFormation templates
 - Instsall required software's and tools , see here for [eksctl ,kubectl and aws cli setup and configuration](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
 
 # EKS Cluster setup
  To Setup a EKS cluster run below command .
+ 
  `eksctl create cluster -f eksclustersetup.yaml`. Modify the **eksclustersetup.yaml** file as per the need. 
  It will take 15 to 20 minutes to setup a cluster along with the managed node groups. 
  
