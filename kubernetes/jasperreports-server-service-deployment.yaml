@@ -21,12 +21,12 @@ metadata:
   namespace: jaspersoft
 spec:
   ports:
-  - name: http
-    port: 8080
-    targetPort: 8080
-  - name: https
-    port: 8443
-    targetPort: 8443
+    - name: http
+      port: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      protocol: TCP
   selector:
     app: jasperserver-pro
   type: LoadBalancer
@@ -39,6 +39,7 @@ metadata:
   name: jasperserver-pro
   namespace: jaspersoft
 spec:
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -51,96 +52,94 @@ spec:
       namespace: jaspersoft
     spec:
       containers:
-      - envFrom:
-        - configMapRef:
-            name: jasper-config
-        image: jasperserver-pro:7.8.0
-        name: jasperserver-pro
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-          name: http
-          protocol: TCP
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        resources:
-          limits:
-            #cpu: 200m
-            memory: 6Gi
-          requests:
-            #cpu: 100m
-            memory: 2Gi
-        volumeMounts:
-        - mountPath: /usr/local/share/jasperserver-pro/license
-          name: license
-          readOnly: true
-        - mountPath: /usr/local/share/jasperserver-pro/keystore
-          name: jasperserver-pro-keystore-files-secret
-          readOnly: true
-# Add if additional default_master.propeties in a Secret
-#        - mountPath: /usr/local/share/jasperserver-pro/deploy-customization
-#          name: jasperserver-pro-additional-master-secret
-#          readOnly: true
-        - mountPath: /usr/local/share/jasperserver-pro
-          name: jasperserver-pro-volume
-          readOnly: true
-        livenessProbe:
-          httpGet:
-            path: /jasperserver-pro/login.html
-            port: 8080
-          failureThreshold: 20
-          periodSeconds: 10
-          initialDelaySeconds: 60
-        readinessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
-              port: 8080
+        - envFrom:
+            - configMapRef:
+                name: jasper-config
+          image: jasperserver-pro:7.8.0
+          name: jasperserver-pro
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 8443
+              name: https
+              protocol: TCP
+          resources:
+            limits:
+              #cpu: 200m
+              memory: 6Gi
+            requests:
+              #cpu: 100m
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /usr/local/share/jasperserver-pro/license
+              name: license
+              readOnly: true
+            - mountPath: /usr/local/share/jasperserver-pro/keystore
+              name: jasperserver-pro-keystore-files-secret
+              readOnly: true
+            # Add if additional default_master.propeties in a Secret
+            #        - mountPath: /usr/local/share/jasperserver-pro/deploy-customization
+            #          name: jasperserver-pro-additional-master-secret
+            #          readOnly: true
+            - mountPath: /usr/local/share/jasperserver-pro
+              name: jasperserver-pro-volume
+              readOnly: true
+          livenessProbe:
+            tcpSocket:
+              port: 80
             failureThreshold: 20
             periodSeconds: 10
-          initialDelaySeconds: 60
+            initialDelaySeconds: 300
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            failureThreshold: 15
+            periodSeconds: 10
+            initialDelaySeconds: 90
       initContainers:
-      - envFrom:
-        - configMapRef:
-            name: jasper-config
-        image: jasperserver-pro-cmdline:k8s-7.8.0
-        name: init
-        imagePullPolicy: IfNotPresent
-        resources:
-          limits:
-            #cpu: 200m
-            memory: 3Gi
-          requests:
-            #cpu: 100m
-            memory: 1Gi
-        volumeMounts:
-        - mountPath: /usr/local/share/jasperserver-pro/license
-          name: license
-          readOnly: true
-        - mountPath: /usr/local/share/jasperserver-pro-secrets/jasperserver-pro-jrsks
-          name: jasperserver-pro-keystore-files-secret
-          readOnly: true
-# Add if buildmatic additional default_master.propeties are in a Secret
-#        - mountPath: /usr/local/share/jasperserver-pro/buildomatic-customization
-#          name: jasperserver-pro-buildmatic-additional-master-secret
-#          readOnly: true
-        - mountPath: /usr/local/share/jasperserver-pro
-          name: jasperserver-pro-volume
-          readOnly: false
+        - envFrom:
+            - configMapRef:
+                name: jasper-config
+          image: jasperserver-pro-cmdline:k8s-7.8.0
+          name: init
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              #cpu: 200m
+              memory: 3Gi
+            requests:
+              #cpu: 100m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /usr/local/share/jasperserver-pro/license
+              name: license
+              readOnly: true
+            - mountPath: /usr/local/share/jasperserver-pro-secrets/jasperserver-pro-jrsks
+              name: jasperserver-pro-keystore-files-secret
+              readOnly: true
+            # Add if buildmatic additional default_master.propeties are in a Secret
+            #        - mountPath: /usr/local/share/jasperserver-pro/buildomatic-customization
+            #          name: jasperserver-pro-buildmatic-additional-master-secret
+            #          readOnly: true
+            - mountPath: /usr/local/share/jasperserver-pro
+              name: jasperserver-pro-volume
+              readOnly: false
       serviceAccountName: jasper-robot
       volumes:
-      - name: license
-        secret:
-          secretName: jasperserver-pro-license
-      - name: jasperserver-pro-keystore-files-secret
-        secret:
-          secretName: jasperserver-pro-jrsks
-#      - name: jasperserver-pro-additional-master-secret
-#        secret:
-#          secretName: jasperserver-pro-additional-master
-#      - name: jasperserver-pro-additional-master-secret
-#        secret:
-#          secretName: jasperserver-pro-buildomatic-additional-master
-      - name: jasperserver-pro-volume
-        hostpath:
-           path: /mnt/jasperser-pro-customization
+        - name: license
+          secret:
+            secretName: jasperserver-pro-license
+        - name: jasperserver-pro-keystore-files-secret
+          secret:
+            secretName: jasperserver-pro-jrsks
+        #      - name: jasperserver-pro-additional-master-secret
+        #        secret:
+        #          secretName: jasperserver-pro-additional-master
+        #      - name: jasperserver-pro-additional-master-secret
+        #        secret:
+        #          secretName: jasperserver-pro-buildomatic-additional-master
+        - name: jasperserver-pro-volume
+          hostPath:
+            path: /mnt/jasperser-pro-customization

@@ -277,6 +277,8 @@ For keystores in secrets: `kubectl apply -f jasperreports-server-service-deploym
 - ConfigMap for Deployment.
 - Service: ClusterIP, NodePort, LoadBalancer.
 
+Note: If Service is not an external loadbalancer like aws or azure loadbalancer or using **NodePort** as Service then **Service ports , Liveness and Readiness ports** should be updated to 8080 and 8443. 
+
 Otherwise launch via volumes only: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
 
 # Troubleshooting

@@ -24,11 +24,11 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 8080
-      targetPort: 8080
+      port: 80
+      protocol: TCP
     - name: https
-      port: 8443
-      targetPort: 8443
+      port: 443
+      protocol: TCP
   selector:
     app: jasperserver-pro
   type: LoadBalancer
@@ -52,6 +52,7 @@ spec:
         app: jasperserver-pro
       namespace: jaspersoft
     spec:
+      replicas: 1
       containers:
         - envFrom:
             - configMapRef:
@@ -81,19 +82,17 @@ spec:
               mountPath: "/usr/local/share/jasperserver-pro"
               readOnly: true
           livenessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
-              port: 8080
-            failureThreshold: 30
-            periodSeconds: 10
-            initialDelaySeconds: 60
-          readinessProbe:
-            httpGet:
-              path: /jasperserver-pro/login.html
-              port: 8080
+            tcpSocket:
+              port: 80
             failureThreshold: 20
             periodSeconds: 10
-            initialDelaySeconds: 60
+            initialDelaySeconds: 300
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            failureThreshold: 10
+            periodSeconds: 10
+            initialDelaySeconds: 90
       initContainers:
         - envFrom:
             - configMapRef:
