@@ -4,7 +4,7 @@
 1. [Introduction](#introduction)
 1. [Prerequisites](#prerequisites)
 1. [EKS Cluster setup](#eks-cluster-setup)
-1. [EFS Configuration for applying the customization](#efs-setup-for customization)
+1. [EFS Configuration for applying the customization](#efs-setup-for-customization)
 # Introduction
  These EKS configuration files help to create a EKS cluster setup.
 
@@ -37,7 +37,7 @@ To Setup EFS Storage for EKS cluster follow below steps.
 
 - To install EFS CSI driver in EKS cluster and creating EFS in aws follow this [AWS-CSI-DRIVER](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
 Make sure EFS should be created in same VPC where EKS cluster is created and allow NFS port for EKS cluster CIDR range
-- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID
+- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID or it can also be available in aws console
 - modify the `eks-efs-setup.yaml` and replace the volumeHandle  with EFS file system ID
  ````
       csi:
