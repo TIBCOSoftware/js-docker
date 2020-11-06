@@ -46,8 +46,7 @@ Make sure EFS should be created in same VPC where EKS cluster is created and all
 ````
 - Create jaspersoft name space in kubernetes cluster by running `kubectl apply -f namespace-rbac.yaml` , find the namespace-rbac-yaml file [js-docker/kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
 - Create Kubernets storage , persistent volume and persistent volume claim in EKS cluster by running `kubectl apply -f eks-efs-setup.yaml`
-- Remove the jasperserver-pro-volume in [Kubernetes-deployment-yaml-file](https://github.com/TIBCOSoftware/js-docker/blob/master/kubernetes/jasperreports-server-service-deployment.yaml)
-and add below volume in volumes sections .
+- Remove the jasperserver-pro-volume in [Kubernetes-deployment-yaml-file](https://github.com/TIBCOSoftware/js-docker/blob/master/kubernetes/jasperreports-server-service-deployment.yaml) in volumes sections .
 ````
    volumes:
            - name: license
@@ -60,7 +59,7 @@ and add below volume in volumes sections .
              hostPath:
                path: /mnt/jasperser-pro-customization
 ````
-Replace jasperserver-pro-volume with below code
+Add jasperserver-pro-volume with below code
 
 ````
 - name: jasperserver-pro-volume
