@@ -37,7 +37,7 @@ To Setup EFS Storage for EKS cluster follow below steps.
 
 - To install EFS CSI driver in EKS cluster and creating EFS in aws follow this [AWS-CSI-DRIVER](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
 Make sure EFS should be created in same VPC where EKS cluster is created and allow NFS port for EKS cluster CIDR range
-- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID or get the ID aws console
+- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID or get the ID from aws console
 - modify the `eks-efs-setup.yaml` and replace the volumeHandle  with EFS file system ID
  ````
       csi:
@@ -48,6 +48,20 @@ Make sure EFS should be created in same VPC where EKS cluster is created and all
 - Create Kubernets storage , persistent volume and persistent volume claim in EKS cluster by running `kubectl apply -f eks-efs-setup.yaml`
 - Remove the jasperserver-pro-volume in [Kubernetes-deployment-yaml-file](https://github.com/TIBCOSoftware/js-docker/blob/master/kubernetes/jasperreports-server-service-deployment.yaml)
 and add below volume in volumes sections .
+````
+   volumes:
+           - name: license
+             secret:
+               secretName: jasperserver-pro-license
+           - name: jasperserver-pro-keystore-files-secret
+             secret:
+               secretName: jasperserver-pro-jrsks
+           - name: jasperserver-pro-volume
+             hostPath:
+               path: /mnt/jasperser-pro-customization
+````
+Replace jasperserver-pro-volume with below code
+
 ````
 - name: jasperserver-pro-volume
   persistentVolumeClaim:
