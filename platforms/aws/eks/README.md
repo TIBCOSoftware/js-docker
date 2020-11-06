@@ -68,9 +68,9 @@ Add jasperserver-pro-volume with below code
 ````
 - To mount the data from on-premises to EFS , first create ec2 instance on same VPC where eks cluster is created and allow SSH port to copy the data
 - Connect to ec2 instance , switch to root user and create efs directory `mkdir efs` 
-- Mount EFS on ec2 machine bu running EFS mount point similar t0 like this `sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-XXXX.efs.us-east-1.amazonaws.com:/ efs`.
-- To get the EFS mount point , click in EFS which is created and click on attach button and then will see EFS mount options, copy the EFS mount point from `Using the NFS client:` and run it on ec2 machine.
-- For more information follow [Mount EFS on EC2 machine](https://docs.aws.amazon.com/efs/latest/ug/wt1-test.html)
+- Mount EFS on ec2 machine bu running EFS mount point similar to like this `sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-XXXX.efs.us-east-1.amazonaws.com:/ efs`.
+- To get the EFS mount point , click in EFS which is created and click on attach button and then will see EFS mounting options, copy the EFS mount point from `Using the NFS client:` and run it on ec2 machine.
+- For more information see [Mount EFS on EC2 machine](https://docs.aws.amazon.com/efs/latest/ug/wt1-test.html)
 - Copy all your customizations in proper volumes , see [JS-Docker-volumes](https://github.com/TIBCOSoftware/js-docker#jasperreports-server-volumes)
 
  Once Everything is setup then see the [Js-Docker/Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes) for JRS deployment in EKS.
