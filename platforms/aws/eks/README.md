@@ -37,14 +37,15 @@ To Setup EFS Storage for EKS cluster follow below steps.
 
 - To install EFS CSI driver in EKS cluster and creating EFS in aws follow this [AWS-CSI-DRIVER](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html)
 Make sure EFS should be created in same VPC where EKS cluster is created and allow NFS port for EKS cluster CIDR range
-- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID or it can also be available in aws console
+- Once everything setup run `aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text` to get the EFS file system ID or get the ID aws console
 - modify the `eks-efs-setup.yaml` and replace the volumeHandle  with EFS file system ID
  ````
       csi:
         driver: efs.csi.aws.com
         volumeHandle: fs-xxxxx`    
 ````
-- To setup Kubernetes run `kubectl apply -f eks-efs-setup.yaml`
+- Create jaspersoft name space in kubernetes cluster by running `kubectl apply -f namespace-rbac.yaml` , find the namespace-rbac-yaml file [js-docker/kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
+- Create Kubernets storage , persistent volume and persistent volume claim in EKS cluster by running `kubectl apply -f eks-efs-setup.yaml`
 - Remove the jasperserver-pro-volume in [Kubernetes-deployment-yaml-file](https://github.com/TIBCOSoftware/js-docker/blob/master/kubernetes/jasperreports-server-service-deployment.yaml)
 and add below volume in volumes sections .
 ````
@@ -52,8 +53,11 @@ and add below volume in volumes sections .
   persistentVolumeClaim:
      claimName: jaspersoft-efs-claim
 ````
-- To mount the data from on-premises to EFS , first create ec2 instance on same VPC where eks cluster is created and then follow [Mount EFS on EC2 machine](https://docs.aws.amazon.com/efs/latest/ug/wt1-test.html)
-- Make sure to provide read and write access to efs mount point.  run `chmod 777 <EFS-MOUNT>`
+- To mount the data from on-premises to EFS , first create ec2 instance on same VPC where eks cluster is created and allow SSH port to copy the data
+- Connect to ec2 instance , switch to root user and create efs directory `mkdir efs` 
+- Mount EFS on ec2 machine bu running EFS mount point similar t0 like this `sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-XXXX.efs.us-east-1.amazonaws.com:/ efs`.
+- To get the EFS mount point , click in EFS which is created and click on attach button and then will see EFS mount options, copy the EFS mount point from `Using the NFS client:` and run it on ec2 machine.
+- For more information follow [Mount EFS on EC2 machine](https://docs.aws.amazon.com/efs/latest/ug/wt1-test.html)
 - Copy all your customizations in proper volumes , see [JS-Docker-volumes](https://github.com/TIBCOSoftware/js-docker#jasperreports-server-volumes)
 
  Once Everything is setup then see the [Js-Docker/Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes) for JRS deployment in EKS.
