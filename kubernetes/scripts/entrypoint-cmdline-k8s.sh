@@ -7,12 +7,14 @@
 # Wraps the jasperserver-pro-cmdline entrypoint.sh to 
 # manage keystore files in a secret
 
-. ./common-environment-k8s.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-BASE_ENTRYPOINT=${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
+. $DIR/common-environment-k8s.sh
+
+BASE_ENTRYPOINT_PATH=${DIR}/${BASE_ENTRYPOINT:-/entrypoint-cmdline.sh}
 
 initialize_keystore_files_from_secret
 
-( ${BASE_ENTRYPOINT} "$@" )
+( ${BASE_ENTRYPOINT_PATH} "$@" )
 
 save_jrsks_to_secret

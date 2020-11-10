@@ -51,7 +51,7 @@ The following software is required or recommended:
 - (*Recommended*) for development - they include Kubernetes:
   - [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/)
   - [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-- (*optional*)[kubernetes](https://kubernetes.io/) version 1.10 or higher
+- (*optional*)[kubernetes](https://kubernetes.io/) version 1.19 or higher
 - (*optional*) Preconfigured PostgreSQL 9, 10 or 11 database. If you do not currently have a PostgreSQL instance, you can create a PostgreSQL container at run time.
 
 # Build the Kubernetes specific command line image
@@ -64,8 +64,8 @@ In this directory, run:
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
-| `JASPERREPORTS_SERVER_IMAGE_TAG` | Tag of jasperserver-pro-cmdline image to base this image on. `jasperserver-pro-cmdline:<JASPERREPORTS_SERVER_IMAGE_TAG>` Default: `7.5.0` |
-| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: `7.5.0` | 
+| `JASPERREPORTS_SERVER_IMAGE_TAG` | Tag of jasperserver-pro-cmdline image to base this image on. `jasperserver-pro-cmdline:<JASPERREPORTS_SERVER_IMAGE_TAG>` Default: `7.8.0` |
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: `7.8.0` | 
 
 
 # Configure the JasperReports Server service
@@ -83,7 +83,7 @@ The init-container in the Service, which runs a cmdline image, ensures that the 
 
 Your JasperReports Server license is in a secret.
 
-`kubectl create secret generic jasperserver-pro-license --from-file=jasperserver.license=./jasperserver.license`
+`kubectl create secret generic jasperserver-pro-license --from-file=jasperserver.license=./jasperserver.license -n jaspersoft`
 
 Use the secret as a volume in both the init and main containers.
 
@@ -138,7 +138,7 @@ And then use the secret with the containers. For the init container, use the cmd
 ```
       initContainers:
       - name: init
-        image: jasperserver-pro-cmdline:k8s-7.5.0
+        image: jasperserver-pro-cmdline:k8s-7.8.0
         env:
           #- name: KEYSTORE_SECRET_NAME
           #  value: "jasperserver-pro-jrsks"
@@ -164,7 +164,7 @@ And for the JasperReports Server web application container:
 ```
       containers:
       - name: jasperserver-pro
-        image: jasperserver-pro:7.5.0
+        image: jasperserver-pro:7.8.0
         env:
 
         volumeMounts:
@@ -202,7 +202,7 @@ And then use the persistent volume with the containers. For the init container, 
 ```
       initContainers:
       - name: init
-        image: jasperserver-pro-cmdline:7.5.0
+        image: jasperserver-pro-cmdline:7.8.0
         env:
         volumeMounts:
         - name: jasperserver-pro-volume
@@ -215,7 +215,7 @@ for the web application:
 ```
       containers:
       - name: jasperserver-pro
-        image: jasperserver-pro:7.5.0
+        image: jasperserver-pro:7.8.0
         env:
         ports:
         volumeMounts:
@@ -261,7 +261,7 @@ Or run the PostgreSQL repository inside k8s, which is the default approach taken
 - edit `repository-database.yaml` to suit your environment.
   - This creates a persistent volume and the `postgresql` service in k8s 
   - set volume name, username, password, use secrets etc according to your requirements
-- use kubectl to create the postgresql service: `kubectl apply -f postgres-k8s.yaml`
+- use kubectl to create the postgresql service: `kubectl apply -f repository-database.yaml`
 
 See the main README for details on how to use other databases for the repository apart from PostgreSQL.
 
@@ -276,6 +276,8 @@ For keystores in secrets: `kubectl apply -f jasperreports-server-service-deploym
 - An initContainer manages the repository database initialization and keystore creation.
 - ConfigMap for Deployment.
 - Service: ClusterIP, NodePort, LoadBalancer.
+
+Note: If Service is not an external loadbalancer like aws or azure loadbalancer or using **NodePort** as Service then **Service ports , Liveness and Readiness ports** should be updated to 8080 and 8443. 
 
 Otherwise launch via volumes only: `kubectl apply -f jasperreports-server-k8s-volume.yaml`
 

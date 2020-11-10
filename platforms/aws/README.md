@@ -43,7 +43,7 @@ The following software is required or recommended:
   - EKS
   - run CloudFormation templates
   - subscribe to AWS Marketplace listings  
-- [kubernetes](https://kubernetes.io/) version 1.10 or higher
+- [kubernetes](https://kubernetes.io/) version 1.17 or higher
 - Bastion EC2 instance to run kubectl commands
 - (*optional*) Preconfigured PostgreSQL database in RDS
 
@@ -53,36 +53,36 @@ The CloudFormation templates attached here:
 - jasperreports-server-7.2.0-ecr.template
 - jasperreports-server-7.5.0-ecr.template
 - jasperreports-server-7.5.1-ecr.template
+- jasperreports-server-7.8.0-ecr.template
 
 create the JasperReports Server images:
 - jasperserver-pro:<jrs_version>
 - jasperserver-pro-cmdline:<jrs_version>
 - jasperserver-pro-cmdline:<jrs_version>-k8s
+- jasperserver-pro:s3-<jrs_version>
+- jasperserver-pro-cmdline:s3-<jrs_version>
 
-To create these stacks, you need to go to the AWS Marketplace and subscribe to TIBCO Jaspersoft Reporting and Analytics (BYOL).
-- Find via the listings via: https://aws.amazon.com/marketplace/search/results?x=0&y=0&searchTerms=jaspersoft+byol
-- Login to your AWS account as a user with the ability to subscribe to Marketplace listings.
-- Continue to Subscribe
-- Accept terms and conditions
-- Do not launch instances
+To create these images , take the ECR template as per the required version of Jasper reports server
+- Login to your AWS account 
+- Upload the jasperreports-server-<version>-ecr.template template
+- Provide the correct github branch url for JaspersoftForDockerURL
+- fill all other parameters as per the requirement 
+- click create stack 
 
-Create a stack for the desired version of JasperReports Server, based on the templates here. These templates:
-- Launch a JasperReports Server BYOL instance
-- Install Docker
-- Download the master branch of https://github.com/TIBCOSoftware/js-docker
-- Build 
-  - jasperserver-pro:<version>
-  - jasperserver-pro-cmdline:<version>
-  - jasperserver-pro-cmdline:<version>-k8s
-    - note that the JasperReports Server image is confiured to run on port 80 in the template
-- Create ECR repositories for the current AWS account and region if they do not exist
+Once stack creation completed , it will generate docker images in ECR repository in your account
+
+Repository Names:
+- jasperserver-pro
+- jasperserver-pro-cmdline
+
+Create ECR repositories for the current AWS account and region if they do not exist
   - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro
   - aws ecr create-repository --region ${AWS::Region} --repository-name jasperserver-pro-cmdline
 - Tag and push the versions of the images to the ECR repositories
 
 # Deployment to EKS
 
-General deployment into EKS is documented here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+General setup of  EKS cluster documented in [aws/eks  in js-docker](https://github.com/TIBCOSoftware/js-docker/tree/master/platforms/aws/eks) 
 
 JasperReports Server deploys into EKS as per the instructions for Kubernetes [js-docker for Kubernetes](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes)
 

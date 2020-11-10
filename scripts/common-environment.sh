@@ -15,6 +15,8 @@
 # Sets script to fail if any command fails.
 set -e
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 BUILDOMATIC_HOME=${BUILDOMATIC_HOME:-/usr/src/jasperreports-server/buildomatic}
 MOUNTS_HOME=${MOUNTS_HOME:-/usr/local/share/jasperserver-pro}
 
@@ -43,10 +45,10 @@ export JAVA_MAX_RAM_PCT=${JAVA_MAX_RAM_PERCENTAGE:-80.0}
 
 # Add Java options to suppress Groovy related warning message for Jaspersoft running Java 11
 
-export JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT  @/java11.opts"
+export JAVA_OPTS="$JAVA_OPTS -XX:-UseContainerSupport -XX:MinRAMPercentage=$JAVA_MIN_RAM_PCT -XX:MaxRAMPercentage=$JAVA_MAX_RAM_PCT  @$DIR/java11.opts"
 
 # additional options for Ant used by buildomatic
-export ANT_OPTS="$ANT_OPTS @/java11.opts"
+export ANT_OPTS="$ANT_OPTS @$DIR/java11.opts"
 
 initialize_deploy_properties() {
   # license could fail

@@ -3,18 +3,18 @@
 # JasperReports Server command line image, loading resources from S3.
 # Leverages base JRS image of same version
 
-ARG JASPERREPORTS_SERVER_VERSION=7.5.1
+ARG JASPERREPORTS_SERVER_VERSION=7.8.0
 
 FROM jasperserver-pro-cmdline:${JASPERREPORTS_SERVER_VERSION}
 
-ENV JASPERREPORTS_SERVER_VERSION        ${JASPERREPORTS_SERVER_VERSION:-7.5.1}
+ENV JASPERREPORTS_SERVER_VERSION        ${JASPERREPORTS_SERVER_VERSION:-7.8.0}
 
-COPY scripts /
+COPY scripts /usr/src/jasperreports-server/scripts/
 
-RUN chmod +x /*.sh && \
-    /installPackagesForJasperserver-pro-s3.sh
+RUN chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
+    /usr/src/jasperreports-server/scripts/installPackagesForJasperserver-pro-s3.sh
 
-ENTRYPOINT ["/entrypoint-aws-cmdline.sh"]
+ENTRYPOINT ["/usr/src/jasperreports-server/scripts/entrypoint-aws-cmdline.sh"]
 
 # Default action executed by entrypoint script.
 CMD ["init"]

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export ANT_OPTS="$ANT_OPTS -Djava.net.preferIPv4Stack=true -noverify"
-echo "ANT_OPTS=$ANT_OPTS"
+ANT_OPTS="-Xms128m -Xmx512m -Djava.net.preferIPv4Stack=true -noverify"
+
 #
 # setup to use bundled of ant
 #
@@ -30,6 +30,7 @@ then
 fi
 
 export BUILDOMATIC_MODE=${BUILDOMATIC_MODE:-interactive}
+#export ANT_OPTS="-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"
 
 #
 # Collect the command line args
@@ -37,5 +38,4 @@ export BUILDOMATIC_MODE=${BUILDOMATIC_MODE:-interactive}
 
 CMD_LINE_ARGS=$*
 
-$ANT_RUN --noconfig -nouserlib -f build.xml $CMD_LINE_ARGS
-
+$ANT_RUN --noconfig -nouserlib -lib . -lib lib -f build.xml $CMD_LINE_ARGS

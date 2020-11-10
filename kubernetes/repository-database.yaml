@@ -23,7 +23,7 @@ spec:
     app: jasperreports-server-repository
     tier: postgreSQL
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -33,6 +33,9 @@ metadata:
 spec:
   strategy:
     type: Recreate
+  selector:
+    matchLabels:
+      app: jasperreports-server-repository
   template:
     metadata:
       labels:
