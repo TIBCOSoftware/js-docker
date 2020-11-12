@@ -80,7 +80,7 @@ RUN chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
     #rm -rf /tmp/* && \
     #
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar"  \
-        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
+        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose
 # Expose ports. Note that you must do one of the following:
 # map them to local ports at container runtime via "-p 8080:8080 -p 8443:8443"
 # or use dynamic ports.
