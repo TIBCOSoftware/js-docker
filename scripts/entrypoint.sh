@@ -79,7 +79,6 @@ config_ports_and_ssl() {
       for keystore in $CERT_PATH_FILES; do
         if [[ -f "$keystore" ]]; then
           echo "Deploying SSL Keystore $keystore"
-          cp "${keystore}" $CATALINA_HOME/conf
             xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \
               -n Connector -v "" --var connector-ssl '$prev' \
           --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
@@ -94,7 +93,7 @@ config_ports_and_ssl() {
           --insert '$connector-ssl' --type attr -n keystorePass \
               -v "${KS_PASSWORD:-changeit}"\
           --insert '$connector-ssl' --type attr -n keystoreFile \
-              -v "$CATALINA_HOME/conf/${keystore}"\
+              -v "${keystore}"\
           ${CATALINA_HOME}/conf/server.xml
           echo "Deployed SSL ${keystore} keystore"
         fi
