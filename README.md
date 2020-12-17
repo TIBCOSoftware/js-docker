@@ -250,6 +250,7 @@ For the JasperReports Server Web app (WAR):
 | SSL keystore file | `/usr/local/share/jasperserver-pro/ssl-certificate` | .keystore file containing the certificate in this volume will be loaded into /root and Tomcat updated to use it. The keystore password must be set as the KS_PASSWORD environment variable. |
 | Additional default_master installation properties | `/usr/local/share/jasperserver-pro/deploy-customization` |  `default_master_additional.properties` file contents appended to default_master.properties. See "To install the WAR file using js-install scripts" in JasperReports Server Installation Guide |
 | JDBC driver for the repository database | /usr/src/jasperreports-server/buildomatic/conf_source/db/dbType/jdbc | Override JDBC drivers within the image for the repository. Valid dbTypes are: postgresql, mysql, sqlserver, oracle, db2. Need to set the `JDBC_DRIVER_VERSION` environment variable to the version number of the driver. |
+
 Note: Tomcat and JasperReports server customizations are applied after deploying the JasperReports Server Application in tomcat.
 
 For the cmdline:
