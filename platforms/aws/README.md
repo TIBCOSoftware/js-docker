@@ -54,6 +54,7 @@ The CloudFormation templates attached here:
 - jasperreports-server-7.5.0-ecr.template
 - jasperreports-server-7.5.1-ecr.template
 - jasperreports-server-7.8.0-ecr.template
+- jasperreports-server-7.9.0-ecr.template
 
 create the JasperReports Server images:
 - jasperserver-pro:<jrs_version>
