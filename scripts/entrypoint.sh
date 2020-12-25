@@ -79,30 +79,30 @@ config_ports_and_ssl() {
       for keystore in $CERT_PATH_FILES; do
         if [[ -f "$keystore" ]]; then
           echo "Deploying SSL Keystore $keystore"
-          cp "${keystore}" $CATALINA_HOME/conf
-          xmlstarlet ed --inplace --subnode "/Server/Service/Connector[@port='${HTTPS_PORT:-8443}']" --type elem \ 
-          --var connector-ssl '$prev' \
-            --update '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
-            --update '$connector-ssl' --type attr -n keystoreFile -v "$CATALINA_HOME/conf/${keystore}" \
-            --update '$connector-ssl' --type attr -n keystorePass -v "${KS_PASSWORD:-changeit}" \
-            ${CATALINA_HOME}/conf/server.xml
+            xmlstarlet ed --inplace --subnode "/Server/Service" --type elem \
+              -n Connector -v "" --var connector-ssl '$prev' \
+          --insert '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
+          --insert '$connector-ssl' --type attr -n protocol -v \
+              "org.apache.coyote.http11.Http11NioProtocol" \
+          --insert '$connector-ssl' --type attr -n maxThreads -v "150" \
+          --insert '$connector-ssl' --type attr -n SSLEnabled -v "true" \
+          --insert '$connector-ssl' --type attr -n scheme -v "https" \
+          --insert '$connector-ssl' --type attr -n secure -v "true" \
+          --insert '$connector-ssl' --type attr -n clientAuth -v "false" \
+          --insert '$connector-ssl' --type attr -n sslProtocol -v "TLS" \
+          --insert '$connector-ssl' --type attr -n keystorePass \
+              -v "${KS_PASSWORD:-changeit}"\
+          --insert '$connector-ssl' --type attr -n keystoreFile \
+              -v "${keystore}"\
+          ${CATALINA_HOME}/conf/server.xml
           echo "Deployed SSL ${keystore} keystore"
         fi
       done
     else
-      # update existing server.xml. could have been overwritten by customization
-      # xmlstarlet ed --inplace --subnode "/Server/Service/Connector[@port='${HTTPS_PORT:-8443}']" --type elem \
-      #		--var connector-ssl '$prev' \
-      #	--update '$connector-ssl' --type attr -n port -v "${HTTPS_PORT:-8443}" \
-      #		--update '$connector-ssl' --type attr -n keystorePass  -v "${KS_PASSWORD}" \
-      #		--update '$connector-ssl' --type attr -n keystoreFile  -v "/root/.keystore.p12" \
-      #		${CATALINA_HOME}/conf/server.xml
       echo "No .keystore files. Did not update SSL"
     fi
-
   # end if $SSL_CERT_PATH exists.
   fi
-
 }
 
 apply_customizations() {
