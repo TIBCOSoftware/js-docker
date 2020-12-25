@@ -89,43 +89,43 @@ Mappings:
 
   AWSRegionAMI:
     us-east-1:
-      "64": ami-06ed3fd089c8e62f5
+      "64": ami-0611aaaa585236409
     us-east-2:
-      "64": ami-0355f6d73d5fae73a
+      "64": ami-01d379547bb0c2293
     us-west-1:
-      "64": ami-0001470d19f9a6405
+      "64": ami-0e8378b6b6612d709
     us-west-2:
-      "64": ami-060f780bf2d6d376a
+      "64": ami-01e14464fee462080
     ca-central-1  :
-      "64": ami-09a9f2133758f756e
+      "64": ami-018cd544cdfe16ff1
     eu-central-1  :
-      "64": ami-04b28d05825ee91bb
+      "64": ami-0a853d7ad8834b742
     eu-west-1:
-      "64": ami-0fd13a289d081dc3d
+      "64": ami-02f6834e9380a38e9
     eu-west-2:
-      "64": ami-03c3c1fde3b77b77a
+      "64": ami-0da3719136c35a8f1
     eu-west-3:
-      "64": ami-01a516917af8fa78f
+      "64": ami-01d7163c2dd1afc24
     eu-north-1:
-      "64": ami-0adb3b3512c53ea84
+      "64": ami-02385fa233f923be6
     ap-southeast-1:
-      "64": ami-0ad88e26054d6c830
+      "64": ami-094860a0831f4851e
     ap-southeast-2:
-      "64": ami-0f4986d48d5541b72
+      "64": ami-0e90d94f5dfc9976c
     ap-south-1:
-      "64": ami-09f1c9c9ea7ad7467
+      "64": ami-04402091ace376a0a
     ap-northeast-1:
-      "64": ami-0a97c312878973887
+      "64": ami-09ebc214500fb5647
     ap-northeast-2:
-      "64": ami-01cf7a60a1037b9e2
+      "64": ami-0f7890898be077656
     ap-northeeast-3:
       "64": ami-058a3ca662374270c
     sa-east-1:
-      "64": ami-0cce5bd1e6ba2a8c3
+      "64": ami-004d7f721f5463b97
     us-gov-east-1 :
-      "64": ami-0d95a1d045c867695
+      "64": ami-0d9d28a88d8200f2
     us-gov-west-1 :
-      "64": ami-094b49d82d41681c9
+      "64": ami-052db6e5901be2481
 
 Resources:
 
