@@ -12,7 +12,7 @@
 # Certified version of Tomcat for JasperReports Server 7.5.0 commercial editions
 # ARG TOMCAT_BASE_IMAGE=tomcat:9.0-jdk11-corretto
 
-# Certified version of Tomcat for JasperReports Server 7.8.0 commercial editions
+# Certified version of Tomcat for JasperReports Server 7.8.0 and 7.9.0 commercial editions
 # ARG TOMCAT_BASE_IMAGE=tomcat:9.0.37-jdk11-corretto
 
 ARG TOMCAT_BASE_IMAGE=tomcat:9.0.37-jdk11-openjdk
@@ -36,7 +36,7 @@ ENV HTTPS_PORT          ${HTTPS_PORT:-8443}
 ENV JAVASCRIPT_RENDERING_ENGINE  ${JAVASCRIPT_RENDERING_ENGINE:-chromium}
 
 ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.5}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.8.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.9.0}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-pro-$JASPERREPORTS_SERVER_VERSION-bin}
 
 # This Dockerfile requires an exploded JasperReports Server WAR file installer file

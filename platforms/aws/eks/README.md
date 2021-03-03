@@ -76,7 +76,7 @@ Add jasperserver-pro-volume with below code
  Once Everything is setup then see the [Js-Docker/Kubernets](https://github.com/TIBCOSoftware/js-docker/tree/master/kubernetes) for JRS deployment in EKS.
 
 # Copyright
-Copyright &copy; 2020. TIBCO Software Inc.
+Copyright &copy; 2021. TIBCO Software Inc.
 This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___
