@@ -10,7 +10,7 @@ provisioner: efs.csi.aws.com
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jaspersfor-efs-pv
+  name: jaspersoft-efs-pv
   namespace: jaspersoft
 spec:
   capacity:

@@ -64,8 +64,8 @@ In this directory, run:
 
 | Environment Variable Name | Notes |
 | ------------ | ------------- |
-| `JASPERREPORTS_SERVER_IMAGE_TAG` | Tag of jasperserver-pro-cmdline image to base this image on. `jasperserver-pro-cmdline:<JASPERREPORTS_SERVER_IMAGE_TAG>` Default: `7.8.0` |
-| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: `7.8.0` | 
+| `JASPERREPORTS_SERVER_IMAGE_TAG` | Tag of jasperserver-pro-cmdline image to base this image on. `jasperserver-pro-cmdline:<JASPERREPORTS_SERVER_IMAGE_TAG>` Default: `7.9.0` |
+| `JASPERREPORTS_SERVER_VERSION` | Version number used in file names. Default: `7.9.0` | 
 
 
 # Configure the JasperReports Server service
@@ -138,7 +138,7 @@ And then use the secret with the containers. For the init container, use the cmd
 ```
       initContainers:
       - name: init
-        image: jasperserver-pro-cmdline:k8s-7.8.0
+        image: jasperserver-pro-cmdline:k8s-7.9.0
         env:
           #- name: KEYSTORE_SECRET_NAME
           #  value: "jasperserver-pro-jrsks"
@@ -164,7 +164,7 @@ And for the JasperReports Server web application container:
 ```
       containers:
       - name: jasperserver-pro
-        image: jasperserver-pro:7.8.0
+        image: jasperserver-pro:7.9.0
         env:
 
         volumeMounts:
@@ -202,7 +202,7 @@ And then use the persistent volume with the containers. For the init container, 
 ```
       initContainers:
       - name: init
-        image: jasperserver-pro-cmdline:7.8.0
+        image: jasperserver-pro-cmdline:7.9.0
         env:
         volumeMounts:
         - name: jasperserver-pro-volume
@@ -215,7 +215,7 @@ for the web application:
 ```
       containers:
       - name: jasperserver-pro
-        image: jasperserver-pro:7.8.0
+        image: jasperserver-pro:7.9.0
         env:
         ports:
         volumeMounts:
@@ -320,7 +320,7 @@ JasperReports Server ships with the following default credentials:
 - jasperadmin/jasperadmin - Administrator for the default organization
 
 # Copyright
-Copyright &copy; 2019-2020. TIBCO Software Inc.
+Copyright &copy; 2019-2021. TIBCO Software Inc.
 This file is subject to the license terms contained
 in the license file that is distributed with this file.
 ___

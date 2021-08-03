@@ -11,6 +11,6 @@ phantomjs-2.1.1-linux-x86_64.tar.bz2
 You will need to update the Dockerfile to use this.
 
 # Copyright
-Copyright &copy; 2005 - 2019. TIBCO Software Inc.
+Copyright &copy; 2005 - 2021. TIBCO Software Inc.
 You may not use this file except in compliance with the license
 terms contained in the TIBCO License.txt file provided with this file.
