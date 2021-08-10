@@ -1,0 +1,112 @@
+** Thanks for Installing JasperReportsServer **
+{{- if .Values.ingress.enabled }}
+
+   Run below commands to get JasperReportsServer application Url
+   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jasperserver-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   echo http{{ if $.Values.ingress.tls }}s{{ end }}://$SERVICE_IP/jasperserver-pro
+
+   {{- if .Values.metrics.enabled }}
+
+   Run below commands to connect to the Grafana Application
+   export GRAFANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-grafana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Get the password by running below command
+   kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+   Get the Grafana Application Url
+   echo http://$NODE_IP:$GRAFANA_NODE_PORT
+    {{- end }}
+
+   {{- if .Values.logging.enabled }}
+
+   Run below command to connect to the Kibana Application
+   export KIBANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-kibana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Get the Kibana Application Url
+   echo http://$NODE_IP:$KIBANA_NODE_PORT
+   {{- end }}
+
+
+{{- else if contains "NodePort" .Values.service.type }}
+
+   Run below commands to get JasperReportsServer application Url
+   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "jrs.fullname" . }})
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   echo http://$NODE_IP:$NODE_PORT/jasperserver-pro
+
+   {{- if .Values.metrics.enabled }}
+
+   Run below commands to connect to the Grafana Application
+   export GRAFANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-grafana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Get the password by running below command
+   kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+   Get the Grafana Application Url
+   echo http://$NODE_IP:$GRAFANA_NODE_PORT
+    {{- end }}
+
+   {{- if .Values.logging.enabled }}
+
+   Run below command to connect to the Kibana Application
+   export KIBANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-kibana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Get the Kibana Application Url
+   echo http://$NODE_IP:$KIBANA_NODE_PORT
+   {{- end }}
+
+{{- else if contains "LoadBalancer" .Values.service.type }}
+
+  Run below commands to get JasperReportsServer application Url
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "jrs.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "jrs.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}/jasperserver-pro
+
+   {{- if .Values.metrics.enabled }}
+
+  Run below commands to connect to the Grafana  Interface
+  export GRAFANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-grafana )
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  Get the password by running below command
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+  Connect To Grafana
+  echo http://$NODE_IP:$GRAFANA_NODE_PORT
+    {{- end }}
+  {{- if .Values.logging.enabled }}
+
+  Run below command to connect to the Kibana Interface
+  export KIBANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-kibana )
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  Connect To Kibana
+  echo http://$NODE_IP:$KIBANA_NODE_PORT
+  {{- end }}
+
+
+{{- else if contains "ClusterIP" .Values.service.type }}
+
+   Run below commands to get JasperReportsServer application Url
+   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "jrs.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+   echo "Visit http://$POD_NAME:$CONTAINER_PORT/jasperserver-pro to use your application"
+
+   Note: ** This can be used only to communicate between the pods in same cluster , can not be accessed outside the cluster**
+
+   {{- if .Values.metrics.enabled }}
+
+   Run below commands to connect to the Grafana  Interface
+   export GRAFANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-grafana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Get the password by running below command
+   kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+   Connect To Grafana
+   echo http://$NODE_IP:$GRAFANA_NODE_PORT
+
+ {{- end }}
+  {{- if .Values.logging.enabled }}
+
+   Run below command to connect to the Kibana Interface
+   export KIBANA_NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-kibana )
+   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   Connect To Kibana
+   echo http://$NODE_IP:$KIBANA_NODE_PORT
+  {{- end }}
+{{- end }}
