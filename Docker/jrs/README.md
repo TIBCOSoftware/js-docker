@@ -187,14 +187,14 @@ If you see the Chromium issue in TIBCO JasperReports® Server using Docker deplo
 
 ## Using Docker Run
 
- ### Repository Setup Using Docker Container
+ ### Repository Database as Docker Container
  
     docker run --name activemq -d rmohr/activemq:5.15.9-alpine
     docker run --link activemq:activemq --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
 
 **Note:** Dockerfiles are designed to run in the cluster mode always, to run the TIBCO JasperReports® Server alone, comment `COPY --chown=jasperserver:jasperserver cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/` in Dockerfile and then rebuild the image.
 
-### Repository Setup Using External DB
+### Repository Database as External DB
 
     docker run --name activemq -d rmohr/activemq:5.15.9-alpine
     docker run --link activemq:activemq   --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
