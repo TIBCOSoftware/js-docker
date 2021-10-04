@@ -47,8 +47,7 @@ COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/lib /usr/src/jasperreports-serv
 # js-docker specific scripts and resources
 COPY scripts /usr/src/jasperreports-server/scripts/
 
-RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
+RUN chmod +x /usr/src/jasperreports-server/scripts/*.sh && \
     /usr/src/jasperreports-server/scripts/installPackagesForJasperserver-pro-cmdline.sh && \
 	echo "finished installing packages" && \
 	cp -R /usr/src/jasperreports-server/scripts/buildomatic /usr/src/jasperreports-server/buildomatic && \
