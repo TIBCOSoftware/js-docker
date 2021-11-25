@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+    </Properties>
+    <Appenders>
+        <RollingFile name="RollingFile" fileName="scalable-adhoc.log" filePattern="scalable-adhoc-%d{MM-dd-yyyy}.log.gz"
+                     ignoreExceptions="false">
+            <PatternLayout pattern="%style{%d{ISO8601}}{black} %highlight{%-5level} [${spring:spring.application.name},$${ctx:X-Execution-ID:-},$${ctx:traceId:-},$${ctx:spanId:-}] [%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+            <TimeBasedTriggeringPolicy />
+        </RollingFile>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json">
+                <EventTemplateAdditionalField key="k8s.pod" value="${k8s:podName:-}"/>
+                <EventTemplateAdditionalField key="app.name" value="${lower:${spring:spring.application.name:-spring}}"/>
+            </JsonTemplateLayout-->
+            <PatternLayout
+                    pattern="%style{%d{ISO8601}}{black} %highlight{%-5level} [${spring:spring.application.name},$${ctx:X-Execution-ID:-},$${ctx:traceId:-},$${ctx:spanId:-}] [%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.jaspersoft.commons.groovy.GroovyRunnerFactory" level="error" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.jaspersoft.commons.dataset.expr.DataSetExpressionParser" level="error" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.redisson" level="INFO" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- LOG everything at ERROR level -->
+        <Root level="error">
+            <AppenderRef ref="Console"/>
+            <!--            <AppenderRef ref="RollingFile"/>-->
+        </Root>
+    </Loggers>
+</Configuration>

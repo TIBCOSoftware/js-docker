@@ -1,0 +1,65 @@
+# Copyright (c) 2021-2021. TIBCO Software Inc.
+# This file is subject to the license terms contained
+# in the license file that is distributed with this file
+
+version: "3.9"
+networks:
+  jrs_default:
+    external: true
+    name: jrs_default
+services:
+  drivers:
+    env_file:
+     - .env
+    image: "${SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME}:${SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG}"
+    networks:
+      - jrs_default
+    build:
+      context: ../../../
+      dockerfile: ./jaspersoft-containers/Docker/scalableQueryEngine/Dockerfile.drivers
+      args:
+        - JASPERREPORTS_SERVER_VERSION
+        - JDK_BASE_IMAGE
+    command: >
+      sh -c "/usr/local/drivers/rsync -ari --ignore-existing --no-compress /usr/local/drivers/ /lib/drivers/"
+    volumes:
+      - ./resources/drivers:/lib/drivers
+
+  redis:
+    image: 'bitnami/redis:6.2'
+    environment:
+        - REDIS_PASSWORD=jasperserver
+    networks:
+      - jrs_default
+    volumes:
+      - redis-data:/bitnami/redis/data
+
+  scalable-query-engine:
+    env_file: .env
+    image: "${SCALABLE_QUERY_ENGINE_IMAGE_NAME}:${SCALABLE_QUERY_ENGINE_IMAGE_TAG}"
+    networks:
+      - jrs_default
+    build:
+      context: ../../../
+      dockerfile: ./jaspersoft-containers/Docker/scalableQueryEngine/Dockerfile
+      args:
+        - JASPERREPORTS_SERVER_VERSION
+        - JDK_BASE_IMAGE
+    volumes:
+      - ./resources/properties/:/etc/config/
+      - ./resources/drivers:/usr/lib/drivers/
+      - ./resources/keystore:/etc/secrets/keystore
+    ports:
+      - "8081:8081"
+    environment:
+      - LOADER_PATH=/etc/config,BOOT-INF/classes,BOOT-INF/lib,/usr/lib/drivers
+    mem_limit: 5g
+    mem_reservation: 1g
+    cpu_shares: 256
+
+    depends_on:
+      - drivers
+      - redis
+volumes:
+  redis-data:
+    name: jrs-redis-vol

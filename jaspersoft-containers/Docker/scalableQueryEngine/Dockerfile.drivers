@@ -1,0 +1,57 @@
+# Copyright (c) 2021-2021. TIBCO Software Inc.
+# This file is subject to the license terms contained
+# in the license file that is distributed with this file
+#ARG JDK_BASE_IMAGE=amazoncorretto:11
+ARG JDK_BASE_IMAGE=openjdk:11-jdk
+ARG JASPERREPORTS_SERVER_VERSION=8.0.0
+
+FROM ${JDK_BASE_IMAGE} as driver
+
+ARG JASPERREPORTS_SERVER_VERSION
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.0}
+ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
+ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
+ENV JRS_HOME /usr/local/jasperreports-server
+
+COPY ${JRS_DISTRO}/buildomatic ${JRS_HOME}/buildomatic/
+COPY ${JRS_DISTRO}/jasperserver-pro.war ${JRS_HOME}/
+COPY $CONTAINER_DISTRO/scripts/installPackagesForScalableAdhoc.sh /usr/local/scripts/installPackagesForScalableAdhoc.sh
+RUN  chmod +x /usr/local/scripts/installPackagesForScalableAdhoc.sh  &&\
+     /usr/local/scripts/installPackagesForScalableAdhoc.sh &&\
+     unzip -o -q ${JRS_HOME}/jasperserver-pro.war -d ${JRS_HOME}/jasperserver-pro/
+
+
+FROM ${JDK_BASE_IMAGE}
+
+ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
+ENV WAR_JARS=/usr/local/jasperreports-server/buildomatic/conf_source/iePro/lib
+ENV WAR_LIB_JARS=/usr/local/jasperreports-server/jasperserver-pro/WEB-INF/lib
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.0}
+ENV RELEASE_DATE ${RELEASE_DATE:- 14-11-2021}
+
+LABEL "org.jasperosft.name"="Jasper Reports Server Scalable Query Engine" \
+      "org.jaspersoft.vendor"="TIBCO Software Inc." \
+      "org.jaspersoft.maintainer"="js-support@tibco.com" \
+      "org.jaspersoft.version"=$JASPERREPORTS_SERVER_VERSION \
+      "org.jaspersoft.release_date"=$RELEASE_DATE \
+      "org.jaspersoft.description"="This image will use loading the datasource drivers" \
+      "org.jaspersoft.url"="www.jaspersoft.com"
+
+
+COPY $CONTAINER_DISTRO/scripts/installPackagesForScalableAdhoc.sh /usr/local/scripts/installPackagesForScalableAdhoc.sh
+
+WORKDIR /usr/local/drivers
+
+RUN  chmod +x /usr/local/scripts/installPackagesForScalableAdhoc.sh  &&\
+     /usr/local/scripts/installPackagesForScalableAdhoc.sh &&\
+     cp /usr/bin/rsync /usr/local/drivers &&\
+     mkdir -p /worker/lib/drivers &&\
+     useradd -m jasperserver -u 13999 && chown -R jasperserver:root /usr/local/drivers /worker/lib/drivers &&\
+     chgrp -R 0 /usr/local/drivers /worker/lib/drivers  && \
+     chmod -R g=u /usr/local/drivers   /worker/lib/drivers
+
+VOLUME /worker/lib/drivers
+
+USER 13999
+COPY --from=driver --chown=jasperserver:root  ${WAR_JARS}/mariadb-java-client-*.jar ${WAR_JARS}/postgresql-*.jar ${WAR_JARS}/mongo-java-driver-*.jar ${WAR_JARS}/googlebigquery-jdbc41-*.jar ${WAR_JARS}/hive-*.jar ${WAR_LIB_JARS}/TIoracle-*.jar ${WAR_LIB_JARS}/TIsqlserver-*.jar ${WAR_LIB_JARS}/TIgooglebigquery-*.jar ${WAR_LIB_JARS}/spark-jdbc42-*.jar ${WAR_LIB_JARS}/TIsparksql-*.jar ${WAR_LIB_JARS}/TIdb2-*.jar ${WAR_LIB_JARS}/cassandra-jdbc42-*.jar ${WAR_LIB_JARS}/TIcassandra-*.jar ${WAR_LIB_JARS}/mongo-java-driver-*.jar ${WAR_LIB_JARS}/TImongodb-*.jar ${WAR_LIB_JARS}/impala-jdbc42-*.jar  ${WAR_LIB_JARS}/TIimpala-*.jar ${WAR_LIB_JARS}/TIhive-*.jar ${WAR_LIB_JARS}/TIsforce-*.jar ${WAR_LIB_JARS}/TIautorest-*.jar ${WAR_LIB_JARS}/elasticsearch-jdbc-*.jar ${WAR_LIB_JARS}/neo4j-jdbc42-*.jar ${WAR_LIB_JARS}/TIredshift-*.jar ./
+

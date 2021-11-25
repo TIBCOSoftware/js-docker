@@ -1,0 +1,279 @@
+replicaCount: 1
+jrsVersion: 8.0.0
+image:
+  tag:  8.0.0
+  name:
+  pullPolicy: IfNotPresent
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  PullSecrets:
+  nameOverride: ""
+  fullnameOverride: ""
+
+## JasperReports Server sample database
+foodmart:
+  jdbcUrl: repository-postgresql.{{.Release.Namespace }}.svc.cluster.local:5432/foodmart
+  username: postgres
+  password: {} ## Provide the password in base 64 encoded format and by default password is postgres
+
+## JasperReports Server sample database
+sugarcrm:
+  jdbcUrl: repository-postgresql.{{.Release.Namespace }}.svc.cluster.local:5432/sugarcrm
+  username: postgres
+  password: {} ## Provide the password in base 64 encoded format and by default password is postgres
+
+## JasperReports Server audit database configuration
+## By default audit moniteriing is disabled
+audit:
+  enabled: false
+  jdbcUrl: repository-postgresql.{{.Release.Namespace }}.svc.cluster.local:5432/jasperserver
+  userName: postgres
+  password: {}   ## Provide the password in base 64 encoded format and by default password is postgres
+
+
+## Set Timezone for adhoc worker
+# Ex:  "America/Los_Angeles"
+timeZone: {}
+
+## If Application credentials secret created manually then provide the name here
+appCredentialsSecretName: ""
+
+
+
+## Pod Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  #readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 11099
+  allowPrivilegeEscalation: false
+
+## Scalabe adhoc worker Service
+## ref: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
+service:
+  type: ClusteIP
+  port: 80
+
+## Pod Service Account
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+
+serviceAccount:
+  enabled: true
+  annotations: {}
+  # The name of the service account to use, if service account already exist change enabled to false and update the name
+  name: query-engine
+
+## Rbac for service account
+## https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+rbac:
+  create: true
+  name: query-enging-role
+
+## Set env variables
+## ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+## ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+
+extraEnv:
+  javaOpts: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=80.0 -Xss2M -Djava.io.tmpdir=/tmp"
+  normal: {}
+  secrets: {}
+  #- name: DB_USERNAME
+  #  valueFrom:
+  #    secretKeyRef:
+  #     name: db-secret
+  #     key: DB_USERNAME
+
+## Define volume mounts in k8s standard way
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+
+extraVolumeMounts: {}
+
+## Define Volumes in k8s standard way
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumes: {}
+
+## Configure the health check for Scalable query engine
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+
+healthcheck:
+  enabled: true
+  livenessProbe:
+    port: 8080
+    initialDelaySeconds: 120
+    failureThreshold: 24
+    periodSeconds: 10
+    timeoutSeconds: 4
+  readinessProbe:
+    port: 8080
+    initialDelaySeconds: 60
+    failureThreshold: 24
+    periodSeconds: 10
+    timeoutSeconds: 4
+
+## Configure the resource requirements
+## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+resources:
+  enabled: true
+  limits:
+    cpu: "3"
+    memory: 4Gi
+  requests:
+    cpu: "2"
+    memory: 2Gi
+
+engineProperties:
+  sharedCacheExpiration: 20m
+
+
+# Configure the Scalable query engine ingress
+# By default it has to be enabled to communicate with the jasperserver webapp
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host:
+      paths:
+        - path: /query-engine
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# Enable the redis cluster for redis based caching
+# externalRedisClusteraddress provide the External redis Url , if it is provided default redis installation skipped
+# Ex: externalRedisClusteraddress: redis://redis-cluster:6379
+rediscluster:
+  enabled: true
+  externalRedisClusteraddress: {}
+  externalRedisClusterpassword: {}
+
+redis-cluster:
+  nameOverride: query-engine-redis-cluster
+  cluster:
+    nodes: 6
+  persistence:
+    size: 8Gi
+
+global:
+  redis:
+    password: ZI85uBweKn
+
+customMetricScaling:
+  enabled: false
+scalable-query-engine-scaling:
+  minReplicas: 2
+  maxReplicas: 10
+  averageQueuedExecutions: 10
+  scaleDown:
+      stabilizationWindowSeconds: 300
+
+## Enable the HPA for Scalable query engine
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: {}
+  scaleDown:
+      stabilizationWindowSeconds: 300
+
+ingressClass: intranet
+
+kubernetes-ingress:
+  nameOverride: query-engine-ingress
+  controller:
+    replicaCount: 1
+    service:
+      type: LoadBalancer
+    ingressClass: intranet
+    config:
+      timeout-connect: 30s
+      timeout-check: 60s
+      timeout-client: 240s
+      timeout-server: 240s
+      maxconn: "1000"
+    logging:
+      level: debug
+  defaultBackend:
+    replicaCount: 1
+
+server:
+  tomcat:
+    connectionTimeout: 300000
+
+## Configure the JRS settings in Scalable query engine application properties
+
+jrs:
+  server:
+    scheme: http
+    host: "{{ .Release.Name }}-jasperserver-ingress.{{ .Release.Namespace }}.svc.cluster.local"
+    port: 80
+    path: jasperserver-pro/rest_v2
+    username: jasperadmin
+  proxy:
+    scheme: http
+    host: "{{ .Release.Name }}-query-engine-ingress.{{ .Release.Namespace }}.svc.cluster.local"
+    port: 80
+    path: rest_v2
+    username: jasperadmin
+    timedOut: 30000
+
+# configure the Scalable query engine to copy the jdbc jars to worker pods
+
+drivers:
+  enabled: true
+  image:
+    tag: 8.0.0
+    name:
+    pullPolicy: IfNotPresent
+  jdbcDriversPath: /usr/lib/drivers
+
+
+# Configure the metrics
+metrics:
+  enabled: false
+
+kube-prometheus-stack:
+  prometheus-node-exporter:
+    hostRootFsMount: false
+  grafana:
+    service:
+      type: NodePort
+
+# To enable centralized logging using EFK stack
+logging:
+  enabled: false
+  level: INFO
+  pretty: false
+  #layout: json
+
+  fluentd:
+    imageName: fluent/fluentd-kubernetes-daemonset
+    imageTag: v1.12.3-debian-elasticsearch7-1.0
+    esClusterName: elasticsearch
+    esPort: 9200
+
+elasticsearch:
+  replicas: 1
+  volumeClaimTemplate:
+    resources:
+      requests:
+        storage: 10Gi
+
+kibana:
+  service:
+    type: NodePort
+
+tracing:
+  enabled: false
+  zipkin:
+    baseUrl: "http://{{ .Release.Name }}-adhoc-tracing.default.svc.cluster.local:9411/"

@@ -1,0 +1,310 @@
+# Default values for jrs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+jrsVersion: 8.0.0
+image:
+  tag:  8.0.0
+  name:
+  pullPolicy: IfNotPresent
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  PullSecrets:
+nameOverride: ""
+fullnameOverride: ""
+secretKeyStoreName: jasperserver-keystore
+secretLicenseName: jasperserver-license
+
+## Set Timezone for adhoc worker
+# Ex:  "America/Los_Angeles"
+timeZone: {}
+
+## Pod Service Account
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+
+serviceAccount:
+  enabled: true
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: jasperserver-pro
+
+## Rbac for service account
+## https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+rbac:
+  create: true
+  name: jasperserver-role
+
+podAnnotations: {}
+
+## Jasperserver Pods Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+
+securityContext:
+  capabilities:
+    drop:
+     - ALL
+  #readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10099
+  allowPrivilegeEscalation: false
+
+
+## Configure the Jasperserver repository setup
+## change includeSamples to false if samples are not required
+buildomatic:
+  enabled: true
+  name: jasperserver-buildomatic
+  imageTag: 8.0.0
+  imageName:
+  pullPolicy: IfNotPresent
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  PullSecrets:
+  includeSamples: true
+
+## Set env variables
+## ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+## ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+
+extraEnv:
+ javaOpts: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0"
+ normal: {}
+ secrets: {}
+ #- name: DB_USERNAME
+ #  valueFrom:
+ #    secretKeyRef:
+ #     name: db-secret
+ #     key: DB_USERNAME
+
+
+## Define volume mounts in k8s standard way
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+
+extraVolumeMounts: {}
+
+## Define Volumes in k8s standard way
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+extraVolumes: {}
+
+## Configure the service for Jasperserver webapp
+service:
+  type: ClusterIP
+  port: 80
+
+## Configure the health checks for Jasperserver webapp
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+
+healthcheck:
+  enabled: true
+  livenessProbe:
+    port: 8080
+    initialDelaySeconds: 350
+    failureThreshold: 10
+    periodSeconds: 10
+    timeoutSeconds: 4
+  readinessProbe:
+    port: 8080
+    initialDelaySeconds: 90
+    failureThreshold: 15
+    periodSeconds: 10
+    timeoutSeconds: 4
+    
+## Configure resource requests and limits for Jasperserver webapp
+## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+resources:
+  enabled: true
+  limits:
+    cpu: "3"
+    memory: 7.5Gi
+  requests:
+    cpu: "2"
+    memory: 3.5Gi
+
+# Configure the Jasperserver cache replication using JMS
+# if jmsBrokerUrl specified then inbuilt jms configuration is skipped
+# EX:  jmsBrokerUrl: tcp://<fqdn>:61616
+jms:
+  enabled: true
+  jmsBrokerUrl: {}
+  name: jasperserver-cache
+  serviceName: jasperserver-cache-service
+  repository:
+  imageName: rangareddyv/activemq-openshift
+  imageTag: 5.16.2
+
+  healthcheck:
+    enabled: true
+    livenessProbe:
+      port: 61616
+      initialDelaySeconds: 100
+      failureThreshold: 10
+      periodSeconds: 10
+    readinessProbe:
+      port: 61616
+      initialDelaySeconds: 10
+      failureThreshold: 15
+      periodSeconds: 10
+
+  resources:
+    enabled: true
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    #readOnlyRootFilesystem: true
+    #runAsNonRoot: true
+    #runAsUser: 1000
+    allowPrivilegeEscalation: false
+
+# Setup Haproxy ingress controller configuration
+
+kubernetes-ingress:
+  nameOverride: jasperserver-ingress
+  controller:
+    replicaCount: 1
+    service:
+      type: LoadBalancer
+    config:
+      timeout-connect: 30s
+      timeout-check: 60s
+      timeout-client: 240s
+      timeout-server: 240s
+      maxconn: "1000"
+    logging:
+      level: debug
+  defaultBackend:
+    enabled: false
+
+
+# Configure the ingress for Jasperserver webapp
+# For HTTPS traffic , create a tls secret manually and provide below in tls section
+# https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+
+ingress:
+  enabled: true
+  annotations:
+    ingress.kubernetes.io/cookie-persistence: "JRS_COOKIE"
+    haproxy.org/pod-maxconn: "500"
+  hosts:
+    - host:
+      paths:
+        - path: /jasperserver-pro
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+## Enable/ Disable Scalable query engine
+scalableQueryEngine:
+  enabled: false
+
+
+## Provide the external Scalable query engine URL
+## If this is provided scalableQueryEngine.enabled should set it to false
+scalableQueryEngineUrl: {}
+
+
+## Configure the Scalable query engine
+
+scalable-query-engine:
+  replicaCount: 1
+  image:
+    tag: 8.0.0
+    name:
+    pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: {}
+  drivers:
+    enabled: true
+    image:
+      tag: 8.0.0
+      name:
+  kubernetes-ingress:
+    controller:
+      service:
+        type: ClusterIP
+
+
+# Configure the HPA/Autoscaling for Jasperserver webapp
+# Scaling enabled based on either of the metrics , both cannot be used
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: {}
+  scaleDown:
+    stabilizationWindowSeconds: 300
+
+# Configure the default cluster level metrics for jasperserver webapp using prometheus operator
+
+metrics:
+  enabled: false
+
+kube-prometheus-stack:
+  prometheus-node-exporter:
+    hostRootFsMount: false
+  grafana:
+    service:
+      type: NodePort
+
+# To enable centralized logging using EFK stack
+logging:
+  enabled: false
+  fluentd:
+    imageName: fluent/fluentd-kubernetes-daemonset
+    imageTag: v1.12.3-debian-elasticsearch7-1.0
+    esClusterName: elasticsearch
+    esPort: 9200
+
+# Elastic search configuration for logging
+
+elasticsearch:
+  replicas: 1
+  volumeClaimTemplate:
+    resources:
+      requests:
+        storage: 10Gi
+
+## Visualization for logging
+kibana:
+  service:
+    type: NodePort
+
+## Tolerations for JRS webapp
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+
+tolerations: []
+ #- key: "key"
+ #  operator: "Equal"
+ #  value: "value"
+ #  effect: "NoSchedule"
+
+
+## Affinity for JRS webapp
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+#requiredDuringSchedulingIgnoredDuringExecution:
+#  nodeSelectorTerms:
+#    - matchExpressions:
+#        - key: kubernetes.io/e2e-az-name
+#          operator: In
+#          values:
+#            - e2e-az1

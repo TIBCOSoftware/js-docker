@@ -1,0 +1,26 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "scalableQueryEngineScaling.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "scalableQueryEngineScaling.chart" . }}
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/version: {{ .Values.jrsVersion }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{  .Values.queryEngine.deployment }}
+  minReplicas: {{ .Values.minReplicas }}
+  maxReplicas: {{ .Values.maxReplicas }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.scaleDown.stabilizationWindowSeconds }}
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: scalable_query_engine_queued_executions_count
+        target:
+          type: AverageValue
+          averageValue: {{ .Values.averageQueuedExecutions }}

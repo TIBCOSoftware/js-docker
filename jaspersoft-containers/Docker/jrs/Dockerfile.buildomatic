@@ -1,0 +1,51 @@
+# Copyright (c) 2021-2021. TIBCO Software Inc.
+# This file is subject to the license terms contained
+# in the license file that is distributed with this file
+
+#ARG JDK_BASE_IMAGE=amazoncorretto:11
+ARG JDK_BASE_IMAGE=openjdk:11-jdk
+FROM ${JDK_BASE_IMAGE}
+
+ARG JASPERREPORTS_SERVER_VERSION=8.0.0
+ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
+ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
+
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.0}
+ENV JRS_HOME /usr/src/jasperreports-server
+ENV BUILDOMATIC_MODE non-interactive
+ENV RELEASE_DATE ${RELEASE_DATE:- 14-11-2021}
+
+LABEL "org.jasperosft.name"="JasperReports Server" \
+      "org.jaspersoft.vendor"="TIBCO Software Inc." \
+      "org.jaspersoft.maintainer"="js-support@tibco.com" \
+      "org.jaspersoft.version"=$JASPERREPORTS_SERVER_VERSION \
+      "org.jaspersoft.release_date"=$RELEASE_DATE \
+      "org.jaspersoft.description"="This image will use for repository setup, import, and export." \
+      "org.jaspersoft.url"="www.jaspersoft.com"
+
+COPY ${JRS_DISTRO}/buildomatic ${JRS_HOME}/buildomatic/
+COPY ${JRS_DISTRO}/apache-ant ${JRS_HOME}/apache-ant/
+COPY ${CONTAINER_DISTRO}/scripts/installPackagesForBuildomatic.sh /usr/local/scripts/installPackagesForBuildomatic.sh
+COPY ${CONTAINER_DISTRO}/scripts/buildomatic-entrypoint.sh /usr/local/scripts/entrypoint.sh
+COPY ${CONTAINER_DISTRO}/resources/default-properties /usr/src/jasperreports-server/buildomatic
+COPY ${CONTAINER_DISTRO}/resources/buildomatic-customization ${JRS_HOME}/buildomatic/
+
+RUN chmod +x /usr/local/scripts/*.sh && \
+    chmod +x ${JRS_HOME}/buildomatic/js-* && \
+    chmod +x ${JRS_HOME}/buildomatic/bin/*.sh && \
+    chmod +x ${JRS_HOME}/apache-ant/bin/* && \
+    mkdir -p /usr/local/share/jasperserver-pro/keystore && \
+    /usr/local/scripts/installPackagesForBuildomatic.sh
+
+WORKDIR ${JRS_HOME}/buildomatic/
+
+RUN useradd -m jasperserver -u 10099 && chown -R jasperserver:root ${JRS_HOME} && \
+                chown -R jasperserver:root /usr/local/share/jasperserver-pro/keystore && \
+                chgrp -R 0 ${JRS_HOME} /usr/local/share/jasperserver-pro/keystore && \
+                chmod -R g=u ${JRS_HOME}  /usr/local/share/jasperserver-pro/keystore
+VOLUME /usr/local/share/jasperserver-pro/keystore
+
+USER 10099
+
+ENTRYPOINT ["/usr/local/scripts/entrypoint.sh"]
+CMD ["help"]

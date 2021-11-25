@@ -1,0 +1,6 @@
+singleServerConfig:
+  address: "redis://redis:6379"
+  password: "jasperserver"
+  pingConnectionInterval: 7000
+  subscriptionsPerConnection: 7
+  subscriptionConnectionPoolSize: 30

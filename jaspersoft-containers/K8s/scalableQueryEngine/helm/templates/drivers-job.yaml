@@ -1,0 +1,41 @@
+{{- if .Values.drivers.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "queryEngine.fullname" . }}
+  labels:
+    {{- include "queryEngine.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ include "queryEngine.fullname" . }}
+      labels:
+        {{- include "queryEngine.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: {{ .Values.image.PullSecrets }}
+      securityContext:
+        fsGroup: 13999
+      containers:
+        - name: drivers-job
+          image: {{ default "scalable-query-engine-drivers" .Values.drivers.image.name}}:{{ default "latest" .Values.drivers.image.tag}}
+          imagePullPolicy: {{ .Values.drivers.image.pullPolicy }}
+          command: [ "/usr/local/drivers/rsync" ]
+          args: [ "-avzO" , "--no-super","--no-o" ,"--no-g", "--no-perms", "--ignore-existing", "--no-compress", "/usr/local/drivers/", {{ .Values.drivers.jdbcDriversPath }} ]
+          volumeMounts:
+            - name: drivers-volume
+              mountPath: {{ .Values.drivers.jdbcDriversPath }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 13999
+      volumes:
+        - name: drivers-volume
+          persistentVolumeClaim:
+            claimName: {{ include "queryEngine.fullname" . }}
+
+{{- end }}

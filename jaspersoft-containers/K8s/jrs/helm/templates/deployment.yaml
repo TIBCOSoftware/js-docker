@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jrs.fullname" . }}
+  labels:
+    {{- include "jrs.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "jrs.selectorLabels" . | nindent 6 }}
+  replicas: {{ default 1 .Values.replicaCount | int }}
+  template:
+    metadata:
+      labels:
+        {{- include "jrs.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.PullSecrets }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ default "jasperserver-webapp" .Values.image.name}}:{{ default "latest" .Values.image.tag}}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        ports:
+         - containerPort:  8080
+           name: http
+           protocol: TCP
+         - containerPort: 8443
+           name: https
+           protocol: TCP
+
+  {{ include "securitycontext" . | nindent 8 }}
+  {{ include "env" .  | nindent 8 }}
+  {{ include "volumemounts" .  | nindent 8 }}
+  {{ include "healthcheck" .  | nindent 8 }}
+  {{ include "resources" .  | nindent 8 }}
+  {{ include "tolerations" . | nindent 6 }}
+  {{ include "affinity" . | nindent 6 }}
+  {{ include "volumes" . | nindent 6}}
+  {{ include "serviceaccountname" . | nindent 6 }}

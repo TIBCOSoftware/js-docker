@@ -1,0 +1,1 @@
+This distribution includes Dockerfile, scripts, and supporting files for building, configuring, and running TIBCO JasperReports® Server and TIBCO JasperReports® Server Scalable Query Engine in Docker.
