@@ -14,13 +14,19 @@ spec:
       labels:
         {{- include "jrs.labels" . | nindent 8 }}
     spec:
+      {{- if .Values.image.PullSecrets }}
       imagePullSecrets:
         - name: {{ .Values.image.PullSecrets }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ default "jasperserver-webapp" .Values.image.name}}:{{ default "latest" .Values.image.tag}}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-
+        {{- if .Values.db.env }}
+        envFrom:
+          - secretRef:
+              name: {{ default "jasperserver-pro-db-secret"  .Values.db.secretName }}
+        {{- end }}
         ports:
          - containerPort:  8080
            name: http

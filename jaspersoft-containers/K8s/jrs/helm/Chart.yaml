@@ -3,7 +3,7 @@ name: jasperserver-pro
 description: JasperReportServer deployment in K8s
 type: application
 version: 1.0.0
-appVersion: "8.0.0"
+appVersion: "8.0.2"
 keywords:
   - Analytics
   - BI Tool
@@ -11,7 +11,7 @@ keywords:
 
 maintainers:
   - name: Jaspersoft
-    email: js-eng-infra@tibco.com
+    email: js-support@tibco.com
     url: https://www.jaspersoft.com/
 
 dependencies:

@@ -1,0 +1,34 @@
+jrsVersion: 8.0.0
+queryEngine:
+  deployment: jrs-scalable-query-engine
+
+prometheusAdapter:
+  enabled: true
+
+prometheus-adapter:
+  prometheus:
+    url: http://{{ .Release.Name }}-prometheus-server.default.svc.cluster.local
+    port: 80
+    path: ""
+
+  rules:
+    # rules.default=false to workaround https://github.com/DirectXMan12/k8s-prometheus-adapter/issues/292 (K8s 1.20 is needed)
+    default: false
+    custom:
+      - seriesQuery: '{__name__=~"^scalable_query_engine_queued_executions_size$"}'
+        resources:
+          overrides:
+            kubernetes_namespace:
+              resource: namespace
+            kubernetes_pod_name:
+              resource: pod
+        name:
+          matches: "^scalable_query_engine_queued_executions_size$"
+          as: "scalable_query_engine_queued_executions_count"
+        metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+        
+minReplicas: 2
+maxReplicas: 10
+averageQueuedExecutions: 10
+scaleDown:
+  stabilizationWindowSeconds: 300

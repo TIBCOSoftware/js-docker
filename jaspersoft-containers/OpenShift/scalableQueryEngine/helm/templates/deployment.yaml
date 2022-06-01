@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "queryEngine.fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- include "queryEngine.labels" . | nindent 4 }}
+spec:
+  replicas: {{ default 2 .Values.replicaCount | int }}
+  selector:
+    matchLabels:
+  {{- include "queryEngine.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "queryEngine.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/query-batch: "enable"
+      annotations:
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      {{- if.Values.image.PullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.image.PullSecrets }}
+      {{- end }}
+      initContainers:
+        {{ include "initcontainerconfig" . | nindent 8 }}
+      containers:
+        - name: scalable-query-engine
+          image: {{ default "scalable-query-engine" .Values.image.name}}:{{ default "latest" .Values.image.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+            - containerPort: 8443
+              name: https
+              protocol: TCP
+
+          {{ include "workerEnv" .  | nindent 10 }}
+          {{ include "workervolumemounts" .  | nindent 10 }}
+          {{ include "workerhealthcheck" .  | nindent 10 }}
+          {{ include "workerresources" .  | nindent 10 }}
+          {{ include "workersecuritycontext" . | nindent 10}}
+          {{ include "workerserviceaccount" . | nindent 6 }}
+          {{ include "workervolumes" . | nindent 6 }}

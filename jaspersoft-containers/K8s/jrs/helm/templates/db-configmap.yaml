@@ -1,0 +1,68 @@
+{{- if  .Values.db.env  }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jrs.fullname" . }}
+  labels:
+    {{- include "jrs.labels" . | nindent 4 }}
+data:
+  context.xml: |-
+    <Context path="/jasperserver" reloadable="false">
+    <Resource name="jdbc/jasperserver" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
+    {{- if .Values.db.audit.enabled }}
+    <Resource name="jdbc/jasperserverAudit" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${AUDIT_DB_USER_NAME}" password="${AUDIT_DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    url="jdbc:postgresql://${AUDIT_DB_HOST}:${AUDIT_DB_PORT}/${AUDIT_DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
+    {{- else if semverCompare ">= 8.0.0" .Values.jrsVersion }}
+    <Resource name="jdbc/jasperserverAudit" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
+      {{- end }}
+    <Resource name="jdbc/sugarcrm" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/sugarcrm"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"/>
+
+    <Resource name="jdbc/foodmart" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/foodmart"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"/>
+
+    <!-- Comment this line to enable session persistence across Tomcat restarts -->
+    <Manager pathname="" />
+    </Context>
+
+{{- end }}

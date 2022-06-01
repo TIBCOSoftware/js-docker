@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-jrsVersion: 8.0.0
+jrsVersion: 8.0.2
 image:
-  tag:  8.0.0
+  tag:  8.0.2
   name:
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -52,12 +52,33 @@ securityContext:
   allowPrivilegeEscalation: false
 
 
+## Add JRS DB details here
+##
+db:
+  env: false
+  secretName:
+  jrs:
+    dbHost: repository-postgresql.default.svc.cluster.local
+    dbPort: 5432
+    dbName: jasperserver
+    dbUserName: postgres
+    dbPassword: postgres
+  ## Provide same as JasperReportServer DB details if audit db is part of JRS DB
+  audit:
+    enabled: false
+    dbHost:
+    dbPort:
+    dbName:
+    dbUserName:
+    dbPassword:
+
+
 ## Configure the Jasperserver repository setup
 ## change includeSamples to false if samples are not required
 buildomatic:
   enabled: true
   name: jasperserver-buildomatic
-  imageTag: 8.0.0
+  imageTag: 8.0.2
   imageName:
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -222,7 +243,7 @@ scalableQueryEngineUrl: {}
 scalable-query-engine:
   replicaCount: 1
   image:
-    tag: 8.0.0
+    tag: 8.0.2
     name:
     pullPolicy: IfNotPresent
   autoscaling:
@@ -234,7 +255,7 @@ scalable-query-engine:
   drivers:
     enabled: true
     image:
-      tag: 8.0.0
+      tag: 8.0.2
       name:
   kubernetes-ingress:
     controller:

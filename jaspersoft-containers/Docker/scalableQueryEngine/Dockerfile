@@ -4,13 +4,13 @@
 
 #ARG JDK_BASE_IMAGE=amazoncorretto:11
 ARG JDK_BASE_IMAGE=openjdk:11-jdk
-ARG JASPERREPORTS_SERVER_VERSION=8.0.0
+ARG JASPERREPORTS_SERVER_VERSION=8.0.2
 
 FROM ${JDK_BASE_IMAGE} AS worker
 
 ARG JASPERREPORTS_SERVER_VERSION
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.2}
 ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
 ENV WORKER_HOME /usr/local/scalable-query-engine
@@ -29,7 +29,7 @@ RUN chmod +x /usr/local/scripts/installPackagesForScalableAdhoc.sh &&  /usr/loca
 FROM ${JDK_BASE_IMAGE}
 
 ARG JASPERREPORTS_SERVER_VERSION
-ENV RELEASE_DATE ${RELEASE_DATE:- 14-11-2021}
+ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 LABEL "org.jasperosft.name"="Jasper Reports Server Scalable Query Engine" \
       "org.jaspersoft.vendor"="Tibco Software Inc." \
