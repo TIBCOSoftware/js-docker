@@ -1,0 +1,19 @@
+{{- if and .Values.jms.enabled  (not .Values.jms.jmsBrokerUrl) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.jms.serviceName }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    helm.sh/chart: {{ include "jrs.chart" . }}
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/version: {{ .Values.jrsVersion }}
+spec:
+  ports:
+    - name: broker
+      port: 61616
+      targetPort: 61616
+  selector:
+    app.kubernetes.io/name: {{ include "jms.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+ {{- end}}

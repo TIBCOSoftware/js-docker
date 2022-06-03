@@ -1,0 +1,25 @@
+{{- if .Values.route.enabled -}}
+{{- $fullName := include "queryEngine.fullname" . -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "queryEngine.labels" . | nindent 4 }}
+  annotations:
+    {{- include "routeannotations" . | nindent 4 }}
+spec:
+  {{- if .Values.route.tls }}
+  tls:
+    {{- toYaml .Values.route.tls | nindent 4 }}
+  {{- end }}
+  {{- if .Values.route.host }}
+  host: {{ .Values.route.host }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ $fullName }}
+  port:
+    targetPort: http
+
+  {{- end }}

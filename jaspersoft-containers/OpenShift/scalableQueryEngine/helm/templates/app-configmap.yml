@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "queryEngine.fullname" . }}
+  labels:
+    {{- include "queryEngine.labels" . | nindent 4 }}
+data:
+  application.properties: |-
+    spring.application.name={{ include "queryEngine.fullname" . }}
+    server.servlet.application-display-name=${spring.application.name}
+    spring.config.import=classpath:jndi.properties
+    worker.local.cache.config=classpath:ehcache.xml
+    worker.local-cache.executions.capacity=100
+    worker.local-cache.executions.expiration.time-to-live=5m
+    worker.local-cache.adhoc-data.capacity=100
+    worker.local-cache.adhoc-data.expiration.time-to-live=5m
+    worker.shared.cache.config=classpath:redisson-jcache.yaml
+    worker.shared-cache.expirations.executions.time-to-idle={{ .Values.engineProperties.sharedCacheExpiration }}
+    worker.execution.descriptor-dir=/usr/local/scalable-query-engine/executions
+    worker.execution.retry.maxAttempts=1
+    worker.execution.retry.ignoreErrorCodes=query.no.data
+
+    spring.banner.location=classpath:bannername.txt
+    spring.banner.image.location=classpath:banner.gif
+    server.port=8080
+    server.max-http-header-size=100KB
+    #server.tomcat.max-http-header-size=100KB
+    server.tomcat.connection-timeout={{ default "20000" .Values.server.tomcat.connectionTimeout }}
+    server.shutdown=graceful
+    spring.lifecycle.timeout-per-shutdown-phase=1m
+    management.endpoint.shutdown.enabled=true
+    management.endpoint.info.enabled=true
+    management.endpoint.health.enabled=true
+    management.endpoint.metrics.enabled=true
+    management.endpoint.prometheus.enabled=true
+    management.endpoint.startup.enabled=true
+    management.endpoints.web.exposure.include=info,health,startup,metrics,prometheus
+    management.metrics.enable.cache.local=false
+    logging.level.root={{ .Values.logging.level }}
+    logging.config=classpath:log4j2-spring.xml
+    week.start.day=2
+    property.licenseServerActivationPort=8080
+    feature.audit_monitoring.enabled={{ default "false" .Values.audit.enabled }}
+    auditDBType=postgresql
+    auditJNDIName=jdbc/jasperserverAudit
+
+    property.reportThumbnailServiceEnabled=false
+    property.ehcache.disabled=false
+    jndi.namespace=comp/env
+    resource.root=classpath:
+    groovy.root=classpath:/groovy/
+    executions.stealing.enabled=false
+    external.jdbc-drivers={{ .Values.drivers.jdbcDriversPath }}
+    worker.id=adhoc-worker-${random.int(100)}
+
+    #spring.cloud.kubernetes.config.name=adhoc_worker
+    spring.cloud.kubernetes.config.enabled=false
+    spring.cloud.kubernetes.config.enableApi=false
+    #export SPRING_CLOUD_KUBERNETES_CONFIG_ENABLEAPI=false
+
+    spring.sleuth.enabled=true
+    spring.sleuth.web.servlet.enabled=true
+    spring.sleuth.web.client.enabled=true
+    spring.sleuth.baggage.correlation-fields=X-Authenticated-Tenant,X-Authenticated-User,X-Execution-ID
+    spring.sleuth.baggage.remote-fields=X-Authenticated-Tenant,X-Authenticated-User,X-Execution-ID
+    spring.sleuth.baggage.tag-fields=X-Authenticated-Tenant,X-Authenticated-User,X-Execution-ID
+    spring.sleuth.sampler.probability=1.0
+    # Sleuth has an unsampled path generator, but it doesn't notice remapped health endpoint
+    spring.sleuth.web.additional-skip-pattern=/actuator
+
+    spring.zipkin.enabled={{ .Values.tracing.enabled }}
+    spring.zipkin.baseUrl={{ tpl (.Values.tracing.zipkin.baseUrl) . }}
+
+    javascript.optimize=false
+    jrs.server.scheme={{ .Values.jrs.server.scheme }}
+    jrs.server.host={{ tpl (.Values.jrs.server.host) . }}
+    jrs.server.port={{ .Values.jrs.server.port }}
+    jrs.server.path={{ .Values.jrs.server.path }}
+    jrs.server.username={{ .Values.jrs.server.username }}
+    jrs.proxy.scheme={{ .Values.jrs.proxy.scheme }}
+    jrs.proxy.host={{ tpl (.Values.jrs.proxy.host) . }}
+    jrs.proxy.port={{ .Values.jrs.proxy.port }}
+    jrs.proxy.path={{ .Values.jrs.proxy.path }}
+    jrs.proxy.username={{ .Values.jrs.proxy.username }}
+    jrs.proxy.timedOut={{ .Values.jrs.proxy.timedOut }}
+
+    spring.task.execution.thread-name-prefix=worker-common-
+    spring.task.execution.pool.max-size=32
+    spring.task.execution.pool.queue-capacity=100
+    spring.task.execution.pool.keep-alive=10s
+    worker.execution.max-queue-capacity=32
+    worker.execution.enqueue-timeout=500ms
+
+    spring.task.scheduling.thread-name-prefix=worker-scheduling-
+    spring.task.scheduling.pool.size=3
+
+    worker.execution.thread-name-prefix=query-execution-
+    worker.execution.pool.max-size=16
+    #worker.execution.pool.core-size=3
+    worker.execution.pool.queue-capacity=8
+    worker.execution.max-queue-capacity=1000
+    worker.execution.enqueue-timeout=1ms
+
+    worker.shared-cache.execution.thread-name-prefix=cache-task-
+    worker.shared-cache.execution.pool.max-size=32
+    worker.shared-cache.execution.pool.queue-capacity=100
+    worker.shared-cache.execution.pool.keep-alive=10s
+
+    product.name=scalable-query-engine
+
+    resilience4j.retry.instances.fetchData.maxAttempts=10
+    resilience4j.retry.instances.fetchData.waitDuration=5s
+    resilience4j.retry.instances.fetchData.enableExponentialBackoff=true
+    resilience4j.retry.instances.fetchData.exponentialBackoffMultiplier=1.5
+    resilience4j.retry.instances.fetchData.retryExceptions=com.jaspersoft.commons.datarator.exception.ExtensiveFetchDataLockFailedException
+
+    spring.main.lazy-initialization=true

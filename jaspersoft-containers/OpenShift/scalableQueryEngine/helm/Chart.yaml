@@ -1,0 +1,49 @@
+apiVersion: v2
+name: scalable-query-engine
+description: Helm Chart for Scalable Query Engine
+type: application
+version: 1.0.0
+appVersion: 8.0.0
+maintainers:
+  - name: Jaspersoft Eng Infra
+    email: js-eng-infra@tico.com
+dependencies:
+  - name: kubernetes-ingress
+    version: 1.15.4
+    repository: "@haproxytech"
+    condition: ingress.enabled
+    tags:
+      - load-balancer
+      - ingress-controller
+      - internal-ingress
+
+  - name: kube-prometheus-stack
+    version: ~16.0.1
+    repository: "@prometheus-community"
+    condition: metrics.enabled
+
+  - name: elasticsearch
+    version: 7.12.0
+    repository: "@elastic"
+    condition: logging.enabled
+
+  - name: kibana
+    version: 7.12.0
+    repository: "@elastic"
+    condition: logging.enabled
+
+  - name: redis-cluster
+    version: "6.2.3"
+    repository: "@bitnami"
+    condition: rediscluster.enabled
+    tags:
+      - redis-cluster
+      - cache
+      - in-memory-store
+
+  - name: scalable-query-engine-scaling
+    version: 1.0.0
+    condition: customMetricScaling.enabled
+    tags:
+      - logging
+      - fluentbit

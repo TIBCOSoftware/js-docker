@@ -1,0 +1,28 @@
+{{- if .Values.route.enabled -}}
+{{- $fullName := include "jrs.fullname" . -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "jrs.labels" . | nindent 4 }}
+  {{- with .Values.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.route.tls }}
+  tls:
+    {{- toYaml .Values.route.tls | nindent 4 }}
+  {{- end }}
+  {{- if .Values.route.host }}
+  host: {{ .Values.route.host }}
+  {{- end }}
+  path: {{ .Values.route.path }}
+  to:
+    kind: Service
+    name: {{ $fullName }}
+  port:
+    targetPort: http
+
+  {{- end }}

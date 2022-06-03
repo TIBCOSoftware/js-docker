@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "queryEngine.fullname" . }}-additional
+  labels:
+    {{- include "queryEngine.labels" . | nindent 4 }}
+data:
+{{ tpl (.Files.Glob "config/*.properties").AsConfig . | indent 2 }}
+  {{- if .Values.rediscluster.enabled }}
+  redisson-jcache.yaml: |-
+    clusterServersConfig:
+      {{ include "redisconfiguration" . | nindent 6 }}
+  {{- end }}
+  log4j2-spring.xml: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration status="WARN" monitorInterval="30">
+      <Appenders>
+        <RollingFile name="RollingFile" fileName="/usr/local/scalable-query-engine/scalable-adhoc.log" filePattern="/usr/local/scalable-query-engine/scalable-adhoc-%d{MM-dd-yyyy}.log.gz"
+                     ignoreExceptions="false">
+            <PatternLayout pattern="%style{%d{ISO8601}}{black} %highlight{%-5level} [${spring:spring.application.name},$${ctx:X-Execution-ID:-},$${ctx:traceId:-},$${ctx:spanId:-}] [%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+            <TimeBasedTriggeringPolicy />
+        </RollingFile>
+        <Console name="Console" target="SYSTEM_OUT">
+          {{- if eq (.Values.logging.layout | default "") "json" }}
+          <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json">
+            <EventTemplateAdditionalField key="application.name" value="${lower:${spring:spring.application.name:-scalable-adhoc}}"/>
+          </JsonTemplateLayout>
+          {{- else }}
+          <PatternLayout
+              pattern="%d{ISO8601} %-5level [${spring:spring.application.name},$${ctx:X-Execution-ID:-},$${ctx:traceId:-},$${ctx:spanId:-}] [%t] %C{1.}: %msg%n%throwable"/>
+          {{- end }}
+        </Console>
+      </Appenders>
+
+      <Loggers>
+        <Logger name="com.jaspersoft.commons.groovy.GroovyRunnerFactory" level="ERROR" additivity="false" >
+          <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.jaspersoft.commons.dataset.expr.DataSetExpressionParser" level="ERROR" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.redisson" level="INFO" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="com.jaspersoft.adhoc.worker.repo.Repo" level="ERROR" additivity="false" >
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <Root level="error">
+          <AppenderRef ref="Console"/>
+          {{- if .Values.logging.pretty }}
+          <AppenderRef ref="RollingFile"/>
+          {{- end }}
+        </Root>
+      </Loggers>
+    </Configuration>
+

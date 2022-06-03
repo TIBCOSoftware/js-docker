@@ -1,0 +1,18 @@
+{{- if .Values.drivers.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "queryEngine.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "queryEngine.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.5Gi
+{{- end }}

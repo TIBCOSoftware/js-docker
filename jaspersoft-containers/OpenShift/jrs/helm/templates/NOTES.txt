@@ -1,0 +1,27 @@
+** Thanks for Installing JasperReportsServer **
+{{- if .Values.route.enabled }}
+
+   Run below commands to get JasperReportsServer application Url
+   export HOST_NAME=$(oc get route --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jasperserver-pro  -o jsonpath='{.status.ingress[0].host}')
+   echo http{{ if $.Values.route.tls }}s{{ end }}://$HOST_NAME/jasperserver-pro
+
+{{- else if contains "LoadBalancer" .Values.service.type }}
+
+  Run below commands to get JasperReportsServer application Url
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "jrs.fullname" . }}'
+  export SERVICE_IP=$(oc get svc --namespace {{ .Release.Namespace }} {{ include "jrs.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}/jasperserver-pro
+
+
+{{- else if contains "ClusterIP" .Values.service.type }}
+
+   Run below commands to get JasperReportsServer application Url
+   export POD_NAME=$(oc get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "jrs.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+   export CONTAINER_PORT=$(oc get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+   echo "Visit http://$POD_NAME:$CONTAINER_PORT/jasperserver-pro to use your application"
+
+   Note: ** This can be used only to communicate between the pods in same cluster , can not be accessed outside the cluster**
+
+
+{{- end }}
