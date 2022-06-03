@@ -1,5 +1,5 @@
 # TIBCO JasperReports® Server for Containers
-This project intends to build, configure, and deploy TIBCO JasperReports&reg; Server and Scalable Adhoc Worker on Docker and Kubernetes.
+This project intends to build, configure, and deploy TIBCO JasperReports&reg; Server and Scalable Query Engine on Docker and Kubernetes.
 
 
 ## Repository Structure
