@@ -69,12 +69,12 @@ These variables are passed to the command line with `--build-arg` for docker bui
 |INSTALL_CHROMIUM| Whether Chromium installed. **Note: TIBCO Software Inc. is not liable for license violation of chromium.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the TIBCO JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the TIBCO JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of TIBCO JasperReports® Server|8.0.0|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server web app |8.0.0|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server buildomatic |8.0.0|
+|JASPERREPORTS_SERVER_VERSION|Version number of TIBCO JasperReports® Server|8.0.2|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server web app |8.0.2|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server buildomatic |8.0.2|
 |TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.54-jdk11-openjdk" for Debian and "tomcat:9.0.54-jdk11-corretto" for Amazon Linux 2 |tomcat:9.0.54-jdk11-openjdk|
 |JDK_BASE_IMAGE|Java Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types openjdk:11-jdk and  amazoncorretto:11|openjdk:11-jdk|
-RELEASE_DATE|Release date of TIBCO JasperReports® Server | Nov 14, 2021 |
+RELEASE_DATE|Release date of TIBCO JasperReports® Server | May 13, 2022 |
 |JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in TIBCO JasperReports® Server. See the TIBCO JasperReports® Server documentation for more information. |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
 
 # Building the Images 

@@ -37,8 +37,9 @@
 1. TIBCO JasperReports® Server
 1. Keystore 
 1. Git
-1. Helm 3.5
-1. Minimum knowledge of Docker and K8s
+1. [Helm 3.5](https://helm.sh/docs/intro/)
+1. [kubectl commandline tool](https://kubernetes.io/docs/tasks/tools/)   
+1. Minimum Knowledge of Docker and K8s
 
 # Parameters
 
@@ -47,7 +48,7 @@ These parameters and values are the same as parameters in values.yaml.
 | Parameter| Description | default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)| 
-| jrsVersion|TIBCO JasperReports® Server release version | 8.0.0 | 
+| jrsVersion|TIBCO JasperReports® Server release version | 8.0.2 | 
 | image.tag | Name of the TIBCO JasperReports® Server webapp image tag | TIBCO JasperReports® Server Release Version|
 | image.name| Name of the TIBCO JasperReports® Server webapp image | null|
 | image.pullPolicy| Docker image pull policy  | IfNotPresent|
@@ -72,7 +73,18 @@ These parameters and values are the same as parameters in values.yaml.
 | buildomatic.pullPolicy | Image pull policy| IfNotPresent|
 | buildomatic.PullSecrets | Image pull secrets | null|
 | buildomatic.includeSamples| Installs TIBCO JasperReports® Server samples in JasperReports Server DB | true|
-| extraEnv.javaopts | Adds all JAVA_OPTS  | -XMX3500M |
+| db.env | Enables the DB configuration using environment variables | true |
+| db.jrs.dbHost | JasperReports Server repository DB host | repository-postgresql.default.svc.cluster.local |
+| db.jrs.dbPort | JasperReports Server repository DB port | 5432|
+| db.jrs.dbName | JasperReports Server repository DB name | jasperserver |
+| db.jrs.dbUserName | JasperReports Server repository DB user name | postgres |
+| db.jrs.dbPassword | JasperReports Server repository DB password | postgres |
+| db.audit.dbHost | JasperReports Server audit DB host | repository-postgresql.default.svc.cluster.local |
+| db.audit.dbPort | JasperReports Server audit DB port | 5432|
+| db.audit.dbName | JasperReports Server audit DB name | jasperserver |
+| db.audit.dbUserName | JasperReports Server audit DB user name | postgres |
+| db.audit.dbPassword | JasperReports Server audit DB password | postgres |
+| extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 |
 | extraEnv.normal | Adds all the normal key value pair variables | null |
 | extraEnv.secrets | Adds all the environment references from secrets or configmaps| null | 
 | extraVolumeMounts | Adds extra volume mounts | null|
@@ -96,10 +108,12 @@ These parameters and values are the same as parameters in values.yaml.
 | resources.requests.cpu | Minimum CPU | "2" |
 | resources.requests.memory | Minimum Memory | 3.5Gi |
 | jms.enabled | Enables the ActiveMQ cache service | true|
+| jms.jmsBrokerUrl |  | null|
 | jms.name | Name of the JMS | jasperserver-cache|
 | jms.serviceName | Name of the JMS Service | jasperserver-cache-service |
 | jms.imageName | Name of the Activemq image | rangareddyv/activemq-openshift |
 | jms.imageTag | Activemq image tag | 5.16.2 |
+| jms.healthcheck.enabled |  | true |
 | jms.healthcheck.livenessProbe.port | Container port | 61616 |
 | jms.healthcheck.livenessProbe.initialDelaySeconds | Initial delay  | 100 |
 | jms.healthcheck.livenessProbe.failureThreshold | Threshold for health check | 10 |
@@ -115,11 +129,11 @@ These parameters and values are the same as parameters in values.yaml.
 | ingress.tls | Adds TLS secret name to allow secure traffic | null| 
 | scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
 | scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 2|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.0|
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.2|
 | scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
 | scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
 | scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | false |
-| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.0.0 |
+| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.0.2 |
 | scalable-query-engine.drivers.image.name |  | null |
 | scalable-query-engine.drivers.storageClassName |   | hostpath |
 | scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP |
@@ -150,13 +164,49 @@ These parameters and values are the same as parameters in values.yaml.
 
 1. Go to `jaspersersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
 2. Update the default_master.properties in `Docker/jrs/resources/default_properties` as needed.
+3. (Optional , in case DB has to be configure using env variables)Update the `db` section in `values.yaml` with the actual JasperReports Server DB details or create a separate secret like below.
+   
 
-   **Note:** Update the dbhost in `Docker/jrs/resources/default-propertes/default_master.properties` with the name
-    `respository-postgresql.<k8s-namespace>.svc.cluster.local` to create DB in K8s cluster.
+      
+          apiVersion: v1
+          kind: Secret
+          type: Opaque
+          metadata:
+            name: jasperserver-pro-db-secret
+            labels:
+          data:
+            DB_HOST: host-name
+            DB_PORT: port-name
+            DB_NAME: db-name
+            DB_USER_NAME:db-user-name
+            DB_PASSWORD:  db-password
 
-3. Build the docker images for TIBCO JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme) ).
-4. Generate the keystore and copy it to the `K8s/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation). 
-5. Copy the TIBCO JasperReports® Server license to the `K8s/jrs/helm/secrets/license` folder.
+All the DB details should be encoded in base64 format. 
+
+   **Note:** By default, the below details are used and for this, DB should be part of OpenShift Cluster in the default project. Please note the  DB is already created, adding this won't enforce to create a DB
+ If JasperReports Server is deployed in a different project, then change the dbHost in the following format: `respository-postgresql.<OpenShift-project>.svc.cluster.local`.
+   
+
+       dbHost: repository-postgresql.default.svc.cluster.local
+       dbPort: 5432
+       dbName: jasperserver
+       dbUserName: postgres
+       dbPassword: postgres
+
+These details are stored in Kubernetes secrets and used as environment variables during application startup.
+
+**Note on Audit DB:** Enable the `db.audit.enable=true` if separate Audit DB is required for audit events, and add the below values to the db-secrets. Please note the Audit DB is already created, adding this won't enforce to create a DB
+
+
+      AUDIT_DB_HOST: audit-db-host
+      AUDIT_DB_PORT:  audit-db-port
+      AUDIT_DB_NAME:  audit-db-name
+      AUDIT_DB_USER_NAME: audit-db-user-name
+      AUDIT_DB_PASSWORD: audit-password
+
+3. Build the docker images for TIBCO JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableAdhocWorker#readme) ).
+4. Generate the keystore and copy it to the `OpenShift/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation).
+5. Copy the TIBCO JasperReports® Server license to the `OpenShift/jrs/helm/secrets/license` folder.
 
 ## JMS Configuration
   By default, TIBCO JasperReports® Server will install using activemq docker image. You can disable it by changing the parameter `jms.enabled=false`. 
@@ -205,7 +255,7 @@ For more information and configuration, see the [Official Docs](https://github.c
 
 -  To set up the Repository DB in K8s cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set postgresqlPassword=postgres --namespace jrs --create-namespace`
+`helm install repository bitnami/postgresql --set postgresqlPassword=postgres  --version 10.14.0 --namespace jrs --create-namespace`
 
 
 - Check the pods status and make sure pods are in a running state.

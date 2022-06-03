@@ -1,0 +1,11 @@
+1. Get the application URL by running these commands:
+{{- if .Values.route.enabled }}
+   export HOST_NAME=$(oc get route --namespace {{ .Release.Namespace }} {{ .Release.Name }}-query-engine  -o jsonpath='{.status.ingress[0].host}')
+   echo http{{ if $.Values.ingress.tls }}s{{ end }}://HOST_NAME/actuator/health
+
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "jrs.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+
+{{- end }}

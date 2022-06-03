@@ -1,0 +1,37 @@
+{{- if  .Values.buildomatic.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.buildomatic.name  }}
+  labels:
+    helm.sh/chart: {{ include "jrs.chart" . }}
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/version: {{ .Values.jrsVersion }}
+  {{- include "jrs.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Values.buildomatic.name  }}
+      labels:
+        helm.sh/chart: {{ include "jrs.chart" . }}
+        app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+        app.kubernetes.io/version: {{ .Values.jrsVersion }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: {{ .Values.buildomatic.PullSecrets }}
+      containers:
+      - name: repository-setup
+        image: "{{ default "jasperserver-buildomatic" .Values.buildomatic.imageName}}:{{ default "latest" .Values.buildomatic.imageTag}}"
+        imagePullPolicy: {{ .Values.buildomatic.pullPolicy }}
+        args:
+      {{ include "js.ant.targets" . | nindent 12 }}
+      {{ include "buildomaticvolumemounts" .  | nindent 8 }}
+      {{ include "buildomaticvolumes" . | nindent 6}}
+
+    {{- end}}
