@@ -184,7 +184,7 @@ These parameters and values are the same as parameters in values.yaml.
 All the DB details should be encoded in base64 format. 
 
    **Note:** By default, the below details are used and for this, DB should be part of OpenShift Cluster in the default project. Please note the  DB is already created, adding this won't enforce to create a DB
- If JasperReports Server is deployed in a different project, then change the dbHost in the following format: `respository-postgresql.<OpenShift-project>.svc.cluster.local`.
+ If JasperReports Server is deployed in a different project, then change the dbHost in the following format: `respository-postgresql.<namespace>.svc.cluster.local`.
    
 
        dbHost: repository-postgresql.default.svc.cluster.local
