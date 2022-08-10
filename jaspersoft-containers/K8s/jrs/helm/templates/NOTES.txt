@@ -2,7 +2,7 @@
 {{- if .Values.ingress.enabled }}
 
    Run below commands to get JasperReportsServer application Url
-   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jasperserver-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jasperserver-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
    echo http{{ if $.Values.ingress.tls }}s{{ end }}://$SERVICE_IP/jasperserver-pro
 
    {{- if .Values.metrics.enabled }}

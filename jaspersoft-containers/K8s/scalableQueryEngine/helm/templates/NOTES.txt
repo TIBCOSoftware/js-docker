@@ -1,6 +1,6 @@
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
-   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-query-engine-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-query-engine-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
    echo http{{ if $.Values.ingress.tls }}s{{ end }}://$SERVICE_IP/query-engine/actuator/health
 
    {{- if .Values.metrics.enabled }}
