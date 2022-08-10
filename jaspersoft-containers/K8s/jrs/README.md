@@ -326,11 +326,11 @@ List all the resources.
  
 ## Installation
 
-1. Clone the jaspersoft-containers ``git clone git@github.com:tibco/jaspersoft-containers.git ``.
+1. Clone this repo: ``git clone git@github.com:TIBCOSoftware/js-docker.git``.
 1. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of TIBCO JasperReports® Server WAR File installer zip to your current directory.
 1. Run ``cd jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, chromium installation, etc.
 1. Run ``cd scripts`` and then run ``./unpackWARInstaller.sh`` to unzip the installer file.
-1. Update the dbHost in ``Docker/jrs/resources/default-properties/default_master.properties`` with the name ``repository-postgresql.<k8s-namespace>.svc.cluster.local`` to    create DB in K8s cluster.
+1. Update the dbHost in ``Docker/jrs/resources/default-properties/default_master.properties`` with the name ``repository-postgresql.<k8s-namespace>.svc.cluster.local`` to create DB in K8s cluster.
 1. Run ``cd ../``  and then run ``docker-compose build`` to build the images and if required, push it to the internal repository once the build is complete.
 1. To tag and push images to the internal repository, [see this doc](https://docs.docker.com/engine/reference/commandline/push/#push-a-new-image-to-a-registry).
 1. Run ``cd ../../K8s/jrs/helm`` and update the values.yaml for changing the image name, tag name, etc. (See the [Parameters](#parameters) section for more information)
