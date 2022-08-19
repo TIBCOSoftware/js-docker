@@ -13,9 +13,6 @@ dependencies:
   version: 7.12.0
 - name: scalable-query-engine
   repository: file://../../scalableQueryEngine/helm
-  version: 8.0.0
-- name: jrio-at-scale
-  repository: file://../../jrio/helm
-  version: 3.0.0
+  version: 8.1.0
 digest: sha256:9079e159a4b75b70a5c4340694dd3ed2661ec62f07e2117033cc683a864e0799
 generated: "2022-03-10T12:46:13.4875958+05:30"

@@ -17,10 +17,10 @@ spec:
         {{- include "queryEngine.labels" . | nindent 8 }}
     spec:
       restartPolicy: Never
-      {{ - if.Values.drivers.PullSecrets }}
+      {{- if.Values.drivers.PullSecrets }}
       imagePullSecrets:
         - name: {{ .Values.drivers.PullSecrets }}
-        {{ - endif }}
+        {{- end }}
       securityContext:
         fsGroup: 13999
       containers:

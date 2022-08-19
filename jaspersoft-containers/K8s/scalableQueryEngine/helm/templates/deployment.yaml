@@ -28,10 +28,6 @@ spec:
         {{ include "initcontainerconfig" . | nindent 8 }}
       containers:
         - name: scalable-query-engine
-          {{ - if .Values.image.PullSecrets }}
-          imagePullSecrets:
-            - name: {{ .Values.image.PullSecrets }}
-          {{ - end }}
           image: {{ default "scalable-query-engine" .Values.image.name}}:{{ default "latest" .Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

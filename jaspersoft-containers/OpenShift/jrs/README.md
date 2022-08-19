@@ -40,7 +40,7 @@ These parameters and values are the same as parameters in values.yaml.
 | Parameter| Description | default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)| 
-| jrsVersion|TIBCO JasperReports® Server release version | 8.0.2 | 
+| jrsVersion|TIBCO JasperReports® Server release version | 8.1.0 | 
 | image.tag | Name of the TIBCO JasperReports® Server webapp image tag | TIBCO JasperReports® Server Release Version|
 | image.name| Name of the TIBCO JasperReports® Server webapp image | jrscontainerregistry.azurecr.io/jrs/webapp|
 | image.pullPolicy| Docker image pull policy  | IfNotPresent|
@@ -121,11 +121,11 @@ These parameters and values are the same as parameters in values.yaml.
 | ingress.tls | Adds TLS secret name to allow secure traffic | null| 
 | scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
 | scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 1|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.2|
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.1.0|
 | scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
 | scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
 | scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | true |
-| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.0.2 |
+| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.1.0 |
 | scalable-query-engine.drivers.image.name |  | null |
 | scalable-query-engine.drivers.storageClassName |   | hostpath |
 | scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP |
@@ -199,7 +199,7 @@ External JMS instance can also be used instead of in-build JMS setup by adding t
 
 -  To set up the Repository DB in the OpenShift cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set postgresqlPassword=postgres --version 10.14.0`
+`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres  --version 11.6.0 `
 
 
 - Check the pods status and make sure pods are in a running state.

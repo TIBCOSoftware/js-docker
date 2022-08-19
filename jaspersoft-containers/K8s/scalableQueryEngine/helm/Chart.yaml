@@ -3,7 +3,7 @@ name: scalable-query-engine
 description: Helm Chart for Scalable Query Engine
 type: application
 version: 1.0.0
-appVersion: 8.0.2
+appVersion: 8.1.0
 maintainers:
   - name: Jaspersoft Eng Infra
     email: js-eng-infra@tico.com
@@ -33,7 +33,7 @@ dependencies:
     condition: logging.enabled
 
   - name: redis-cluster
-    version: "6.2.3"
+    version: "7.6.0"
     repository: "@bitnami"
     condition: rediscluster.enabled
     tags:
