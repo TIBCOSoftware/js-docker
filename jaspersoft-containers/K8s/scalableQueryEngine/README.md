@@ -8,8 +8,8 @@
   - [Adding Dependencies](#adding-dependencies)
 - [Redis Configuration](#redis-configuration)
 - [JNDI Configuration](#jndi-configuration)  
-- [Installing Scalable Query Engine](#installing-scalable-query-engine)
-- [Integrating Scalable Query Engine with TIBCO JasperReports&reg; Server](#integrating-scalable-query-engine-with-tibco-jasperreports-server)
+- [Installing Scalable Query Engine](#installing-scalable-query-engine-manually)
+- [Integrating Scalable Query Engine with running TIBCO JasperReports&reg; Server](#integrating-scalable-query-engine-with-running-tibco-jasperreports-server-k8s-cluster)
   <!-- /TOC -->
   </details>
 
@@ -30,10 +30,12 @@
 
 ## Parameters
 
+These parameters and values are the same as parameters in `K8s/scalableQueryEngine/helm/values.yaml`  and will be used by TIBCO JasperReports® Server Scalable Query Engine Helm chart during installation.
+
 | Parameter| Description | Default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 2 (It will not come into effect if autoscaling is enabled.)|
-| jrsVersion| TIBCO JasperReports® Server release version  | 8.0.0|
+| jrsVersion| TIBCO JasperReports® Server release version  | 8.1.0|
 | image.name| Name of the Scalable Query Engine image | null |
 | image.tag | Name of the Scalable Query Engine image tag | JasperReports&reg; Server Release Version|
 | image.pullPolicy | Docker image pull policy | IfNotPresent |
@@ -131,7 +133,7 @@
 | jrs.proxy.timedOut | timeout | 30000 |
 | drivers.image.enabled | Enables the drivers  | true |
 | drivers.image.name | Image name for Scalable Query Engine Driver image | null |
-| drivers.image.tag | Scalable Query Engine Driver image tag | 8.0.0 |
+| drivers.image.tag | Scalable Query Engine Driver image tag | 8.1.0 |
 | drivers.image.pullPolicy | Image pull policy | IfNotPresent |
 | drivers.storageClassName | Driver image storage class name | hostPath |
 | drivers.image.jdbcDriversPath | JDBC drivers path  | /usr/lib/drivers |
@@ -161,7 +163,7 @@ To update the dependencies, run `cd <CONAINER_PATH>/K8s` and then run `helm depe
 
 # Redis Configuration
   By default, Scalable Query Engine comes with the redis cluster by using [bitnami/redis-cluster](https://artifacthub.io/packages/helm/bitnami/redis-cluster) helm chart.
-External redis configuration can also be used by adding the redis url for `rediscluster.externalRedisClusteraddress` and `rediscluster.externalRedisClusterpassword` parameters.
+External redis configuration can also be used by adding the redis url for `rediscluster.externalRedisClusteraddress` and `rediscluster.externalRedisClusterpassword` parameters in `values.yaml`.<br />
 **Note:** If the values of these parameters are provided, then the default redis-cluster Helm chart installation will be skipped.
 
 # JNDI Configuration
@@ -183,19 +185,44 @@ External redis configuration can also be used by adding the redis url for `redis
     jndi.dataSources[3].maxIdle=30
     jndi.dataSources[3].maxWait=10000
 
-# Installing Scalable Query Engine
-1. Build the Scalable Query Engine images, see the instructions at [Docker scalableQueryEngine Readme](../../Docker/scalableQueryEngine).
-1. Go to `cd <CONTAINER_PATH>/K8s`.
-1. Copy the JasperReports&reg; Server keystore to `./scalableQueryEngine/helm/secrets/keystore`, if keystore does not exist, generate the keystore (see here for [Keystore Generation](../../Docker/jrs/#keystore-generation)).   
-1. Update the values.yaml if needed or set the values to the chart dynamically through passing `--set <parameter_name>=<paramter_value>`.
-1. Run `helm install engine scalableQueryEngine/helm`.
-1. Get the ingress external IP or nodeport and check the engine status at `<EXTERNAL_IP>/query-engine/actuator/health`.
+**Note:** If you plan to use JNDI connections for queries performed by Scalable Query Engine, then JNDI data source names should be the same as defined in TIBCO JasperReports® Server repository.
+For example `jdbc/foodmart`.
 
-# Integrating Scalable Query Engine with TIBCO JasperReports&reg; Server
 
-1. Get the ingress external IP of Scalable Query Engine.
-1. Set the `SCALABLE_QUERY_ENGINE_URL` as an environment variable in JasperReports&reg; Server.
-1. Enable the scalableQueryEngine.enabled to true in js.config.properties
-1. Update  the `jrs.server` section in values.yaml with JasperReports&reg; Server configuration details 
-1. Restart the JasperReports&reg; Server application to reflect the changes.
-1. Install the Scalable Query Engine Helm chart.
+# Installing Scalable Query Engine manually
+**Note:** Following steps should be performed when the TIBCO JasperReports® Server helm chart is already installed and functions normally
+
+1. If not yet built, build the Scalable Query Engine images. For more information, see the instructions at [Docker scalableQueryEngine Readme](../../Docker/scalableQueryEngine).
+2. Go to `cd <CONTAINER_PATH>/K8s`.
+3. Copy the JasperReports&reg; Server keystore to `./scalableQueryEngine/helm/secrets/keystore`, if keystore does not exist, generate the keystore (see the instructions at [Keystore Generation](../../Docker/jrs/#keystore-generation)).
+<br />**Note:** Same keystore files should be used in TIBCO JasperReports&reg; Server and Scalable Query Engine clusters
+4. Update the values.yaml if needed or set the values to the chart dynamically by passing `--set <parameter_name>=<paramter_value>`. </br>
+**Note:** You can increase the `failureThreshold` limit from 12 to 24 in the values.yaml file, if Scalable Query Engine pods are not set into Ready state during autoscaling.
+5. Run:
+
+        helm dependencies update scalableQueryEngine/helm
+        helm install engine scalableQueryEngine/helm
+
+6. Get the ingress external IP or nodeport:
+
+        export SERVICE_IP=$(kubectl get svc --namespace default engine-query-engine-ingress  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        echo $SERVICE_IP    
+
+7. Check the engine status at `$SERVICE_IP/query-engine/actuator/health`.
+
+# Integrating Scalable Query Engine with running TIBCO JasperReports&reg; Server K8s Cluster
+1. Confirm that Scalable Query Engine deployed successfully, get the ingress external IP of Scalable Query Engine (see step 7 from [Installing Scalable Query Engine](#installing-scalable-query-engine))
+2. Edit `K8s/jrs/helm/values.yaml`, and set:
+   1. `scalableQueryEngine.enabled` as false
+   2. `scalableQueryEngineUrl` to `http://$SERVICE_IP/query-engine`, where `$SERVICE_IP` is the ingress external IP of Scalable Query Engine
+3. Edit  `K8s/scalableQueryEngine/helm/values.yaml`, and set:
+   1. `jrs.host` to the ingress external host (or IP) of deployed JasperReports® Server k8s cluster. It can be a JasperReports® Server internal cluster host as well, for example `jrs-jasperserver-ingress.default.svc.cluster.local`, but confirm that it is accessible for Scalable Query Engine cluster  
+4. Run `cd <CONTAINER_PATH>/K8s` and update JasperReports® Server helm chart with new configuration:
+
+        helm dependencies update jrs/helm
+        helm upgrade jrs jrs/helm
+
+5. Update Scalable Query Engine with new configuration:
+
+        helm dependencies update scalableQueryEngine/helm
+        helm upgrade engine scalableQueryEngine/helm

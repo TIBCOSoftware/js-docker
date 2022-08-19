@@ -1,7 +1,7 @@
 replicaCount: 1
-jrsVersion: 8.0.2
+jrsVersion: 8.1.0
 image:
-  tag:  8.0.2
+  tag:  8.1.0
   name:
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -244,7 +244,7 @@ jrs:
 drivers:
   enabled: true
   image:
-    tag: 8.0.2
+    tag: 8.1.0
     name:
     pullPolicy: IfNotPresent
   PullSecrets: 

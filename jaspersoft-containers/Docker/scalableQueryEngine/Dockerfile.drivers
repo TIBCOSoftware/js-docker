@@ -3,12 +3,12 @@
 # in the license file that is distributed with this file
 #ARG JDK_BASE_IMAGE=amazoncorretto:11
 ARG JDK_BASE_IMAGE=openjdk:11-jdk
-ARG JASPERREPORTS_SERVER_VERSION=8.0.2
+ARG JASPERREPORTS_SERVER_VERSION=8.1.0
 
 FROM ${JDK_BASE_IMAGE} as driver
 
 ARG JASPERREPORTS_SERVER_VERSION
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.2}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.0}
 ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
 ENV JRS_HOME /usr/local/jasperreports-server
@@ -26,7 +26,7 @@ FROM ${JDK_BASE_IMAGE}
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
 ENV WAR_JARS=/usr/local/jasperreports-server/buildomatic/conf_source/iePro/lib
 ENV WAR_LIB_JARS=/usr/local/jasperreports-server/jasperserver-pro/WEB-INF/lib
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.2}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.0}
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 LABEL "org.jasperosft.name"="Jasper Reports Server Scalable Query Engine" \
