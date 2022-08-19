@@ -46,7 +46,7 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 1. Run `cd <CONTAINER_PATH>`.
 1. Download a commercial edition of JasperReports Server WAR File installer zip into the current directory.
 1. Clone the jaspersoft-containers repository to the current directory.
-   `git clone git@github.com:tibco/jaspersoft-containers.git`
+   `git clone git clone git@github.com:TIBCOSoftware/js-docker.git`
 1. Run `cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/scripts` and then run `./unpackWARInstaller.sh`.
 
 
