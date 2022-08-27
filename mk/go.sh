@@ -2,8 +2,9 @@
 
 set -u
 
+FORCE=true
 DEBUG=false
-BUILD=true
+BUILD=true # TODO: Remove
 
 PROJ_ROOT_PATH=$(cd "${0%/*}" && echo $PWD)
 REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo $PWD)
@@ -24,7 +25,7 @@ delete_quietly() {
   [ -e $1 ] && rm $1
 }
 
-while getopts ":d:b:" opt; do
+while getopts ":d:b:f" opt; do
   case $opt in
     d)
       DEBUG=true >&2
@@ -32,6 +33,9 @@ while getopts ":d:b:" opt; do
     b)
       BUILD=$OPTARG >&2
       ;;  
+    b)
+      FORCE=true
+      ;;    
     \?)
       echo "Invalid option: -$OPTARG" >&2
       ;;
@@ -47,11 +51,27 @@ $DEBUG && echo "INSTALLER_ZIP=${INSTALLER_ZIP}"
 $DEBUG && echo "INSTALLER_PATH=${INSTALLER_PATH}"
 $DEBUG && echo
 
-# Update Docker default master properties file with customized version
-cp $PROJ_ROOT_PATH/docker.default_master.properties $DOCKER_PATH/jrs/resources/default-properties/default_master.properties
+#
+# Clean
+#
 
-# Update Docker Compose environment file with customized version
-cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
+# Delete existing keystore files in user home
+delete_quietly ~/.jrsks
+delete_quietly ~/.jrsksp
+# Delete existing keystore files in Docker keystore directory
+delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsks
+delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+# Delete existing keystore files in Helm keystore directory
+delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsks
+delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
+# Delete existing Buildomatic default master properties file
+delete_quietly $INSTALLER_PATH/buildomatic/default_master.properties
+# Delete existing license file in Helm license directory
+delete_quietly $K8S_PATH/jrs/helm/secrets/license/jasperserver.license
+
+#
+# Installer
+#
 
 # Unzip JasperReport Server installer archive
 #   -o  Overwrite without prompting
@@ -59,46 +79,16 @@ cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
 #   -d  Unzip to repository root directory
 unzip -o $($DEBUG && echo "" || echo "-q") $INSTALLER_ZIP -d $REPO_ROOT_PATH
 
-# Delete existing Buildomatic default master properties file
-delete_quietly $INSTALLER_PATH/buildomatic/default_master.properties
-# Delete existing keystore files in user home, Docker, and Helm keystore directories
-delete_quietly ~/.jrsks
-delete_quietly ~/.jrsksp
-delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsks
-delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsksp
-delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsks
-delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
-# Delete existing license file in Helm license directory
-delete_quietly $K8S_PATH/jrs/helm/secrets/license/jasperserver.license
-
-# Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
-cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/buildomatic/default_master.properties
-
-# Generate keystore files
-cd $INSTALLER_PATH/buildomatic
-source ./js-ant gen-config <<<$'y'
-
-# Copy the keystore files to the Docker keystore directory with 644 permissions
-cp ~/.jrsks $DOCKER_PATH/jrs/resources/keystore
-cp ~/.jrsksp $DOCKER_PATH/jrs/resources/keystore
-chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsks
-chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
-
-# Copy the same keystore files to the Helm keystore directory
-cp $DOCKER_PATH/jrs/resources/keystore/.jrsks $K8S_PATH/jrs/helm/secrets/keystore
-cp $DOCKER_PATH/jrs/resources/keystore/.jrsksp $K8S_PATH/jrs/helm/secrets/keystore
-
-# Delete keystore files created in user home directory
-delete_quietly ~/.jrsks
-delete_quietly ~/.jrsksp
-
-# Copy license file to Helm license directory
-cp $PROJ_ROOT_PATH/jasperserver.license $K8S_PATH/jrs/helm/secrets/license
+#
+# Minikube
+#
 
 # Confirm minikube delete
-read -p $'\n'"💀 Warning! This will run minikube delete, continue? <y/N> " -r prompt
-if [[ $prompt != "y" && $prompt != "Y" && $prompt != "yes" && $prompt != "Yes" ]]; then
-  exit 1
+if ! $FORCE; then
+  read -p $'\n'"💀 Warning! This will run minikube delete, continue? <y/N> " -r prompt
+  if [[ $prompt != "y" && $prompt != "Y" && $prompt != "yes" && $prompt != "Yes" ]]; then
+    exit 1
+  fi
 fi
 
 # Setup minikub
@@ -112,8 +102,53 @@ kubectl config get-contexts
 # Connect Docker CLI to minikube Docker daemon
 eval "$(minikube -p minikube docker-env)" 
 
+#
+# Docker Images
+#
+
+# Update Docker Compose environment file with customized version
+cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
+
+# Update Docker default master properties file with customized version
+cp $PROJ_ROOT_PATH/docker.default_master.properties $DOCKER_PATH/jrs/resources/default-properties/default_master.properties
+
 # Build Docker images using Docker Compose
-$BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
+# TODO: Remove --no-cache flag
+$BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build --no-cache
+
+#
+# Keystore
+#
+
+# Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
+cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/buildomatic/default_master.properties
+
+# Generate keystore files
+cd $INSTALLER_PATH/buildomatic
+if $FORCE; then
+  source ./js-ant gen-config <<<$'y'
+else
+  source ./js-ant gen-config
+fi
+
+# Copy the keystore files to the Docker keystore directory with 644 permissions
+cp ~/.jrsks $DOCKER_PATH/jrs/resources/keystore
+cp ~/.jrsksp $DOCKER_PATH/jrs/resources/keystore
+chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsks
+chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+
+#
+# Helm
+# 
+
+# Copy license file to Helm license directory
+cp $PROJ_ROOT_PATH/jasperserver.license $K8S_PATH/jrs/helm/secrets/license
+
+# Copy the keystore files to the Helm keystore directory with 644 permissions
+cp ~/.jrsks $K8S_PATH/jrs/helm/secrets/keystore
+cp ~/.jrsksp $K8S_PATH/jrs/helm/secrets/keystore
+chmod 644 $K8S_PATH/jrs/helm/secrets/keystore.jrsks
+chmod 644 $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
 
 # Add Helm dependency chart repositories and update Helm dependencies
 cd $K8S_PATH
@@ -127,7 +162,7 @@ helm dependencies update jrs/helm
 helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --namespace default
 
 # Wait for the PostgreSQL pod to be ready
-printf "\n🦄 Giving the pod a few seconds to warm up .. (5s) "
+printf "\n🦄 Giving the PostgreSQL pod a few seconds to warm up .. (5s) "
 for i in {5..1};
 do
   printf "\b\b\b\b%ss) " "$i"
@@ -147,4 +182,12 @@ echo
 kubectl get pods -n default
 
 # Install JasperReports Server charts into specified namespace
+# TODO: Run install in background, add related messaging
 helm install jrs jrs/helm --namespace $K8S_NAMESPACE --wait --timeout 12m0s --set buildomatic.includeSamples=false
+
+# kubectl port-forward --namespace jasper-reports service/jrs-jasperserver-ingress 8080:80
+# http://127.0.0.1:8080/jasperserver-pro/login.html
+
+# # Delete keystore files created in user home directory
+# delete_quietly ~/.jrsks
+# delete_quietly ~/.jrsksp
