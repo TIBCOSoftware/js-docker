@@ -14,6 +14,10 @@ INSTALLER_PATH="$REPO_ROOT_PATH/jasperreports-server-pro-8.1.0-bin"
 
 BUILD=true
 
+delete_quietly() {
+  [ -e $1 ] && rm $1
+}
+
 while getopts ":d:b:" opt; do
   case $opt in
     d)
@@ -49,5 +53,29 @@ cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
 #   -d  Unzip to repository root directory
 unzip -o $($DEBUG && echo "" || echo "-q") $INSTALLER_ZIP -d $REPO_ROOT_PATH
 
+# Delete existing Buildomatic default master properties file
+delete_quietly $INSTALLER_PATH/buildomatic/default_master.properties
+
+# Delete existing keystore files in user home and Docker keystore directories
+delete_quietly ~/.jrsks
+delete_quietly ~/.jrsksp
+delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsks
+delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+
+# Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
+cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/buildomatic/default_master.properties
+
+# Generate keystore files
+cd $INSTALLER_PATH/buildomatic
+source ./js-ant gen-config <<<$'y'
+cp ~/.jrsks $DOCKER_PATH/jrs/resources/keystore
+cp ~/.jrsksp $DOCKER_PATH/jrs/resources/keystore
+chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsks
+chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+
 # Build Docker images using Docker Compose
 $BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
+
+# Delete keystore files created in user home directory
+delete_quietly ~/.jrsks
+delete_quietly ~/.jrsksp
