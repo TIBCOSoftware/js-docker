@@ -14,6 +14,11 @@ INSTALLER_ZIP=TIB_js-jrs_8.1.0_bin.zip
 INSTALLER_PATH="$REPO_ROOT_PATH/jasperreports-server-pro-8.1.0-bin"
 
 K8S_NAMESPACE=jasper-reports
+K8S_POSTGRES_POD_NAME="pod/repository-postgresql-0"
+
+msg() {
+  printf "\n🦄 %s\n" "$1" >&2;
+}
 
 delete_quietly() {
   [ -e $1 ] && rm $1
@@ -109,3 +114,34 @@ eval "$(minikube -p minikube docker-env)"
 
 # Build Docker images using Docker Compose
 $BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
+
+# Add Helm dependency chart repositories and update Helm dependencies
+cd $K8S_PATH
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add haproxytech https://haproxytech.github.io/helm-charts
+helm repo add elastic https://helm.elastic.co
+helm dependencies update jrs/helm
+
+# Install PostgreSQL chart into default namespace
+helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --namespace default
+
+# Wait for the PostgreSQL pod to be ready
+printf "\n🦄 Giving the pod a few seconds to warm up .. (5s) "
+for i in {5..1};
+do
+  printf "\b\b\b\b%ss) " "$i"
+  sleep 1
+done
+printf "\b\b\b\b0s) \n"
+
+kubectl get pods -n default
+
+msg "A single PostgreSQL pod named '$K8S_POSTGRES_POD_NAME' should be coming up in the default namespace"
+
+printf "\n🦄 Waiting for the PostgreSQL pod to have the Running status ... /"
+while [[ $(kubectl get $K8S_POSTGRES_POD_NAME -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+do for X in '-' '\' '|' '/'; do printf "\b\b%s " "$X"; sleep 0.1; done; done 
+echo
+
+kubectl get pods -n default
