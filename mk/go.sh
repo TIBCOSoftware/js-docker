@@ -55,12 +55,15 @@ unzip -o $($DEBUG && echo "" || echo "-q") $INSTALLER_ZIP -d $REPO_ROOT_PATH
 
 # Delete existing Buildomatic default master properties file
 delete_quietly $INSTALLER_PATH/buildomatic/default_master.properties
-
-# Delete existing keystore files in user home and Docker keystore directories
+# Delete existing keystore files in user home, Docker, and Helm keystore directories
 delete_quietly ~/.jrsks
 delete_quietly ~/.jrsksp
 delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsks
 delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsks
+delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
+# Delete existing license file in Helm license directory
+delete_quietly $K8S_PATH/jrs/helm/secrets/license/jasperserver.license
 
 # Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
 cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/buildomatic/default_master.properties
@@ -68,14 +71,23 @@ cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/b
 # Generate keystore files
 cd $INSTALLER_PATH/buildomatic
 source ./js-ant gen-config <<<$'y'
+
+# Copy the keystore files to the Docker keystore directory with 644 permissions
 cp ~/.jrsks $DOCKER_PATH/jrs/resources/keystore
 cp ~/.jrsksp $DOCKER_PATH/jrs/resources/keystore
 chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsks
 chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
 
-# Build Docker images using Docker Compose
-$BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
+# Copy the same keystore files to the Helm keystore directory
+cp $DOCKER_PATH/jrs/resources/keystore/.jrsks $K8S_PATH/jrs/helm/secrets/keystore
+cp $DOCKER_PATH/jrs/resources/keystore/.jrsksp $K8S_PATH/jrs/helm/secrets/keystore
 
 # Delete keystore files created in user home directory
 delete_quietly ~/.jrsks
 delete_quietly ~/.jrsksp
+
+# Copy license file to Helm license directory
+cp $PROJ_ROOT_PATH/jasperserver.license $K8S_PATH/jrs/helm/secrets/license
+
+# Build Docker images using Docker Compose
+$BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
