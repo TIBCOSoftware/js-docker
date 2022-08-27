@@ -12,11 +12,16 @@ K8S_PATH="$REPO_ROOT_PATH/jaspersoft-containers/K8s"
 INSTALLER_ZIP=TIB_js-jrs_8.1.0_bin.zip
 INSTALLER_PATH="$REPO_ROOT_PATH/jasperreports-server-pro-8.1.0-bin"
 
-while getopts ":d" opt; do
+BUILD=true
+
+while getopts ":d:b:" opt; do
   case $opt in
     d)
       DEBUG=true >&2
-      ;;     
+      ;;
+    b)
+      BUILD=$OPTARG >&2
+      ;;  
     \?)
       echo "Invalid option: -$OPTARG" >&2
       ;;
@@ -43,3 +48,6 @@ cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
 #   -q  Quietly unless debug is true
 #   -d  Unzip to repository root directory
 unzip -o $($DEBUG && echo "" || echo "-q") $INSTALLER_ZIP -d $REPO_ROOT_PATH
+
+# Build Docker images using Docker Compose
+$BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
