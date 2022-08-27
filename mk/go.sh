@@ -3,6 +3,7 @@
 set -u
 
 DEBUG=false
+BUILD=true
 
 PROJ_ROOT_PATH=$(cd "${0%/*}" && echo $PWD)
 REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo $PWD)
@@ -12,7 +13,7 @@ K8S_PATH="$REPO_ROOT_PATH/jaspersoft-containers/K8s"
 INSTALLER_ZIP=TIB_js-jrs_8.1.0_bin.zip
 INSTALLER_PATH="$REPO_ROOT_PATH/jasperreports-server-pro-8.1.0-bin"
 
-BUILD=true
+K8S_NAMESPACE=jasper-reports
 
 delete_quietly() {
   [ -e $1 ] && rm $1
@@ -88,6 +89,23 @@ delete_quietly ~/.jrsksp
 
 # Copy license file to Helm license directory
 cp $PROJ_ROOT_PATH/jasperserver.license $K8S_PATH/jrs/helm/secrets/license
+
+# Confirm minikube delete
+read -p $'\n'"💀 Warning! This will run minikube delete, continue? <y/N> " -r prompt
+if [[ $prompt != "y" && $prompt != "Y" && $prompt != "yes" && $prompt != "Yes" ]]; then
+  exit 1
+fi
+
+# Setup minikub
+minikube delete
+minikube start
+kubectl config use-context minikube
+kubectl create namespace $K8S_NAMESPACE
+kubectl config set-context --current --namespace=$K8S_NAMESPACE
+kubectl config get-contexts
+
+# Connect Docker CLI to minikube Docker daemon
+eval "$(minikube -p minikube docker-env)" 
 
 # Build Docker images using Docker Compose
 $BUILD && docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build
