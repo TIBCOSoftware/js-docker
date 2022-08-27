@@ -32,10 +32,13 @@ $DEBUG && echo "INSTALLER_ZIP=${INSTALLER_ZIP}"
 $DEBUG && echo "INSTALLER_PATH=${INSTALLER_PATH}"
 $DEBUG && echo
 
-# Update docker default master properties file with customized version
+# Update Docker default master properties file with customized version
 cp $PROJ_ROOT_PATH/docker.default_master.properties $DOCKER_PATH/jrs/resources/default-properties/default_master.properties
 
-# Unpack jasper report server installer 
+# Update Docker Compose environment file with customized version
+cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
+
+# Unzip JasperReport Server installer archive
 #   -o  Overwrite without prompting
 #   -q  Quietly unless debug is true
 #   -d  Unzip to repository root directory
