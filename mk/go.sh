@@ -145,3 +145,6 @@ do for X in '-' '\' '|' '/'; do printf "\b\b%s " "$X"; sleep 0.1; done; done
 echo
 
 kubectl get pods -n default
+
+# Install JasperReports Server charts into specified namespace
+helm install jrs jrs/helm --namespace $K8S_NAMESPACE --wait --timeout 12m0s --set buildomatic.includeSamples=false
