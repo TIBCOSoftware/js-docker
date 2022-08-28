@@ -4,8 +4,8 @@ set -u
 
 FORCE=true
 
-PROJ_ROOT_PATH=$(cd "${0%/*}" && echo $PWD)
-REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo $PWD)
+PROJ_ROOT_PATH=$(cd "${0%/*}" && echo "$PWD")
+REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo "$PWD")
 DOCKER_PATH="$REPO_ROOT_PATH/jaspersoft-containers/Docker"
 K8S_PATH="$REPO_ROOT_PATH/jaspersoft-containers/K8s"
 
@@ -24,7 +24,7 @@ msg_ol() {
 }
 
 delete_quietly() {
-  [ -e $1 ] && rm $1
+  [ -e "$1" ] && rm "$1"
 }
 
 #
@@ -38,19 +38,19 @@ clean() {
   delete_quietly ~/.jrsks
   delete_quietly ~/.jrsksp
   # Delete existing keystore files in Docker keystore directory
-  delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsks
-  delete_quietly $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+  delete_quietly "$DOCKER_PATH/jrs/resources/keystore/.jrsks"
+  delete_quietly "$DOCKER_PATH/jrs/resources/keystore/.jrsksp"
   # Checkout existing Docker Componse environment file
-  git checkout $DOCKER_PATH/jrs/.env
+  git checkout "$DOCKER_PATH/jrs/.env"
   # Checkout original Docker default master peroperties file
-  git checkout $DOCKER_PATH/jrs/resources/default-properties/default_master.properties
+  git checkout "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
   # Delete existing keystore files in Helm keystore directory
-  delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsks
-  delete_quietly $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
+  delete_quietly "$K8S_PATH/jrs/helm/secrets/keystore/.jrsks"
+  delete_quietly "$K8S_PATH/jrs/helm/secrets/keystore/.jrsksp"
   # Delete existing Buildomatic default master properties file
-  delete_quietly $INSTALLER_PATH/buildomatic/default_master.properties
+  delete_quietly "$INSTALLER_PATH/buildomatic/default_master.properties"
   # Delete existing license file in Helm license directory
-  delete_quietly $K8S_PATH/jrs/helm/secrets/license/jasperserver.license
+  delete_quietly "$K8S_PATH/jrs/helm/secrets/license/jasperserver.license"
   # Checkout original Helm chart lock file
   git checkout jaspersoft-containers/K8s/jrs/helm/Chart.lock >&1
 }
@@ -62,7 +62,7 @@ while getopts ":cf" opt; do
       echo
       exit
       ;;  
-    b)
+    f)
       FORCE=true
       ;;    
     \?)
@@ -92,7 +92,7 @@ msg_ol "Unzipping JasperReports Server installation archive to repository root"
 #   -o  Overwrite without prompting
 #   -q  Quietly
 #   -d  Unzip to repository root directory
-unzip -o -q $INSTALLER_ZIP -d $REPO_ROOT_PATH
+unzip -o -q "$INSTALLER_ZIP" -d "$REPO_ROOT_PATH"
 
 #
 # Minikube
@@ -131,14 +131,14 @@ eval "$(minikube -p minikube docker-env)"
 msg "Building JasperReports Server Docker images using Docker Compose"
 
 # Update Docker Compose environment file with customized version
-cp $PROJ_ROOT_PATH/docker.env $DOCKER_PATH/jrs/.env
+cp "$PROJ_ROOT_PATH/docker.env" "$DOCKER_PATH/jrs/.env"
 
 # Update Docker default master properties file with customized version
-cp $PROJ_ROOT_PATH/docker.default_master.properties $DOCKER_PATH/jrs/resources/default-properties/default_master.properties
+cp "$PROJ_ROOT_PATH/docker.default_master.properties" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
 
 # Build Docker images using Docker Compose
 # TODO: Remove --no-cache flag
-docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build --no-cache
+docker-compose -f "$DOCKER_PATH/jrs/docker-compose.yml" build --no-cache
 
 #
 # Keystore
@@ -147,19 +147,20 @@ docker-compose -f $DOCKER_PATH/jrs/docker-compose.yml build --no-cache
 msg "Generating keystore files"
 
 # Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
-cp $PROJ_ROOT_PATH/keystore.postgres.default_master.properties $INSTALLER_PATH/buildomatic/default_master.properties
+cp "$PROJ_ROOT_PATH/keystore.postgres.default_master.properties" "$INSTALLER_PATH/buildomatic/default_master.properties"
 
 # Generate keystore files
-cd $INSTALLER_PATH/buildomatic
+cd "$INSTALLER_PATH/buildomatic" || exit
+# shellcheck disable=SC1091
 source ./js-ant gen-config <<<$'y'
 
 msg_ol "Copying generated keystore files to Docker keystore directory"
 
 # Copy the generated keystore files to the Docker keystore directory with 644 permissions
-cp ~/.jrsks $DOCKER_PATH/jrs/resources/keystore
-cp ~/.jrsksp $DOCKER_PATH/jrs/resources/keystore
-chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsks
-chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
+cp ~/.jrsks "$DOCKER_PATH/jrs/resources/keystore"
+cp ~/.jrsksp "$DOCKER_PATH/jrs/resources/keystore"
+chmod 644 "$DOCKER_PATH/jrs/resources/keystore/.jrsks"
+chmod 644 "$DOCKER_PATH/jrs/resources/keystore/.jrsksp"
 
 #
 # Helm
@@ -168,20 +169,20 @@ chmod 644 $DOCKER_PATH/jrs/resources/keystore/.jrsksp
 msg_ol "Copying JasperReports Server license file to Helm license directory"
 
 # Copy license file to Helm license directory
-cp $PROJ_ROOT_PATH/jasperserver.license $K8S_PATH/jrs/helm/secrets/license
+cp "$PROJ_ROOT_PATH/jasperserver.license" "$K8S_PATH/jrs/helm/secrets/license"
 
 msg_ol "Copying generated keystore files to Helm keystore directory"
 
 # Copy the generated keystore files to the Helm keystore directory with 644 permissions
-cp ~/.jrsks $K8S_PATH/jrs/helm/secrets/keystore
-cp ~/.jrsksp $K8S_PATH/jrs/helm/secrets/keystore
-chmod 644 $K8S_PATH/jrs/helm/secrets/keystore/.jrsks
-chmod 644 $K8S_PATH/jrs/helm/secrets/keystore/.jrsksp
+cp ~/.jrsks "$K8S_PATH/jrs/helm/secrets/keystore"
+cp ~/.jrsksp "$K8S_PATH/jrs/helm/secrets/keystore"
+chmod 644 "$K8S_PATH/jrs/helm/secrets/keystore/.jrsks"
+chmod 644 "$K8S_PATH/jrs/helm/secrets/keystore/.jrsksp"
 
 msg "Adding and updating Helm chart dependencies"
 
 # Add Helm dependency chart repositories and update Helm dependencies
-cd $K8S_PATH
+cd "$K8S_PATH" || exit
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add haproxytech https://haproxytech.github.io/helm-charts
@@ -206,6 +207,7 @@ kubectl get pods -n default
 
 printf "\n🦄 Waiting for the PostgreSQL pod to have the Running status ... (/) "
 
+# shellcheck disable=SC1003
 while [[ $(kubectl get $K8S_POSTGRES_POD_NAME -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
 do for X in '-' '\' '|' '/'; do printf "\b\b\b%s) " "$X"; sleep 0.1; done; done 
 printf "\b\b\b\b(👍) \n"
@@ -216,34 +218,48 @@ kubectl get pods -n default
 
 msg "Installing JasperReports Server Helm charts"
 
-echo ""\
-"------------------------------------------------"
+# shellcheck disable=SC2028
+echo "------------------------------------------------
 
-echo "Verification: \n\n"\
-"  A pod named 'pod/jasperserver-buildomatic-<id>' will start in the '$K8S_NAMESPACE' namespace  with the\n"\
-"  purpose of setting up the JRS repository DB.\n\n"\
-"  To connect to the repository DB at any time the '$K8S_POSTGRES_POD_NAME' is running:\n\n"\
-"    $ kubectl port-forward --namespace default svc/repository-postgresql 5432:5432\n\n"\
-"  Once completed successfully the buildomatic pod will be destroyed.\n\n"\
-"  Three additional pods will start in the '$K8S_NAMESPACE' namespace with the names:\n\n"\
-"    pod/jasperserver-cache-<id>\n"\
-"    pod/jrs-jasperserver-ingress-<id>\n"\
-"    pod/jrs-jasperserver-pro-<id>\n\n"\
-"  To watch the JRS webapp logs during startup:\n\n"\
-"    $ kubectl logs --follow pod/jrs-jasperserver-pro-<id>\n\n"\
-"  Once the pod named 'pod/jrs-jasperserver-ingress-<id>' is in the Ready state, you'll need to forward\n"\
-"  http traffic from your localhost to the JRS service to be able to view the JRS UI in a browser.\n\n"\
-"    $ kubectl port-forward --namespace $K8S_NAMESPACE service/jrs-jasperserver-ingress 8080:80\n\n"\
-"  Open http://127.0.0.1:8080/jasperserver-pro/login.html in a browser to verify the server is up and running.\n"
+Verification:
 
-echo "Troubleshooting:\n\n"\
-"  It's important that the pod named 'pod/jasperserver-cache-<id>' is Ready before the webapp pod comes up,\n"\
-"  however often it doesn't. When the cache pod is not ready for the webapp, you'll see errors in the webapp logs\n"\
-"  similar to:\n\n  Could not connect to broker URL: tcp://jasperserver-cache-service.jasper-reports.svc.cluster.local:61616\n\n"\
-"  When this occurs: Delete the webapp pod and let the deployment recreate it.\n"
+  A pod named 'pod/jasperserver-buildomatic-<id>' will start in the '$($K8S_NAMESPACE)' namespace  with the
+  purpose of setting up the JRS repository DB.
 
-echo ""\
-"
+  To connect to the repository DB at any time the '$K8S_POSTGRES_POD_NAME' is running:
+
+    $ kubectl port-forward --namespace default svc/repository-postgresql 5432:5432
+
+  Once completed successfully the buildomatic pod will be destroyed.
+
+  Three additional pods will start in the '$K8S_NAMESPACE' namespace with the names:
+
+    pod/jasperserver-cache-<id>
+    pod/jrs-jasperserver-ingress-<id>
+    pod/jrs-jasperserver-pro-<id>
+
+  To watch the JRS webapp logs during startup:
+
+    $ kubectl logs --follow pod/jrs-jasperserver-pro-<id>
+
+  Once the pod named 'pod/jrs-jasperserver-ingress-<id>' is in the Ready state, you'll need to forward
+  http traffic from your localhost to the JRS service to be able to view the JRS UI in a browser.
+
+    $ kubectl port-forward --namespace $K8S_NAMESPACE service/jrs-jasperserver-ingress 8080:80
+
+  Open http://127.0.0.1:8080/jasperserver-pro/login.html in a browser to verify the server is up and running.
+
+Troubleshooting:
+
+  It's important that the pod named 'pod/jasperserver-cache-<id>' is Ready before the webapp pod comes up,
+  however often it doesn't. When the cache pod is not ready for the webapp, you'll see errors in the webapp 
+  logs similar to:
+  
+  Could not connect to broker URL: tcp://jasperserver-cache-service.jasper-reports.svc.cluster.local:61616
+
+  When this occurs: Delete the webapp pod and let the deployment recreate it OR just be patient and the 
+  webapp pod will be restarted and come up without error.
+
 You may kill this terminal once the K8S deployments have been created.
 
 (╯°□°）╯︵ puƎ ǝɥꓕ
