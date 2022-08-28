@@ -73,12 +73,15 @@ done
 
 msg "Running with the following parameters"
 
+echo "   FORCE=${FORCE}"
 echo "   PROJ_ROOT_PATH=${PROJ_ROOT_PATH}"
 echo "   REPO_ROOT_PATH=${REPO_ROOT_PATH}"
 echo "   DOCKER_PATH=${DOCKER_PATH}"
 echo "   K8S_PATH=${K8S_PATH}"
 echo "   INSTALLER_ZIP=${INSTALLER_ZIP}"
 echo "   INSTALLER_PATH=${INSTALLER_PATH}"
+echo "   K8S_NAMESPACE=${K8S_NAMESPACE}"
+echo "   K8S_POSTGRES_POD_NAME=${K8S_POSTGRES_POD_NAME}"
 
 clean
 
@@ -91,7 +94,7 @@ msg_ol "Unzipping JasperReports Server installation archive to repository root"
 # Unzip JasperReports Server installer archive
 #   -o  Overwrite without prompting
 #   -q  Quietly
-#   -d  Unzip to repository root directory
+#   -d  To repo root directory
 unzip -o -q "$INSTALLER_ZIP" -d "$REPO_ROOT_PATH"
 
 #
