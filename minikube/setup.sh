@@ -9,10 +9,10 @@ REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo "$PWD")
 DOCKER_PATH="$REPO_ROOT_PATH/jaspersoft-containers/Docker"
 K8S_PATH="$REPO_ROOT_PATH/jaspersoft-containers/K8s"
 
-INSTALLER_ZIP=TIB_js-jrs_8.1.0_bin.zip
+INSTALLER_ZIP="TIB_js-jrs_8.1.0_bin.zip"
 INSTALLER_PATH="$REPO_ROOT_PATH/jasperreports-server-pro-8.1.0-bin"
 
-K8S_NAMESPACE=jasper-reports
+K8S_NAMESPACE="jasper-reports"
 K8S_POSTGRES_POD_NAME="pod/repository-postgresql-0"
 
 msg() {
@@ -55,7 +55,7 @@ clean() {
   git checkout jaspersoft-containers/K8s/jrs/helm/Chart.lock >&1
 }
 
-while getopts ":cf" opt; do
+while getopts ":cfn:" opt; do
   case $opt in
     c)
       clean
@@ -64,6 +64,9 @@ while getopts ":cf" opt; do
       ;;  
     f)
       FORCE=true
+      ;;
+    n)
+      K8S_NAMESPACE=$OPTARG
       ;;    
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -117,8 +120,8 @@ minikube start
 
 msg "Creating K8S namespace '$K8S_NAMESPACE' in minikube"
 kubectl config use-context minikube
-kubectl create namespace $K8S_NAMESPACE
-kubectl config set-context --current --namespace=$K8S_NAMESPACE
+kubectl create namespace "$K8S_NAMESPACE"
+kubectl config set-context --current --namespace="$K8S_NAMESPACE"
 
 msg "Current K8S contexts:"
 kubectl config get-contexts
@@ -138,6 +141,7 @@ cp "$PROJ_ROOT_PATH/docker.env" "$DOCKER_PATH/jrs/.env"
 
 # Update Docker default master properties file with customized version
 cp "$PROJ_ROOT_PATH/docker.default_master.properties" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
+sed -i '' "s/K8S_NAMESPACE/$K8S_NAMESPACE/g" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
 
 # Build Docker images using Docker Compose
 # TODO: Remove --no-cache flag
@@ -192,8 +196,8 @@ helm repo add haproxytech https://haproxytech.github.io/helm-charts
 helm repo add elastic https://helm.elastic.co
 helm dependencies update jrs/helm
 
-# Install PostgreSQL chart into default namespace
-helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --namespace default
+# Install PostgreSQL chart into the correct namespace
+helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --namespace $K8S_NAMESPACE
 
 # Wait for the PostgreSQL pod to be ready
 printf "\n🦄 Giving the PostgreSQL pod a few seconds to warm up ... (5s) "
@@ -204,20 +208,20 @@ do
 done
 printf "\b\b\b\b🔥) \n"
 
-msg "A single PostgreSQL pod named '$K8S_POSTGRES_POD_NAME' should be coming up in the default namespace"
+msg "A single PostgreSQL pod named '$K8S_POSTGRES_POD_NAME' should be coming up in the '$K8S_NAMESPACE' namespace"
 
-kubectl get pods -n default
+kubectl get pods -n "$K8S_NAMESPACE"
 
 printf "\n🦄 Waiting for the PostgreSQL pod to have the Running status ... (/) "
 
 # shellcheck disable=SC1003
-while [[ $(kubectl get $K8S_POSTGRES_POD_NAME -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+while [[ $(kubectl get $K8S_POSTGRES_POD_NAME -n $K8S_NAMESPACE -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
 do for X in '-' '\' '|' '/'; do printf "\b\b\b%s) " "$X"; sleep 0.1; done; done 
 printf "\b\b\b\b(👍) \n"
 
-msg "Current K8s pods in the 'default' namespace"
+msg "Current K8s pods in the '$K8S_NAMESPACE' namespace"
 
-kubectl get pods -n default
+kubectl get pods -n "$K8S_NAMESPACE"
 
 msg "Installing JasperReports Server Helm charts"
 
@@ -226,12 +230,12 @@ echo "------------------------------------------------
 
 Verification:
 
-  A pod named 'pod/jasperserver-buildomatic-<id>' will start in the '$($K8S_NAMESPACE)' namespace  with the
+  A pod named 'pod/jasperserver-buildomatic-<id>' will start in the '$K8S_NAMESPACE' namespace  with the
   purpose of setting up the JRS repository DB.
 
   To connect to the repository DB at any time the '$K8S_POSTGRES_POD_NAME' is running:
 
-    $ kubectl port-forward --namespace default svc/repository-postgresql 5432:5432
+    $ kubectl port-forward --namespace $K8S_NAMESPACE svc/repository-postgresql 5432:5432
 
   Once completed successfully the buildomatic pod will be destroyed.
 
@@ -258,10 +262,10 @@ Troubleshooting:
   however often it doesn't. When the cache pod is not ready for the webapp, you'll see errors in the webapp 
   logs similar to:
   
-  Could not connect to broker URL: tcp://jasperserver-cache-service.jasper-reports.svc.cluster.local:61616
+  Could not connect to broker URL: tcp://jasperserver-cache-service.$K8S_NAMESPACE.svc.cluster.local:61616
 
   When this occurs: Delete the webapp pod and let the deployment recreate it OR just be patient and the 
-  webapp pod will be restarted and come up without error.
+  webapp pod will be restarted and should come up without error.
 
 You may kill this terminal once the K8S deployments have been created.
 
@@ -270,4 +274,4 @@ You may kill this terminal once the K8S deployments have been created.
 "
 
 # Install JasperReports Server charts into specified namespace
-helm install jrs jrs/helm --namespace $K8S_NAMESPACE --wait --timeout 6m0s --set buildomatic.includeSamples=false
+helm install jrs jrs/helm --namespace "$K8S_NAMESPACE" --wait --timeout 6m0s --set buildomatic.includeSamples=false
