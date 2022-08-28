@@ -216,12 +216,39 @@ kubectl get pods -n default
 
 msg "Installing JasperReports Server Helm charts"
 
-# TODO: Additional information and troubleshooting
+echo ""\
+"------------------------------------------------"
+
+echo "Verification: \n\n"\
+"  A pod named 'pod/jasperserver-buildomatic-<id>' will start in the '$K8S_NAMESPACE' namespace  with the\n"\
+"  purpose of setting up the JRS repository DB.\n\n"\
+"  To connect to the repository DB at any time the '$K8S_POSTGRES_POD_NAME' is running:\n\n"\
+"    $ kubectl port-forward --namespace default svc/repository-postgresql 5432:5432\n\n"\
+"  Once completed successfully the buildomatic pod will be destroyed.\n\n"\
+"  Three additional pods will start in the '$K8S_NAMESPACE' namespace with the names:\n\n"\
+"    pod/jasperserver-cache-<id>\n"\
+"    pod/jrs-jasperserver-ingress-<id>\n"\
+"    pod/jrs-jasperserver-pro-<id>\n\n"\
+"  To watch the JRS webapp logs during startup:\n\n"\
+"    $ kubectl logs --follow pod/jrs-jasperserver-pro-<id>\n\n"\
+"  Once the pod named 'pod/jrs-jasperserver-ingress-<id>' is in the Ready state, you'll need to forward\n"\
+"  http traffic from your localhost to the JRS service to be able to view the JRS UI in a browser.\n\n"\
+"    $ kubectl port-forward --namespace $K8S_NAMESPACE service/jrs-jasperserver-ingress 8080:80\n\n"\
+"  Open http://127.0.0.1:8080/jasperserver-pro/login.html in a browser to verify the server is up and running.\n"
+
+echo "Troubleshooting:\n\n"\
+"  It's important that the pod named 'pod/jasperserver-cache-<id>' is Ready before the webapp pod comes up,\n"\
+"  however often it doesn't. When the cache pod is not ready for the webapp, you'll see errors in the webapp logs\n"\
+"  similar to:\n\n  Could not connect to broker URL: tcp://jasperserver-cache-service.jasper-reports.svc.cluster.local:61616\n\n"\
+"  When this occurs: Delete the webapp pod and let the deployment recreate it.\n"
+
+echo ""\
+"
+You may kill this terminal once the K8S deployments have been created.
+
+(╯°□°）╯︵ puƎ ǝɥꓕ
+------------------------------------------------
+"
 
 # Install JasperReports Server charts into specified namespace
-helm install jrs jrs/helm --namespace $K8S_NAMESPACE --wait --timeout 12m0s --set buildomatic.includeSamples=false
-
-# kubectl port-forward --namespace jasper-reports service/jrs-jasperserver-ingress 8080:80
-# http://127.0.0.1:8080/jasperserver-pro/login.html
-
-# Could not connect to broker URL: tcp://jasperserver-cache-service.jasper-reports.svc.cluster.local:61616
+helm install jrs jrs/helm --namespace $K8S_NAMESPACE --wait --timeout 6m0s --set buildomatic.includeSamples=false
