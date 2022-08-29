@@ -5,6 +5,7 @@ set -u
 FORCE=true
 
 PROJ_ROOT_PATH=$(cd "${0%/*}" && echo "$PWD")
+PROJ_CONF_PATH=$(cd "$PROJ_ROOT_PATH/conf" && echo "$PWD")
 REPO_ROOT_PATH=$(cd "$PROJ_ROOT_PATH/../" && echo "$PWD")
 DOCKER_PATH="$REPO_ROOT_PATH/jaspersoft-containers/Docker"
 K8S_PATH="$REPO_ROOT_PATH/jaspersoft-containers/K8s"
@@ -77,8 +78,9 @@ done
 msg "Running with the following parameters"
 
 echo "   FORCE=${FORCE}"
-echo "   PROJ_ROOT_PATH=${PROJ_ROOT_PATH}"
 echo "   REPO_ROOT_PATH=${REPO_ROOT_PATH}"
+echo "   PROJ_ROOT_PATH=${PROJ_ROOT_PATH}"
+echo "   PROJ_CONF_PATH=${PROJ_CONF_PATH}"
 echo "   DOCKER_PATH=${DOCKER_PATH}"
 echo "   K8S_PATH=${K8S_PATH}"
 echo "   INSTALLER_ZIP=${INSTALLER_ZIP}"
@@ -137,10 +139,10 @@ eval "$(minikube -p minikube docker-env)"
 msg "Building JasperReports Server Docker images using Docker Compose"
 
 # Update Docker Compose environment file with customized version
-cp "$PROJ_ROOT_PATH/docker.env" "$DOCKER_PATH/jrs/.env"
+cp "$PROJ_CONF_PATH/docker.env" "$DOCKER_PATH/jrs/.env"
 
 # Update Docker default master properties file with customized version
-cp "$PROJ_ROOT_PATH/docker.default_master.properties" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
+cp "$PROJ_CONF_PATH/docker.default_master.properties" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
 sed -i '' "s/K8S_NAMESPACE/$K8S_NAMESPACE/g" "$DOCKER_PATH/jrs/resources/default-properties/default_master.properties"
 
 # Build Docker images using Docker Compose
@@ -154,7 +156,7 @@ docker-compose -f "$DOCKER_PATH/jrs/docker-compose.yml" build --no-cache
 msg "Generating keystore files"
 
 # Update Buildomatic keystore creation default master properties file with customized PostgreSQL version
-cp "$PROJ_ROOT_PATH/keystore.postgres.default_master.properties" "$INSTALLER_PATH/buildomatic/default_master.properties"
+cp "$PROJ_CONF_PATH/keystore.postgres.default_master.properties" "$INSTALLER_PATH/buildomatic/default_master.properties"
 
 # Generate keystore files
 cd "$INSTALLER_PATH/buildomatic" || exit
@@ -176,7 +178,7 @@ chmod 644 "$DOCKER_PATH/jrs/resources/keystore/.jrsksp"
 msg_ol "Copying JasperReports Server license file to Helm license directory"
 
 # Copy license file to Helm license directory
-cp "$PROJ_ROOT_PATH/jasperserver.license" "$K8S_PATH/jrs/helm/secrets/license"
+cp "$PROJ_CONF_PATH/jasperserver.license" "$K8S_PATH/jrs/helm/secrets/license"
 
 msg_ol "Copying generated keystore files to Helm keystore directory"
 
