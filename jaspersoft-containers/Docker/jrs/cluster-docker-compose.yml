@@ -5,71 +5,54 @@
 version: '3.9'
 
 services:
-##### JRS First instance
-  jasperserver-webapp-1:
+  ##### JRS First instance
+  jasperserver-webapp:
     image: "${JASPERREPORTS_SERVER_APP_IMAGE_NAME}:${JASPERREPORTS_SERVER_APP_IMAGE_TAG}"
+    networks:
+      - jrs_network
     env_file: .env
     environment:
-      JAVA_OPTS: "-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
     volumes:
       - ./resources/keystore:/usr/local/share/jasperserver-pro/keystore
       - ./resources/license/jasperserver.license:/usr/local/share/jasperserver-pro/license/jasperserver.license
     mem_limit: 6g
     mem_reservation: 3g
     cpu_shares: 1000
-
+    deploy:
+      mode: replicated
+      replicas: 2
     depends_on:
       - activemq
-      - repository
 
-##### JRS Second instance
-  jasperserver-webapp-2:
-    image: "${JASPERREPORTS_SERVER_APP_IMAGE_NAME}:${JASPERREPORTS_SERVER_APP_IMAGE_TAG}"
-    env_file: .env
-    environment:
-      JAVA_OPTS: "-Xmx3500M  -Djs.license.directory=/usr/local/share/jasperserver-pro/license  -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
-    volumes:
-      - ./resources/keystore:/usr/local/share/jasperserver-pro/keystore
-      - ./resources/license/jasperserver.license:/usr/local/share/jasperserver-pro/license/jasperserver.license
-    mem_limit: 6g
-    mem_reservation: 3g
-    cpu_shares: 1000
-
-    depends_on:
-      - activemq
-      - repository
-
-####### Loadbalancer to manage the JRS Instances and session replication
+  ####### Loadbalancer to manage the JRS Instances and session replication
   haproxy:
     image: haproxy:2.3.9-alpine
+    networks:
+      - jrs_network
     ports:
       - 80:80
       - 9999:9999
     volumes:
       - ./cluster-config:/usr/local/etc/haproxy
     depends_on:
-      - jasperserver-webapp-1
-      - jasperserver-webapp-2
+      - jasperserver-webapp
 
-##### Repository cache replication runs on 61616 port and 8161 to access from web
+  ##### Repository cache replication runs on 61616 port and 8161 to access from web
   activemq:
-    image: rangareddyv/activemq-openshift:5.16.2
+    image: bansamadev/activemq:5.17.2
+    networks:
+      - jrs_network
     ports:
       - 8161:8161
       - 61616:61616
 
-#### JRS Repository database
-  repository:
-    image: postgres:12
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-#### Postgresql Volume
-volumes:
-  postgres-data:
-    name: jrs-repository-vol
+networks:
+  jrs_network:
+    # use the bridge driver, but enable IPv6
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1

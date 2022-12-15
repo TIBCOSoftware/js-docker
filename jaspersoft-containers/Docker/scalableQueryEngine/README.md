@@ -46,7 +46,7 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 1. Run `cd <CONTAINER_PATH>`.
 1. Download a commercial edition of JasperReports Server WAR File installer zip into the current directory.
 1. Clone the jaspersoft-containers repository to the current directory.
-   `git clone git@github.com:TIBCOSoftware/js-docker.git`
+   `git clone git@github.com:tibco/jaspersoft-containers.git`
 1. Run `cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/scripts` and then run `./unpackWARInstaller.sh`.
 
 
@@ -56,11 +56,11 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 8.1.0|
+|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 8.1.1|
 |SCALABLE_QUERY_ENGINE_IMAGE_NAME| Scalable Query Engine image name |scalable-query-engine|
 |SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME| Scalable Query Engine JDBC drivers image name| scalable-query-engine-driver|
-|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 8.1.0|
-|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 8.1.0|
+|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 8.1.1|
+|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 8.1.1|
 |JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Debian and Amazon Linux 2, and it is of two types **openjdk:11-jdk** for Debian and **amazoncorretto:11** for Amazon Linux 2 |openjdk:11-jdk|
 |ks | .jrsks keystore path |/etc/secrets/keystore|
 |ksp | .jrsksp keystore path | /etc/secrets/keystore |
