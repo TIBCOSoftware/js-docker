@@ -33,7 +33,7 @@
 | Parameter| Description | Default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 2 (It will not come into effect if autoscaling is enabled.)|
-| jrsVersion| TIBCO JasperReports® Server release version  | 8.0.0|
+| jrsVersion| TIBCO JasperReports® Server release version  | 8.0.3|
 | image.name| Name of the Scalable Query Engine image | null |
 | image.tag | Name of the Scalable Query Engine image tag | JasperReports&reg; Server Release Version|
 | image.pullPolicy | Docker image pull policy | IfNotPresent |
@@ -131,7 +131,7 @@
 | jrs.proxy.timedOut | timeout | 30000 |
 | drivers.image.enabled | Enables the drivers  | true |
 | drivers.image.name | Image name for Scalable Query Engine Driver image | null |
-| drivers.image.tag | Scalable Query Engine Driver image tag | 8.0.0 |
+| drivers.image.tag | Scalable Query Engine Driver image tag | 8.0.3 |
 | drivers.image.pullPolicy | Image pull policy | IfNotPresent |
 | drivers.storageClassName | Driver image storage class name | hostPath |
 | drivers.image.jdbcDriversPath | JDBC drivers path  | /usr/lib/drivers |

@@ -33,7 +33,7 @@ dependencies:
     condition: logging.enabled
 
   - name: redis-cluster
-    version: "6.2.3"
+    version: "7.6.0"
     repository: "@bitnami"
     condition: rediscluster.enabled
     tags:
