@@ -199,7 +199,7 @@ External JMS instance can also be used instead of in-build JMS setup by adding t
 
 -  To set up the Repository DB in the OpenShift cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres  --version 11.6.0 `
+`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres  --version 11.9.13 `
 
 
 - Check the pods status and make sure pods are in a running state.
