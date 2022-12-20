@@ -13,9 +13,9 @@ dependencies:
   version: 7.12.0
 - name: redis-cluster
   repository: https://charts.bitnami.com/bitnami
-  version: 7.6.0
+  version: 7.6.4
 - name: scalable-query-engine-scaling
   repository: ""
   version: 1.0.0
-digest: sha256:54837a7c57e07241e76a031788dab4c3d23d5a5be3b5b6f88283f3ebf706aad5
-generated: "2022-12-15T11:21:34.4260415+05:30"
+digest: sha256:8dd4ce24539438f888c86ad3440e5b9caf6bc21a8aa71659e4b20002e172e623
+generated: "2022-12-20T22:56:16.6172698+05:30"

@@ -121,7 +121,7 @@ These parameters and values are the same as parameters in values.yaml.
 | ingress.tls | Adds TLS secret name to allow secure traffic | null| 
 | scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
 | scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 1|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.2|
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.3|
 | scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
 | scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
 | scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | true |
@@ -199,7 +199,7 @@ External JMS instance can also be used instead of in-build JMS setup by adding t
 
 -  To set up the Repository DB in the OpenShift cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set postgresqlPassword=postgres --version 10.15.0`
+`helm install repository bitnami/postgresql --set postgresqlPassword=postgres --version 11.9.13`
 
 
 - Check the pods status and make sure pods are in a running state.
