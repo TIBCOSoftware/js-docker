@@ -221,7 +221,7 @@ If you see the Chromium issue in TIBCO JasperReports® Server using Docker deplo
 
 - Wait for the application to start and access the application by using `host-name/jasperserver-pro` (port is not needed, haproxy is running on port 80).
 
- **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-webapp-1 and jasperserver-webapp-2 services in cluster-docker-compose.yaml
+ **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from under jasperserver-webapp service in cluster-docker-compose.yaml
 
 
 # Deploying JasperReports Server and Scalable Query Engine
