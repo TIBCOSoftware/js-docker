@@ -231,12 +231,13 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 # Deploying the Application in Cluster Mode
 
 - It uses haproxy as a load balancer and activemq as a cache replication. Before launching the application, make sure images are created successfully and repository DB setup is also completed.
+- Update the value of parameter 'replicas' in cluster-docker-compose.yml file depending upon how many containers you would want to create.
 
    `docker-compose -f cluster-docker-compose.yml up -d`
 
 - Wait for the application to start and access the application by using `host-name/jasperserver-pro` (port is not needed, haproxy is running on port 80).
 
- **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-webapp-1 and jasperserver-webapp-2 services in cluster-docker-compose.yaml.
+ **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from under jasperserver-webapp service in cluster-docker-compose.yaml.
 
 
 # Deploying JasperReports Server and Scalable Query Engine
