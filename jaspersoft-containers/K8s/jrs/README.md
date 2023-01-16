@@ -166,7 +166,7 @@ These parameters and values are the same as parameters in `K8s/jrs/helm/values.y
 
 # Installing TIBCO JasperReports® Server
 
-1. Go to `jaspersersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
+1. Go to `jaspersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
 2. Update the default_master.properties in `Docker/jrs/resources/default_properties` as needed.
 3. (Optional , in case DB has to be configure using env variables)Update the `db` section in `values.yaml` with the actual JasperReports Server DB details or create a separate secret like below.
    
@@ -374,7 +374,7 @@ In case if you want to control traffic on AWS Application Load Balancer side ins
  
 ## Installation
 
-1. Clone the jaspersoft-containers ``git clone git@github.com:tibco/jaspersoft-containers.git``.
+1. Clone the jaspersoft-containers ``git clone git@github.com:TIBCOSoftware/js-docker.git``.
 2. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of TIBCO JasperReports® Server WAR File installer zip to your current directory.
 <br />**Note:**  CONTAINER_PATH=<YOUR_SYSTEM_DIR>/js-docker
 3. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, tags, chromium installation, etc.
