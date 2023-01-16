@@ -208,9 +208,9 @@ These details are stored in Kubernetes secrets and used as environment variables
       AUDIT_DB_USER_NAME: audit-db-user-name
       AUDIT_DB_PASSWORD: audit-password
 
-3. Build the docker images for TIBCO JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableAdhocWorker#readme) ).
-4. Generate the keystore and copy it to the `k8s/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation).
-5. Copy the TIBCO JasperReports® Server license to the `k8s/jrs/helm/secrets/license` folder.
+4. Build the docker images for TIBCO JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme) ).
+5. Generate the keystore and copy it to the `k8s/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation).
+6. Copy the TIBCO JasperReports® Server license to the `k8s/jrs/helm/secrets/license` folder.
 
 ## JMS Configuration
   By default, TIBCO JasperReports® Server will install using activemq docker image. You can disable it by changing the parameter `jms.enabled=false`. 
