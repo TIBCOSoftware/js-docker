@@ -162,7 +162,7 @@ These parameters and values are the same as parameters in values.yaml.
 
 # Installing TIBCO JasperReports® Server
 
-1. Go to `jaspersersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
+1. Go to `jaspersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
 2. Update the default_master.properties in `Docker/jrs/resources/default_properties` as needed.
 3. (Optional , in case DB has to be configure using env variables)Update the `db` section in `values.yaml` with the actual JasperReports Server DB details or create a separate secret like below.
    
@@ -326,7 +326,7 @@ List all the resources.
  
 ## Installation
 
-1. Clone the jaspersoft-containers ``git clone git@github.com:tibco/jaspersoft-containers.git ``.
+1. Clone the jaspersoft-containers ``git clone git@github.com:TIBCOSoftware/js-docker.git ``.
 1. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of TIBCO JasperReports® Server WAR File installer zip to your current directory.
 1. Run ``cd jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, chromium installation, etc.
 1. Run ``cd scripts`` and then run ``./unpackWARInstaller.sh`` to unzip the installer file.
