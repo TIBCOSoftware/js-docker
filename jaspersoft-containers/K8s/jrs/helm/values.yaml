@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-jrsVersion: 8.1.0
+jrsVersion: 8.1.1
 image:
-  tag:  8.1.0
+  tag:  8.1.1
   name:
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -78,7 +78,7 @@ db:
 buildomatic:
   enabled: true
   name: jasperserver-buildomatic
-  imageTag: 8.1.0
+  imageTag: 8.1.1
   imageName:
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -155,8 +155,8 @@ jms:
   name: jasperserver-cache
   serviceName: jasperserver-cache-service
   repository:
-  imageName: rangareddyv/activemq-openshift
-  imageTag: 5.16.2
+  imageName: bansamadev/activemq
+  imageTag: 5.17.2
 
   healthcheck:
     enabled: true
@@ -243,7 +243,7 @@ scalableQueryEngineUrl: {}
 scalable-query-engine:
   replicaCount: 1
   image:
-    tag: 8.1.0
+    tag: 8.1.1
     name:
     pullPolicy: IfNotPresent
   autoscaling:
@@ -255,7 +255,7 @@ scalable-query-engine:
   drivers:
     enabled: true
     image:
-      tag: 8.1.0
+      tag: 8.1.1
       name:
   kubernetes-ingress:
     controller:

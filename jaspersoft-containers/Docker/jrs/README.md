@@ -71,9 +71,9 @@ These variables are passed to the command line with `--build-arg` for docker bui
 |INSTALL_CHROMIUM| Whether Chromium installed. **Note: TIBCO Software Inc. is not liable for license violation of chromium.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the TIBCO JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the TIBCO JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of TIBCO JasperReports® Server|8.1.0|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server web app |8.1.0|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server buildomatic |8.1.0|
+|JASPERREPORTS_SERVER_VERSION|Version number of TIBCO JasperReports® Server|8.1.1|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server web app |8.1.1|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server buildomatic |8.1.1|
 |TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.54-jdk11-openjdk" for Debian and "tomcat:9.0.54-jdk11-corretto" for Amazon Linux 2 |tomcat:9.0.54-jdk11-openjdk|
 |JDK_BASE_IMAGE|Java Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types openjdk:11-jdk and  amazoncorretto:11|openjdk:11-jdk|
 RELEASE_DATE|Release date of TIBCO JasperReports® Server | May 13, 2022 |
@@ -231,12 +231,11 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 # Deploying the Application in Cluster Mode
 
 - It uses haproxy as a load balancer and activemq as a cache replication. Before launching the application, make sure images are created successfully and repository DB setup is also completed.
+- Update the value of parameter 'replicas' in cluster-docker-compose.yml file depending upon how many containers you would want to create.
 
    `docker-compose -f cluster-docker-compose.yml up -d`
 
 - Wait for the application to start and access the application by using `host-name/jasperserver-pro` (port is not needed, haproxy is running on port 80).
-
- **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-webapp-1 and jasperserver-webapp-2 services in cluster-docker-compose.yaml.
 
 
 # Deploying JasperReports Server and Scalable Query Engine

@@ -1,4 +1,4 @@
-jrsVersion: 8.1.0
+jrsVersion: 8.1.1
 queryEngine:
   deployment: jrs-scalable-query-engine
 

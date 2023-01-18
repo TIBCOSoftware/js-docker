@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-jrsVersion: 8.1.0
+jrsVersion: 8.1.1
 image:
-  tag:  8.1.0
+  tag:  8.1.1
   name: jrscontainerregistry.azurecr.io/jrs/webapp
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -57,7 +57,7 @@ securityContext:
 buildomatic:
   enabled: true
   name: jasperserver-buildomatic
-  imageTag: 8.1.0
+  imageTag: 8.1.1
   imageName: jrscontainerregistry.azurecr.io/jrs/buildomatic
   pullPolicy: IfNotPresent
   ## Secrets must be manually created in the namespace.
@@ -155,8 +155,8 @@ jms:
   name: jasperserver-cache
   serviceName: jasperserver-cache-service
   repository:
-  imageName: rangareddyv/activemq-openshift
-  imageTag: 5.16.2
+  imageName: bansamadev/activemq
+  imageTag: 5.17.2
 
   healthcheck:
     enabled: true
@@ -207,7 +207,7 @@ route:
 
 ## Enable/ Disable Scalable query engine
 scalableQueryEngine:
-  enabled: true
+  enabled: false
 
 
 ## Provide the external Scalable query engine URL
@@ -220,7 +220,7 @@ scalableQueryEngineUrl: {}
 scalable-query-engine:
   replicaCount: 1
   image:
-    tag: 8.1.0
+    tag: 8.1.1
     name:
     pullPolicy: IfNotPresent
   autoscaling:
@@ -232,7 +232,7 @@ scalable-query-engine:
   drivers:
     enabled: true
     image:
-      tag: 8.1.0
+      tag: 8.1.1
       name:
   kubernetes-ingress:
     controller:

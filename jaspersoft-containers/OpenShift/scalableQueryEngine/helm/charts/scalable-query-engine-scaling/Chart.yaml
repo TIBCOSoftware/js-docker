@@ -3,10 +3,10 @@ name: scalable-query-engine-scaling
 description: Scalable Query Engine custome scaling
 type: application
 version: 1.0.0
-appVersion: 8.1.0
+appVersion: 8.1.1
 maintainers:
   - name: Jaspersoft Eng Infra
-    email: js-eng-infra@tico.com
+    email: js-eng-infra@tibco.com
 dependencies:
   - name: prometheus-adapter
     version: "2.15.2"
