@@ -20,7 +20,7 @@ services:
       - 8080:8080
       - 8443:8443
     environment:
-      JAVA_OPTS: "-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
     volumes:
       - ./resources/keystore:/usr/local/share/jasperserver-pro/keystore
       - ./resources/license/jasperserver.license:/usr/local/share/jasperserver-pro/license/jasperserver.license
@@ -60,7 +60,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   activemq:
-    image: rangareddyv/activemq-openshift:5.16.2
+    image: bansamadev/activemq:5.17.2
     ports:
       - 8161:8161
       - 61616:61616
