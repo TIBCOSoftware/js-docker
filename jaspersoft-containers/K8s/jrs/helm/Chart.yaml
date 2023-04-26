@@ -3,7 +3,7 @@ name: jasperserver-pro
 description: JasperReportServer deployment in K8s
 type: application
 version: 1.0.0
-appVersion: "8.0.3"
+appVersion: "8.0.4"
 keywords:
   - Analytics
   - BI Tool
@@ -16,7 +16,7 @@ maintainers:
 
 dependencies:
   - name: kubernetes-ingress
-    version: 1.15.4
+    version: 1.29.3
     repository: "@haproxytech"
     condition: ingress.enabled
 

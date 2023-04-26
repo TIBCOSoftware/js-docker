@@ -3,7 +3,7 @@ name: jasperserver-pro
 description: JasperReportServer deployment in K8s
 type: application
 version: 1.0.1
-appVersion: "8.0.3"
+appVersion: "8.0.4"
 keywords:
   - Analytics
   - BI Tool

@@ -9,7 +9,7 @@
   - [Prerequisites](#prerequisites)
   - [Parameters](#parameters)
   - [Adding External Helm Repositories](#adding-external-helm-repositories)
-- [Installing TIBCO JasperReports® Server](#installing-tibco-jasperreports-server)
+- [Installing JasperReports® Server](#installing-jasperreports-server)
   - [JMS Configuration](#jms-configuration)
   - [Ingress Controller](#ingress-controller)
   - [Monitoring](#monitoring)
@@ -21,7 +21,7 @@
   - [Prerequisites](#prerequisites)
   - [Installation Procedure](#installation-procedure)
 - [Integrating the Scalable Query Engine and JasperReports Server](#integrating-the-scalable-query-engine-and-jasperreports-server)
-- [Use Case: Deploying TIBCO JasperReports® Server Using PostgreSQL Container in K8s Cluster](#use-case-deploying-tibco-jasperreports-server-using-postgresql-container-in-k8s-cluster)
+- [Use Case: Deploying JasperReports® Server Using PostgreSQL Container in K8s Cluster](#use-case-deploying-jasperreports-server-using-postgresql-container-in-k8s-cluster)
   - [Installation](#installation-1)
  - [Troubleshooting](#troubleshooting)
   <!-- /TOC -->
@@ -29,12 +29,12 @@
   
   
 # Introduction
-  This helm chart is used to install TIBCO JasperReports® Server in Kubernetes and integrate it with the Scalable Query Engine. 
+  This helm chart is used to install JasperReports® Server in Kubernetes and integrate it with the Scalable Query Engine. 
 
 # Prerequisites
 1. Docker-engine (19.x+) setup with Docker Compose  (3.9+)
 1. K8s cluster with 1.19+
-1. TIBCO JasperReports® Server
+1. JasperReports® Server
 1. Keystore 
 1. Git
 1. [Helm 3.5](https://helm.sh/docs/intro/)
@@ -45,112 +45,112 @@
 
 These parameters and values are the same as parameters in values.yaml.
 
-| Parameter| Description | default Value |
-|------------| -------------| ----------|
-| replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)| 
-| jrsVersion|TIBCO JasperReports® Server release version | 8.0.3 | 
-| image.tag | Name of the TIBCO JasperReports® Server webapp image tag | TIBCO JasperReports® Server Release Version|
-| image.name| Name of the TIBCO JasperReports® Server webapp image | null|
-| image.pullPolicy| Docker image pull policy  | IfNotPresent|
+| Parameter| Description | default Value                                                                                                                                                               |
+|------------| -------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)                                                                                                                 | 
+| jrsVersion| JasperReports® Server release version | 8.0.4                                                                                                                                                                       | 
+| image.tag | Name of the JasperReports® Server webapp image tag | JasperReports® Server Release Version                                                                                                                                       |
+| image.name| Name of the JasperReports® Server webapp image | null                                                                                                                                                                        |
+| image.pullPolicy| Docker image pull policy  | IfNotPresent                                                                                                                                                                |
 | image.PullSecrets | Name of the image pull secret | Pull secret should be created manually before using it in same namespace, [See Docs](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) |
-| nameOverride| Override the default helm chart name  | jasperserver-pro |
-| fullnameOverride| Override the default full chart name | Override the full name |
-| secretKeyStoreName| Name of the keystore secret | jasperserver-keystore|
-| secretLicenseName | Name of the license secret | jasperserver-license|
-| serviceAccount.enabled | Service account for TIBCO JasperReports® Server webapp | true |
-| serviceAccount.annotations | Adds new annotations | null |
-| serviceAccount.name | Name of the service account | jasperserver-pro |
-| rbac.create | Creates role and role binding | true |
-| rbac.name | Name of the TIBCO JasperReports® Server role and role binding | jasperserver-role |
-| podAnnotations | Adds pod annotations | null |
-| securityContext.capabilities.drop | Drops Linux capabilites for the TIBCO JasperReports® Server webapp  | All |
-| securityContext.runAsNonRoot | Runs the TIBCO JasperReports® Server webapp as non root user | true |
-| securityContext.runAsUser | User id to run the TIBCO JasperReports® Server webapp | 10099 |
-| buildomatic.enabled | Installs or skips the TIBCO JasperReports® Server repository DB | true|
-| buildomatic.name | Name of the TIBCO JasperReports® Server command line tool | jasperserver-buildomatic|
-| buildomatic.imageTag| Buildomatic image tag | Same as TIBCO JasperReports® Server release version|
-| buildomatic.imageName | Name of the buildomatic image | null|
-| buildomatic.pullPolicy | Image pull policy| IfNotPresent|
-| buildomatic.PullSecrets | Image pull secrets | null|
-| buildomatic.includeSamples| Installs TIBCO JasperReports® Server samples in JasperReports Server DB | true|
-| db.env | Enables the DB configuration using environment variables | true |
-| db.jrs.dbHost | JasperReports Server repository DB host | repository-postgresql.default.svc.cluster.local |
-| db.jrs.dbPort | JasperReports Server repository DB port | 5432|
-| db.jrs.dbName | JasperReports Server repository DB name | jasperserver |
-| db.jrs.dbUserName | JasperReports Server repository DB user name | postgres |
-| db.jrs.dbPassword | JasperReports Server repository DB password | postgres |
-| db.audit.dbHost | JasperReports Server audit DB host | repository-postgresql.default.svc.cluster.local |
-| db.audit.dbPort | JasperReports Server audit DB port | 5432|
-| db.audit.dbName | JasperReports Server audit DB name | jasperserver |
-| db.audit.dbUserName | JasperReports Server audit DB user name | postgres |
-| db.audit.dbPassword | JasperReports Server audit DB password | postgres |
-| extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 |
-| extraEnv.normal | Adds all the normal key value pair variables | null |
-| extraEnv.secrets | Adds all the environment references from secrets or configmaps| null | 
-| extraVolumeMounts | Adds extra volume mounts | null|
-| extraVolumes | Adds extra volumes | null |
-| Service.type | TIBCO JasperReports® Server service type | ClusterIP (for now, we kept as NodePort for internal testing)
-| Service.port | Service port | 80 |
-| healthcheck.enabled | Checks TIBCO JasperReports® Server pod health status | true |
-| healthcheck.livenessProbe.port | TIBCO JasperReports® Server container port  | 8080 |
-| healthcheck.livenessProbe.initialDelaySeconds | Initial waiting time to check the health and restarts the TIBCO JasperReports® Server Webapp pod | 350 |
-| healthcheck.livenessProbe.failureThreshold | Threshold for health checks | 10 |
-| healthcheck.livenessProbe.periodSeconds |Time period to check the health | 10 |
-| healthcheck.livenessProbe.timeoutSeconds | Timeout | 4 |
-| healthcheck.readinessProbe.port | TIBCO JasperReports® Server container port | 8080 |
-| healthcheck.readinessProbe.initialDelaySeconds | Initial delay before checking the health checks | 90 |
-| healthcheck.readinessProbe.failureThreshold | Threshold for health checks | 15 |
-| healthcheck.readinessProbe.periodSeconds | Time period to check the health checks | 10 |
-| healthcheck.readinessProbe.timeoutSeconds | Timeout | 4 |
-| resources.enabled | Enables the minimum and maximum resources used by TIBCO JasperReports® Server | true |
-| resources.limits.cpu | Maximum CPU  | "3" |
-| resources.limits.memory | Maximum Memory | 7.5Gi |
-| resources.requests.cpu | Minimum CPU | "2" |
-| resources.requests.memory | Minimum Memory | 3.5Gi |
-| jms.enabled | Enables the ActiveMQ cache service | true|
-| jms.jmsBrokerUrl |  | null|
-| jms.name | Name of the JMS | jasperserver-cache|
-| jms.serviceName | Name of the JMS Service | jasperserver-cache-service |
-| jms.imageName | Name of the Activemq image | bansamadev/activemq |
-| jms.imageTag | Activemq image tag | 5.17.2 |
-| jms.healthcheck.enabled |  | true |
-| jms.healthcheck.livenessProbe.port | Container port | 61616 |
-| jms.healthcheck.livenessProbe.initialDelaySeconds | Initial delay  | 100 |
-| jms.healthcheck.livenessProbe.failureThreshold | Threshold for health check | 10 |
-| jms.healthcheck.livenessProbe.periodSeconds | Time period for health check | 10 |
-| jms.healthcheck.readinessProbe.port | Container port | 61616 |
-| jms.healthcheck.readinessProbe.initialDelaySeconds | Initial delay  | 10 |
-| jms.healthcheck.readinessProbe.failureThreshold | Threshold for health check | 15 |
-| jms.healthcheck.readinessProbe.periodSeconds | Time period for health check | 10 |
-| jms.securityContext.capabilities.drop | Linux capabilities to drop for the pod  | All |
-| ingress.enabled | Work with multiple pods and stickyness | false|
-| ingress.annotations.ingress.kubernetes.io\/cookie-persistence|  | "JRS_COOKIE"|
-| ingress.hosts.host | Adds valid DNS hostname to access the TIBCO JasperReports® Server | null|
-| ingress.tls | Adds TLS secret name to allow secure traffic | null| 
-| scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
-| scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 2|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.3|
-| scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
-| scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
-| scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | false |
-| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.0.3 |
-| scalable-query-engine.drivers.image.name |  | null |
-| scalable-query-engine.drivers.storageClassName |   | hostpath |
-| scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP |
-| autoscaling.enabled | Scales the JasperReports Server application,  **Note:** Make sure metric server is installed or metrics are enabled | false |
-| autoscaling.minReplicas | Minimum number of pods maintained by autoscaler | 1 |
-| autoscaling.maxReplicas | Maximum number of pods maintained by autoscaler | 4 |
-| autoscaling.targetCPUUtilizationPercentage | Minimum CPU utilization to scale up the application | 50% |
-| autoscaling.targetMemoryUtilizationPercentage | Minimum memory utilization to scale up the TIBCO JasperReports® Server applications | 50% |
-| metrics.enabled | Enables the metrics to display all the metrics | false |
-| kube-prometheus-stack.prometheus-node-exporter.hostRootFsMount |  | false |
-| kube-prometheus-stack.grafana.service.type | Grafana service type  | NodePort |
-| logging.enabled | Enables the centralized logging setup | false |
-| elasticsearch.volumeClaimTemplate.resources.requests.storage |  | 10Gi |
-| kibana.service.type | Kibana service type | NodePort |
-| elasticsearch.replicas | Number of replicas for Elasticsearch  | 1 |
-| tolerations | Adds the tolerations as per K8s standard if needed | null |
-| affinity | Adds the affinity as per K8s standards if needed | null |
+| nameOverride| Override the default helm chart name | jasperserver-pro                                                                                                                                                            |
+| fullnameOverride| Override the default full chart name | Override the full name                                                                                                                                                      |
+| secretKeyStoreName| Name of the keystore secret | jasperserver-keystore                                                                                                                                                       |
+| secretLicenseName | Name of the license secret | jasperserver-license                                                                                                                                                        |
+| serviceAccount.enabled | Service account for JasperReports® Server webapp | true                                                                                                                                                                        |
+| serviceAccount.annotations | Adds new annotations | null                                                                                                                                                                        |
+| serviceAccount.name | Name of the service account | jasperserver-pro                                                                                                                                                            |
+| rbac.create | Creates role and role binding | true                                                                                                                                                                        |
+| rbac.name | Name of the JasperReports® Server role and role binding | jasperserver-role                                                                                                                                                           |
+| podAnnotations | Adds pod annotations | null                                                                                                                                                                        |
+| securityContext.capabilities.drop | Drops Linux capabilites for the JasperReports® Server webapp | All                                                                                                                                                                         |
+| securityContext.runAsNonRoot | Runs the JasperReports® Server webapp as non root user | true                                                                                                                                                                        |
+| securityContext.runAsUser | User id to run the JasperReports® Server webapp | 10099                                                                                                                                                                       |
+| buildomatic.enabled | Installs or skips the JasperReports® Server repository DB | true                                                                                                                                                                        |
+| buildomatic.name | Name of the JasperReports® Server command line tool | jasperserver-buildomatic                                                                                                                                                    |
+| buildomatic.imageTag| Buildomatic image tag | Same as JasperReports® Server release version                                                                                                                               |
+| buildomatic.imageName | Name of the buildomatic image | null                                                                                                                                                                        |
+| buildomatic.pullPolicy | Image pull policy| IfNotPresent                                                                                                                                                                |
+| buildomatic.PullSecrets | Image pull secrets | null                                                                                                                                                                        |
+| buildomatic.includeSamples| Installs JasperReports® Server samples in JasperReports Server DB | true                                                                                                                                                                        |
+| db.env | Enables the DB configuration using environment variables | true                                                                                                                                                                        |
+| db.jrs.dbHost | JasperReports Server repository DB host | repository-postgresql.default.svc.cluster.local                                                                                                                             |
+| db.jrs.dbPort | JasperReports Server repository DB port | 5432                                                                                                                                                                        |
+| db.jrs.dbName | JasperReports Server repository DB name | jasperserver                                                                                                                                                                |
+| db.jrs.dbUserName | JasperReports Server repository DB user name | postgres                                                                                                                                                                    |
+| db.jrs.dbPassword | JasperReports Server repository DB password | postgres                                                                                                                                                                    |
+| db.audit.dbHost | JasperReports Server audit DB host | repository-postgresql.default.svc.cluster.local                                                                                                                             |
+| db.audit.dbPort | JasperReports Server audit DB port | 5432                                                                                                                                                                        |
+| db.audit.dbName | JasperReports Server audit DB name | jasperserver                                                                                                                                                                |
+| db.audit.dbUserName | JasperReports Server audit DB user name | postgres                                                                                                                                                                    |
+| db.audit.dbPassword | JasperReports Server audit DB password | postgres                                                                                                                                                                    |
+| extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0                                                                                                |
+| extraEnv.normal | Adds all the normal key value pair variables | null                                                                                                                                                                        |
+| extraEnv.secrets | Adds all the environment references from secrets or configmaps| null                                                                                                                                                                        | 
+| extraVolumeMounts | Adds extra volume mounts | null                                                                                                                                                                        |
+| extraVolumes | Adds extra volumes | null                                                                                                                                                                        |
+| Service.type | JasperReports® Server service type | ClusterIP (for now, we kept as NodePort for internal testing)                                                                                                               
+| Service.port | Service port | 80                                                                                                                                                                          |
+| healthcheck.enabled | Checks JasperReports® Server pod health status | true                                                                                                                                                                        |
+| healthcheck.livenessProbe.port | JasperReports® Server container port | 8080                                                                                                                                                                        |
+| healthcheck.livenessProbe.initialDelaySeconds | Initial waiting time to check the health and restarts the JasperReports® Server Webapp pod | 350                                                                                                                                                                         |
+| healthcheck.livenessProbe.failureThreshold | Threshold for health checks | 10                                                                                                                                                                          |
+| healthcheck.livenessProbe.periodSeconds |Time period to check the health | 10                                                                                                                                                                          |
+| healthcheck.livenessProbe.timeoutSeconds | Timeout | 4                                                                                                                                                                           |
+| healthcheck.readinessProbe.port | JasperReports® Server container port | 8080                                                                                                                                                                        |
+| healthcheck.readinessProbe.initialDelaySeconds | Initial delay before checking the health checks | 90                                                                                                                                                                          |
+| healthcheck.readinessProbe.failureThreshold | Threshold for health checks | 15                                                                                                                                                                          |
+| healthcheck.readinessProbe.periodSeconds | Time period to check the health checks | 10                                                                                                                                                                          |
+| healthcheck.readinessProbe.timeoutSeconds | Timeout | 4                                                                                                                                                                           |
+| resources.enabled | Enables the minimum and maximum resources used by JasperReports® Server | true                                                                                                                                                                        |
+| resources.limits.cpu | Maximum CPU  | "3"                                                                                                                                                                         |
+| resources.limits.memory | Maximum Memory | 7.5Gi                                                                                                                                                                       |
+| resources.requests.cpu | Minimum CPU | "2"                                                                                                                                                                         |
+| resources.requests.memory | Minimum Memory | 3.5Gi                                                                                                                                                                       |
+| jms.enabled | Enables the ActiveMQ cache service | true                                                                                                                                                                        |
+| jms.jmsBrokerUrl |  | null                                                                                                                                                                        |
+| jms.name | Name of the JMS | jasperserver-cache                                                                                                                                                          |
+| jms.serviceName | Name of the JMS Service | jasperserver-cache-service                                                                                                                                                  |
+| jms.imageName | Name of the Activemq image | bansamadev/activemq                                                                                                                                                         |
+| jms.imageTag | Activemq image tag | 5.17.2                                                                                                                                                                      |
+| jms.healthcheck.enabled |  | true                                                                                                                                                                        |
+| jms.healthcheck.livenessProbe.port | Container port | 61616                                                                                                                                                                       |
+| jms.healthcheck.livenessProbe.initialDelaySeconds | Initial delay  | 100                                                                                                                                                                         |
+| jms.healthcheck.livenessProbe.failureThreshold | Threshold for health check | 10                                                                                                                                                                          |
+| jms.healthcheck.livenessProbe.periodSeconds | Time period for health check | 10                                                                                                                                                                          |
+| jms.healthcheck.readinessProbe.port | Container port | 61616                                                                                                                                                                       |
+| jms.healthcheck.readinessProbe.initialDelaySeconds | Initial delay  | 10                                                                                                                                                                          |
+| jms.healthcheck.readinessProbe.failureThreshold | Threshold for health check | 15                                                                                                                                                                          |
+| jms.healthcheck.readinessProbe.periodSeconds | Time period for health check | 10                                                                                                                                                                          |
+| jms.securityContext.capabilities.drop | Linux capabilities to drop for the pod | All                                                                                                                                                                         |
+| ingress.enabled | Work with multiple pods and stickyness | false                                                                                                                                                                       |
+| ingress.annotations.ingress.kubernetes.io\/cookie-persistence|  | "JRS_COOKIE"                                                                                                                                                                |
+| ingress.hosts.host | Adds valid DNS hostname to access the JasperReports® Server | null                                                                                                                                                                        |
+| ingress.tls | Adds TLS secret name to allow secure traffic | null                                                                                                                                                                        | 
+| scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false                                                                                                                                                                       |
+| scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 2                                                                                                                                                                           |
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.0.4                                                                                                                                                                        |
+| scalable-query-engine.image.name | Name of the Scalable Query Engine image | null                                                                                                                                                                        |
+| scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent                                                                                                                                                                |
+| scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | false                                                                                                                                                                       |
+| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.0.4                                                                                                                                                                       |
+| scalable-query-engine.drivers.image.name |  | null                                                                                                                                                                        |
+| scalable-query-engine.drivers.storageClassName |   | hostpath                                                                                                                                                                    |
+| scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP                                                                                                                                                                   |
+| autoscaling.enabled | Scales the JasperReports Server application,  **Note:** Make sure metric server is installed or metrics are enabled | false                                                                                                                                                                       |
+| autoscaling.minReplicas | Minimum number of pods maintained by autoscaler | 1                                                                                                                                                                           |
+| autoscaling.maxReplicas | Maximum number of pods maintained by autoscaler | 4                                                                                                                                                                           |
+| autoscaling.targetCPUUtilizationPercentage | Minimum CPU utilization to scale up the application | 50%                                                                                                                                                                         |
+| autoscaling.targetMemoryUtilizationPercentage | Minimum memory utilization to scale up the JasperReports® Server applications | 50%                                                                                                                                                                         |
+| metrics.enabled | Enables the metrics to display all the metrics | false                                                                                                                                                                       |
+| kube-prometheus-stack.prometheus-node-exporter.hostRootFsMount |  | false                                                                                                                                                                       |
+| kube-prometheus-stack.grafana.service.type | Grafana service type  | NodePort                                                                                                                                                                    |
+| logging.enabled | Enables the centralized logging setup | false                                                                                                                                                                       |
+| elasticsearch.volumeClaimTemplate.resources.requests.storage |  | 10Gi                                                                                                                                                                        |
+| kibana.service.type | Kibana service type | NodePort                                                                                                                                                                    |
+| elasticsearch.replicas | Number of replicas for Elasticsearch | 1                                                                                                                                                                           |
+| tolerations | Adds the tolerations as per K8s standard if needed | null                                                                                                                                                                        |
+| affinity | Adds the affinity as per K8s standards if needed | null                                                                                                                                                                        |
 
 # Adding External Helm Repositories
     
@@ -160,7 +160,7 @@ These parameters and values are the same as parameters in values.yaml.
     helm repo add elastic https://helm.elastic.co
 
 
-# Installing TIBCO JasperReports® Server
+# Installing JasperReports® Server
 
 1. Go to `jaspersoft-containers/K8s`, and to update the dependency charts, run `helm dependencies update jrs/helm`.
 2. Update the default_master.properties in `Docker/jrs/resources/default_properties` as needed.
@@ -204,20 +204,20 @@ These details are stored in Kubernetes secrets and used as environment variables
       AUDIT_DB_USER_NAME: audit-db-user-name
       AUDIT_DB_PASSWORD: audit-password
 
-4. Build the docker images for TIBCO JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme) ).
+4. Build the docker images for JasperReports® Server, and Scalable Query Engine (see the [Docker JasperReports Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme) ).
 5. Generate the keystore and copy it to the `OpenShift/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation).
-6. Copy the TIBCO JasperReports® Server license to the `OpenShift/jrs/helm/secrets/license` folder.
+6. Copy the JasperReports® Server license to the `OpenShift/jrs/helm/secrets/license` folder.
 
 ## JMS Configuration
-  By default, TIBCO JasperReports® Server will install using activemq docker image. You can disable it by changing the parameter `jms.enabled=false`. 
+  By default, JasperReports® Server will install using activemq docker image. You can disable it by changing the parameter `jms.enabled=false`. 
  
  External JMS instance can also be used instead of in-build JMS setup by adding the external jms url `jms.jmsBrokerUrl`. You can access it by using tcp port, for instance `tcp://<JMS-URL>:61616`.
 
 ## Ingress Controller
 
-You can use HA Proxy ingress controller to manage the traffic across the TIBCO JasperReports® Server pods.
+You can use HA Proxy ingress controller to manage the traffic across the JasperReports® Server pods.
 
-**Note:** Enable the ingress controller so that TIBCO JasperReports® Server can work with multiple pods.
+**Note:** Enable the ingress controller so that JasperReports® Server can work with multiple pods.
 
 To enable this setup, run the following command.
 
@@ -266,7 +266,7 @@ For more information and configuration, see the [Official Docs](https://github.c
   
 - Set **buildomatic.enabled=true** for repository setup. By default samples are included, if it is not required, set **buildomatic.includeSamples=false**
 
-- Run the below command to install TIBCO JasperReports® Server and repository setup. 
+- Run the below command to install JasperReports® Server and repository setup. 
 
 `helm install jrs jrs/helm --namespace jrs --wait --timeout 17m0s`
 
@@ -278,7 +278,7 @@ For more information and configuration, see the [Official Docs](https://github.c
 
 
 ## Verifying installation
-After `helm install` is finished you can verify installed TIBCO JasperReports® Server cluster. 
+After `helm install` is finished you can verify installed JasperReports® Server cluster. 
 
 - Switch to jrs namespace. 
 
@@ -296,7 +296,7 @@ List all the resources.
   1. Enable the container insights for logging and monitoring, [see the docs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/deploy-container-insights-EKS.html) for enabling the container insights.
 
 ## Installation
-  1. Build the images for TIBCO JasperReports® Server and Scalable Query Engine, see the [Docker TIBCO JasperReports® Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme). 
+  1. Build the images for JasperReports® Server and Scalable Query Engine, see the [Docker JasperReports® Server readme](../../Docker/jrs#readme) and [Docker Scalable Query Engine readme](../../Docker/scalableQueryEngine#readme). 
   2. Push the images to ECR, [see the docs](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html). 
   3. Add external repositories. 
     
@@ -305,7 +305,7 @@ List all the resources.
     
   4. Run`helm dependencies update jrs/helm`.       
   5. Update the `jrs/helm/values.yaml` or use `--set <paramater_name>=<value>`. 
-  6. Follow the [TIBCO JasperReports® Server installation procedure](#installing-tibco-jasperreports-server). 
+  6. Follow the [ JasperReports® Server installation procedure](#installing-jasperreports-server). 
   
   **Note:** Logging and monitoring are not required if EKS container insights are enabled. 
 
@@ -321,13 +321,13 @@ List all the resources.
 1. Follow the [JasperReports Server installation procedure](#installing-jrs) to install the JasperReports Server, and the Scalable Query Engine will integrate automatically.   
 
 
-# Use Case: Deploying TIBCO JasperReports® Server Using PostgreSQL Container in K8s Cluster
+# Use Case: Deploying JasperReports® Server Using PostgreSQL Container in K8s Cluster
  
  
 ## Installation
 
 1. Clone the jaspersoft-containers ``git clone git@github.com:TIBCOSoftware/js-docker.git ``.
-1. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of TIBCO JasperReports® Server WAR File installer zip to your current directory.
+1. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of JasperReports® Server WAR File installer zip to your current directory.
 1. Run ``cd jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, chromium installation, etc.
 1. Run ``cd scripts`` and then run ``./unpackWARInstaller.sh`` to unzip the installer file.
 1. Update the dbHost in ``Docker/jrs/resources/default-properties/default_master.properties`` with the name ``repository-postgresql.<k8s-namespace>.svc.cluster.local`` to    create DB in K8s cluster.
@@ -356,7 +356,7 @@ List all the resources.
    Check the pods status in the jrs namespace for PostgreSQL helm chart and make sure it is up and running.
    
 1. After PostgreSQL is up and running, run ``helm install jrs jrs/helm --namespace jrs --wait --timeout 12m0s``.
-  It will take few minutes to set up the DB and install the TIBCO JasperReports® Server webapp, JMS, and other addons like ingress controller, metrics, and logging.
+  It will take few minutes to set up the DB and install the  JasperReports® Server webapp, JMS, and other addons like ingress controller, metrics, and logging.
  
 1. Go to the http://HOSTNAME:Node-Port/jasperserver-pro or if Ingress is enabled, go to the http://EXTRENAL-IP/jasperserver-pro.
 

@@ -10,13 +10,13 @@
   - [Environment Variables](#environment-variables)
   - [Using Docker Compose](#using-docker-compose)
   - [Using Docker Build](#using-docker-build)
-- [Deploying the TIBCO JasperReports&reg; Server Scalable Query Engine Application](#deploying-the-tibco-jasperreports-server-scalable-query-engine-application)
+- [Deploying the JasperReports&reg; Server Scalable Query Engine Application](#deploying-the-jasperreports-server-scalable-query-engine-application)
   <!-- /TOC -->`
   </details>
 
 # Introduction
 
-This distribution includes `Dockerfile` and supporting files for building, configuring, and running TIBCO JasperReports&reg; Server Scalable Query Engine in containers. Orchestration is done by Kubernetes
+This distribution includes `Dockerfile` and supporting files for building, configuring, and running JasperReports&reg; Server Scalable Query Engine in containers. Orchestration is done by Kubernetes
 and all the deployment configurations are managed by Helm charts and Redis is used for caching.
 
  
@@ -25,7 +25,7 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 1. Docker-engine (19.x+) setup with Docker Compose (3.9+)
 1. Knowledge of Docker
 1. Git
-1. TIBCO JasperReports&reg; Server
+1. JasperReports&reg; Server
 1. Keystore
 
 # Repository Structure
@@ -54,17 +54,17 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 
 ## Environment Variables
 
-| Environment Variable Name | Description | Default Value|
-|------------| -------------|--------------|
-|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 8.0.3|
-|SCALABLE_QUERY_ENGINE_IMAGE_NAME| Scalable Query Engine image name |scalable-query-engine|
-|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME| Scalable Query Engine JDBC drivers image name| scalable-query-engine-driver|
-|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 8.0.3|
-|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 8.0.3|
-|JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Debian and Amazon Linux 2, and it is of two types **openjdk:11-jdk** for Debian and **amazoncorretto:11** for Amazon Linux 2 |openjdk:11-jdk|
-|ks | .jrsks keystore path |/etc/secrets/keystore|
-|ksp | .jrsksp keystore path | /etc/secrets/keystore |
-|RELEASE_DATE | JasperReports Server release date | Nov 14, 2021 |
+| Environment Variable Name | Description | Default Value                |
+|------------| -------------|------------------------------|
+|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 8.0.4                        |
+|SCALABLE_QUERY_ENGINE_IMAGE_NAME| Scalable Query Engine image name | scalable-query-engine        |
+|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME| Scalable Query Engine JDBC drivers image name| scalable-query-engine-driver |
+|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 8.0.4                        |
+|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 8.0.4                        |
+|JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Debian and Amazon Linux 2, and it is of two types **openjdk:11-jdk** for Debian and **amazoncorretto:11** for Amazon Linux 2 | openjdk:11-jdk               |
+|ks | .jrsks keystore path | /etc/secrets/keystore        |
+|ksp | .jrsksp keystore path | /etc/secrets/keystore        |
+|RELEASE_DATE | JasperReports Server release date | Nov 14, 2021                 |
 
 
 Update the `.env` based on the requirement.
@@ -85,7 +85,7 @@ Update the `.env` based on the requirement.
     docker build -t scalable-query-engine-drivers:<version> -f jaspersoft-containers/Docker/scalableQueryEngine/Dockerfile.drivers .
 
 
-# Deploying the TIBCO JasperReports&reg; Server Scalable Query Engine Application
+# Deploying the JasperReports&reg; Server Scalable Query Engine Application
 
 [Generate the keystore](../jrs/#keystore-generation) if it does not exist and copy it to `./resources/keystore` folder.
 **Note** These keystore must be same as JasperReports Server keystore which is used for creating repository DB

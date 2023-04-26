@@ -1,11 +1,11 @@
-# Copyright (c) 2021-2021. TIBCO Software Inc.
+# Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
-#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.54-jdk11-corretto
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.54-jdk11-openjdk
+#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.73-jdk11-corretto
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.65-jdk11-openjdk
 ARG INSTALL_CHROMIUM=false
-ARG JASPERREPORTS_SERVER_VERSION=8.0.3
+ARG JASPERREPORTS_SERVER_VERSION=8.0.4
 
 FROM ${TOMCAT_BASE_IMAGE} as deployment
 
@@ -16,7 +16,7 @@ ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
 
 ENV INSTALL_CHROMIUM ${INSTALl_CHROMIUM:-false}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.3}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.4}
 ENV JRS_HOME /usr/src/jasperreports-server
 ENV BUILDOMATIC_MODE non-interactive
 
@@ -57,7 +57,7 @@ ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 
 LABEL "org.jasperosft.name"="JasperReports Server" \
-      "org.jaspersoft.vendor"="TIBCO Software Inc." \
+      "org.jaspersoft.vendor"="Cloud Software Group, Inc." \
       "org.jaspersoft.maintainer"="js-support@tibco.com" \
       "org.jaspersoft.version"=$JASPERREPORTS_SERVER_VERSION \
       "org.jaspersoft.release_date"=$RELEASE_DATE \
