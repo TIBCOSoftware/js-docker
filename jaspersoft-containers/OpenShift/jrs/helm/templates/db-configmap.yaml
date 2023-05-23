@@ -29,7 +29,7 @@ data:
     url="jdbc:postgresql://${AUDIT_DB_HOST}:${AUDIT_DB_PORT}/${AUDIT_DB_NAME}"
     factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
     />
-    {{- else if semverCompare ">= 8.1.1" .Values.jrsVersion }}
+    {{- else if semverCompare ">= 8.2.0" .Values.jrsVersion }}
     <Resource name="jdbc/jasperserverAudit" auth="Container" type="javax.sql.DataSource"
     maxActive="100" maxIdle="30" maxWait="10000"
     username="${DB_USER_NAME}" password="${DB_PASSWORD}"

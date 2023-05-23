@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2021-2021. TIBCO Software Inc.
+# Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
@@ -17,7 +17,7 @@ case "$PACKAGE_MGR" in
 		yum -y update &&
 		yum -y install yum-utils wget unzip shadow-utils
 		if [ "$INSTALL_CHROMIUM" == "true" ]; then
-		  echo "WARNING! TIBCO Software Inc. is not liable for license violation of chromium"
+		  echo "WARNING! Cloud Software Group, Inc. is not liable for license violation of chromium"
 		  sleep 10
 		  amazon-linux-extras install epel -y
 		  yum -y install chromium
@@ -30,7 +30,7 @@ case "$PACKAGE_MGR" in
 		apt-get -y update &&
 		apt-get install -y --no-install-recommends apt-utils unzip wget
 		if [ "$INSTALL_CHROMIUM" == "true" ]; then
-		  echo "WARNING! TIBCO Software Inc. is not liable for license violation of chromium"
+		  echo "WARNING! Cloud Software Group, Inc. is not liable for license violation of chromium"
 		  sleep 10
 		  apt-get -y install chromium
 		fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2021-2021. TIBCO Software Inc.
+# Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
@@ -23,6 +23,7 @@ case "$PACKAGE_MGR" in
 	"apt_get" )
 		apt-get -y update &&
 		apt-get install -y --no-install-recommends apt-utils rsync
+		apt-get install unzip
 		apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 		rm -rf /var/lib/apt/lists/*
 		;;
