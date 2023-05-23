@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -61,10 +61,10 @@
            maxElementsOnDisk="10000"
            diskPersistent="false"/>
 
-    <cache name="RRSCache"           
+    <cache name="RRSCache"
            maxElementsInMemory="500"
            eternal="true"
-           overflowToDisk="false"           
+           overflowToDisk="false"
            diskPersistent="false"
            statistics="true"/>
 
@@ -72,7 +72,7 @@
     <!-- cache used by the object permission service -->
     <cache name="attributeCache"
            maxElementsInMemory="100000"
-	   statistics="false"
+           statistics="false"
            eternal="false"
            overflowToDisk="false"
            timeToIdleSeconds="360000"
@@ -109,6 +109,41 @@
            overflowToDisk="false"
            timeToIdleSeconds="360000"
            timeToLiveSeconds="720000"
+           diskPersistent="false"/>
+
+    <!-- Caches related to dashboard executions and exports.
+    They all should have exactly the same settings: maxElementsInMemory, timeToIdleSeconds, timeToLiveSeconds
+    and others -->
+    <cache name="dashboardTasks"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="10800"
+           diskPersistent="false"/>
+
+    <cache name="dashboardResults"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="10800"
+           diskPersistent="false"/>
+
+    <cache name="dashboardProcesses"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="10800"
+           diskPersistent="false"/>
+
+    <cache name="dashboardIDToUsers"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToIdleSeconds="3600"
+           timeToLiveSeconds="10800"
            diskPersistent="false"/>
 
  <!-- =============================================

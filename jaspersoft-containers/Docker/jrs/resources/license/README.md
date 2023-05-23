@@ -1,2 +1,2 @@
-You can place the TIBCO JasperReports® Server license file here.
+You can place the JasperReports® Server license file here.
 
