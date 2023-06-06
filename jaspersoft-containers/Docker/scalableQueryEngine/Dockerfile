@@ -1,16 +1,18 @@
-# Copyright (c) 2021-2021. TIBCO Software Inc.
+# Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
 #ARG JDK_BASE_IMAGE=amazoncorretto:11
+#ARG JDK_BASE_IMAGE=amazoncorretto:17
+#ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk
 ARG JDK_BASE_IMAGE=openjdk:11-jdk
-ARG JASPERREPORTS_SERVER_VERSION=8.1.1
+ARG JASPERREPORTS_SERVER_VERSION=8.2.0
 
 FROM ${JDK_BASE_IMAGE} AS worker
 
 ARG JASPERREPORTS_SERVER_VERSION
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.1.1}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.2.0}
 ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
 ENV WORKER_HOME /usr/local/scalable-query-engine
@@ -32,7 +34,7 @@ ARG JASPERREPORTS_SERVER_VERSION
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 LABEL "org.jasperosft.name"="Jasper Reports Server Scalable Query Engine" \
-      "org.jaspersoft.vendor"="Tibco Software Inc." \
+      "org.jaspersoft.vendor"="Cloud Software Group, Inc." \
       "org.jaspersoft.maintainer"="js-eng-infra@tibco.com" \
       "org.jaspersoft.version"=$JASPERREPORTS_SERVER_VERSION \
       "org.jaspersoft.release_date"=$RELEASE_DATE \

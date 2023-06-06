@@ -9,19 +9,19 @@
 - [Redis Configuration](#redis-configuration)
 - [JNDI Configuration](#jndi-configuration)  
 - [Installing Scalable Query Engine](#installing-scalable-query-engine)
-- [Integrating Scalable Query Engine with TIBCO JasperReports&reg; Server](#integrating-scalable-query-engine-with-tibco-jasperreports-server)
+- [Integrating Scalable Query Engine with JasperReports&reg; Server](#integrating-scalable-query-engine-with-jasperreports-server)
   <!-- /TOC -->
   </details>
 
 
 # Introduction
  These configuration files (Helm Charts) perform declarative configuration by using [Helm Package Manager](https://helm.sh/docs/) to deploy the
- TIBCO JasperReports&reg; Server Scalable Query Engine in Kubernetes cluster.
+ JasperReports&reg; Server Scalable Query Engine in Kubernetes cluster.
 
 # Prerequisites
 1. Docker-engine (19.x+) setup with Docker Compose (3.9+)
 1. OpenShift cluster with 4.6+
-1. TIBCO JasperReports® Server
+1. JasperReports® Server
 1. Keystore
 1. Git
 1. [Helm 3.5](https://helm.sh/docs/intro/)
@@ -33,7 +33,7 @@
 | Parameter| Description | Default Value                                                                                                                                                               |
 |------------| -------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)                                                                                                                 |
-| jrsVersion| TIBCO JasperReports® Server release version  | 8.1.1                                                                                                                                                                      |
+| jrsVersion| JasperReports® Server release version  | 8.2.0                                                                                                                                                                      |
 | image.name| Name of the Scalable Query Engine image | jrscontainerregistry.azurecr.io/engine/worker                                                                                                                               |
 | image.tag | Name of the Scalable Query Engine image tag | JasperReports&reg; Server Release Version                                                                                                                                   |
 | image.pullPolicy | Docker image pull policy | IfNotPresent                                                                                                                                                                |
@@ -138,7 +138,7 @@
 | jrs.load-balancer.timedOut |  | 30000                                                                                                                                                                       |
 | drivers.enabled | Enable the drivers  | true                                                                                                                                                                        |
 | drivers.image.name | Image name for Scalable Query Engine Driver image | jrscontainerregistry.azurecr.io/engine/driver                                                                                                                               |
-| drivers.image.tag | Scalable Query Engine Driver image tag | 8.1.1                                                                                                                                                                     |
+| drivers.image.tag | Scalable Query Engine Driver image tag | 8.2.0                                                                                                                                                                     |
 | drivers.image.pullPolicy | Image pull policy | IfNotPresent                                                                                                                                                                |
 | drivers.storageClassName | Driver image storage class name | hostPath                                                                                                                                                                    |
 | drivers.image.jdbcDriversPath | JDBC drivers path  | /usr/lib/drivers                                                                                                                                                            |

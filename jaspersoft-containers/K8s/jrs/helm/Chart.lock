@@ -1,7 +1,7 @@
 dependencies:
 - name: kubernetes-ingress
   repository: https://haproxytech.github.io/helm-charts
-  version: 1.15.4
+  version: 1.29.3
 - name: kube-prometheus-stack
   repository: https://prometheus-community.github.io/helm-charts
   version: 16.0.1
@@ -14,5 +14,5 @@ dependencies:
 - name: scalable-query-engine
   repository: file://../../scalableQueryEngine/helm
   version: 1.0.0
-digest: sha256:686ed4a690013f6a4b5d897ebe9a56f5a8aa535d29bc93ac5b626dbc234532e4
-generated: "2022-12-15T17:13:42.7253296+05:30"
+digest: sha256:fdcc8d54046046394473b3235c434bea30ff1beb1411d32a7976fdaacddec707
+generated: "2023-04-18T21:04:35.6321472+05:30"
