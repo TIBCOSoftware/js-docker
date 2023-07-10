@@ -18,6 +18,18 @@ data:
     url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
     factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
     />
+    <Resource name="jdbc/jasperserverSystemAnalytics" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    defaultReadOnly="true"
+    defaultAutoCommit="false"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
     {{- if .Values.db.audit.enabled }}
     <Resource name="jdbc/jasperserverAudit" auth="Container" type="javax.sql.DataSource"
     maxActive="100" maxIdle="30" maxWait="10000"
@@ -37,6 +49,33 @@ data:
     accessToUnderlyingConnectionAllowed = "true"
     validationQuery="SELECT 1"
     testOnBorrow="true"
+    url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
+      {{- end }}
+    {{- if .Values.db.audit.enabled }}
+    <Resource name="jdbc/jasperserverAuditAnalytics" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${AUDIT_DB_USER_NAME}" password="${AUDIT_DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    defaultReadOnly="true"
+    defaultAutoCommit="false"
+    url="jdbc:postgresql://${AUDIT_DB_HOST}:${AUDIT_DB_PORT}/${AUDIT_DB_NAME}"
+    factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
+    />
+    {{- else if semverCompare ">= 9.0.0" .Values.jrsVersion }}
+    <Resource name="jdbc/jasperserverAuditAnalytics" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000"
+    username="${DB_USER_NAME}" password="${DB_PASSWORD}"
+    driverClassName="org.postgresql.Driver"
+    accessToUnderlyingConnectionAllowed = "true"
+    validationQuery="SELECT 1"
+    testOnBorrow="true"
+    defaultReadOnly="true"
+    defaultAutoCommit="false"
     url="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
     factory="com.jaspersoft.jasperserver.tomcat.jndi.JSCommonsBasicDataSourceFactory"
     />
