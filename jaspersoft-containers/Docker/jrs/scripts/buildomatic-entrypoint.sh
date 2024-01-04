@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright (c) 2021-2021. TIBCO Software Inc.
+#Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
@@ -10,4 +10,4 @@ cat >> default_master.properties \
 appServerType=skipAppServerCheck
 _EOL_
 
-./js-ant "$@"
+./js-ant $@

@@ -11,12 +11,12 @@
   - [Using Docker Compose](#using-docker-compose)
   - [Using Docker Build](#using-docker-build)
 - [Keystore Generation](#keystore-generation)
-  - [Using TIBCO JasperReports® Server Installer](#using-tibco-jasperreports-server-installer)
+  - [Using JasperReports® Server Installer](#using-jasperreports-server-installer)
   - [Using Docker Run](#using-docker-run)
 - [Repository Setup](#repository-setup)
   - [Using Docker Compose](#using-docker-compose-1)
   - [Using Docker Run](#using-docker-run-1)
-- [Deploying the TIBCO JasperReports® Server Application](#deploying-the-tibco-jasperreports-server-application)
+- [Deploying the JasperReports® Server Application](#deploying-the-jasperreports-server-application)
   - [Install JasperReports® Server license](#install-jasperreports-server-license)
   - [Using Docker Compose](#using-docker-compose-2)
   - [Using Docker Run](#using-docker-run-2)
@@ -27,28 +27,28 @@
 
 # Introduction
 
-This distribution includes Dockerfile and supporting files for building, configuring, and running TIBCO JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. ActiveMQ JMS is used for caching.
+This distribution includes Dockerfile and supporting files for building, configuring, and running JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. ActiveMQ JMS is used for caching.
 
 # Prerequisites
 
 1. Docker-engine (19.x+) setup with Docker Compose  (3.9+)
 1. Knowledge of Docker 
 1. Git 
-1. TIBCO JasperReports&reg; Server
+1. JasperReports&reg; Server
 
-# Step-by-step Guide to deploy TIBCO JasperReports® Server on Docker
-To deploy TIBCO JasperReports&reg; Server Cluster from scratch using **docker compose**, you can follow instructions at [Deploying JasperReports Server and Scalable Query Engine](#deploying-jasperreports-server-and-scalable-query-engine)
+# Step-by-step Guide to deploy JasperReports® Server on Docker
+To deploy JasperReports&reg; Server Cluster from scratch using **docker compose**, you can follow instructions at [Deploying JasperReports Server and Scalable Query Engine](#deploying-jasperreports-server-and-scalable-query-engine)
 
 # Repository Structure
 
 | File/Directory | Description |
 |------------| -------------|
-|cluster-config| Directory contains all the TIBCO JasperReports® Server cluster configuration files.|
+|cluster-config| Directory contains all the JasperReports® Server cluster configuration files.|
 |resources| Directory contains customer-related files.|
 |scripts| Directory contains Dockerfile scripts.|
 |.env | Environment variables for Docker Compose files.|
-|Dockerfile|TIBCO JasperReports® Server web application image based on Tomcat.|
-|Dockerfile.buildomatic|TIBCO JasperReports® Server buildomatic image. It initializes repository, keystore, import, and export.|
+|Dockerfile|JasperReports® Server web application image based on Tomcat.|
+|Dockerfile.buildomatic|JasperReports® Server buildomatic image. It initializes repository, keystore, import, and export.|
 |docker-compose.yml|Configuration file for running web app and buildomatic images via docker-compose.|
 |cluster-docker-compose.file|Configuration file for running web app images in cluster mode by using HAProxy load balancer via docker-compose.|
 
@@ -57,7 +57,7 @@ To deploy TIBCO JasperReports&reg; Server Cluster from scratch using **docker co
 
 1. Run `cd <YOUR_SYSTEM_DIR>`.
 2. Clone the js-docker repository to the current directory:<br/>`git clone git@github.com:TIBCOSoftware/js-docker.git`
-3. `cd <CONTAINER_PATH>` and Download a commercial edition of TIBCO JasperReports® Server WAR File installer zip into the current directory.
+3. `cd <CONTAINER_PATH>` and Download a commercial edition of JasperReports® Server WAR File installer zip into the current directory.
 4. Run `cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/scripts` and then run `./unpackWARInstaller.sh`.
 
 **Note:**  **CONTAINER_PATH=<YOUR_SYSTEM_DIR>/js-docker**
@@ -68,23 +68,23 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chromium installed. **Note: TIBCO Software Inc. is not liable for license violation of chromium.**| false|
-|JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the TIBCO JasperReports® Server image | jasperserver-webapp|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the TIBCO JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of TIBCO JasperReports® Server|8.1.1|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server web app |8.1.1|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the TIBCO JasperReports® Server buildomatic |8.1.1|
-|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.54-jdk11-openjdk" for Debian and "tomcat:9.0.54-jdk11-corretto" for Amazon Linux 2 |tomcat:9.0.54-jdk11-openjdk|
-|JDK_BASE_IMAGE|Java Docker image certified for the version of TIBCO JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types openjdk:11-jdk and  amazoncorretto:11|openjdk:11-jdk|
-RELEASE_DATE|Release date of TIBCO JasperReports® Server | May 13, 2022 |
-|JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in TIBCO JasperReports® Server. For more information, see the TIBCO JasperReports® Server documentation . |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
+|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium.**| false|
+|JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
+|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|8.2.0|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |8.2.0|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |8.2.0|
+|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.65-jdk11-openjdk" ,"tomcat:9.0.62-jdk17-openjdk" for Debian and "tomcat:9.0.73-jdk11-corretto","tomcat:9.0.73-jdk-17-corretto" for Amazon Linux 2 |tomcat:9.0.65-jdk11-openjdk|
+|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk" and  "amazoncorretto:11","amazoncorretto:17"|openjdk:11-jdk|
+RELEASE_DATE|Release date of JasperReports® Server | May 13, 2022 |
+|JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in JasperReports® Server. For more information, see the JasperReports® Server documentation . |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
 
 # Building the Images 
 `cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs` and update the `.env` file and `./resources/default-properties/default_master.properties`
 
 
 ### Repository Configuration
-Update the dbHost in `./resources/default-properties/default_master.properties` with the repository hostname for TIBCO JasperReports® Server.
+Update the dbHost in `./resources/default-properties/default_master.properties` with the repository hostname for JasperReports® Server.
 In case if an external repository database already exists and loaded, then update **dbHost** to point to the corresponding database host.
 
 If you plan to use repository database in the container, then **dbHost** can be set to:
@@ -92,17 +92,30 @@ If you plan to use repository database in the container, then **dbHost** can be 
 - repository - in case of using docker compose (host should be the same as service name in docker-compose.yml)
 - repository-postgresql.default.svc.cluster.local - when PostgreSQL is installed in k8s cluster
 
+### Setting Java options
+During the deployment of JasperReports® Server with docker-compose, JAVA_OPTS can be specified within the `Docker/jrs/docker-compose.yml` or `Docker/jrs/cluster-docker-compose.yml` files.
+This configuration option enables customization of the Java Virtual Machine settings, which can optimize the performance of the JasperReports® Server application.
+
+If deploying JasperReports® Server with docker images based on JDK17, an additional JAVA_OPTS options need to be added in the `Docker/jrs/docker-compose.yml` or `Docker/jrs/cluster-docker-compose.yml` files:
+```yaml
+    environment:
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/java.nio.channels=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/javax.security.auth.login=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED --add-opens java.base/jdk.internal.access.foreign=ALL-UNNAMED --add-opens java.base/sun.net.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens java.base/sun.util.calendar=ALL-UNNAMED"
+```
+
 ### Chromium Configuration 
 Update the chrome.path in `Docker/jrs/resources/default-properties/default_master.properties`.
  
 |Base Image | Chrome-path|
 |-----------|------------|
-|tomcat:9.0.54-jdk11-openjdk| /usr/bin/chromium|
-|tomcat:9.0.54-jdk11-corretto| /usr/bin/chromium-browser|
+|tomcat:9.0.65-jdk11-openjdk| /usr/bin/chromium|
+|tomcat:9.0.62-jdk17-openjdk| /usr/bin/chromium|
+|tomcat:9.0.73-jdk11-corretto| /usr/bin/chromium-browser|
+|tomcat:9.0.73-jdk17-corretto| /usr/bin/chromium-browser|
+
 
 **Note on Chromium /dev/shm size limit**
 
-By default, Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the TIBCO JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
+By default, Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
 
     echo 'net.sf.jasperreports.chrome.argument.disable-dev-shm-usage=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties
 
@@ -112,7 +125,7 @@ By default, Chromium uses /dev/shm that has 64MB storage to store its internal d
    
   Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
 
-If you see the Chromium issue in TIBCO JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
+If you see the Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
         
     echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties` 
 
@@ -139,7 +152,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
     docker build -t jasperserver-webapp:<version> -f jaspersoft-containers/Docker/jrs/Dockerfile .
 
 # Keystore Generation
-## Using TIBCO JasperReports® Server Installer 
+## Using JasperReports® Server Installer 
 1. Go to `cd <CONTAINER_PATH>/jasperreports-server-pro-<JRS_VERSION>-bin/buildomatic`.
 1. Copy the `sample_conf/postgresql_master.properties` to `default_master.properties`.
 1. Add `appServerType=skipAppServerCheck` to `default_master.properties` and comment out `appServerType = tomcat`.
@@ -160,7 +173,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 
 - To change the keystore permission to 644, run `chmod -R 644 .jrs*`.
 
- For more information, see the TIBCO JasperReports® Server Security Guide at [Jasperserver Official Docs](https://community.jaspersoft.com/documentation).
+ For more information, see the JasperReports® Server Security Guide at [Jasperserver Official Docs](https://community.jaspersoft.com/documentation).
    
 # Repository Setup
 
@@ -171,7 +184,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 
     docker-compose run jasperserver-buildomatic (you can use the same command for the external DB Host and Docker container as DB host)   
  
- **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-buildomatic service in docker-compose.yaml.
+ **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-buildomatic service in docker-compose.yaml.
  
 ## Using Docker Run
 
@@ -197,7 +210,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
     
     docker run --name jrs_jasperserver-buildomatic   -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore jasperserver-buildomatic:<jrs_version> gen-config pre-install-test-pro prepare-all-pro-dbs-normal
 
-# Deploying the TIBCO JasperReports® Server Application
+# Deploying the JasperReports® Server Application
 
 ## Install JasperReports® Server license
 1. To install JasperReports® Server license, copy obtained license file into `<CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license`.
@@ -211,7 +224,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
     
 - Access the application by using host-name:8080/jasperserver-pro
 
- **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact TIBCO JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-webapp service in docker-compose.yaml
+ **Note:** Although an external repository DB is used, a PostgreSQL container is created, and it does not impact JasperReports® Server. If you don't want to create a PostgreSQL container, then remove repository dependency from jasperserver-webapp service in docker-compose.yaml
 
 ## Using Docker Run
 
@@ -220,7 +233,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
     docker run --name activemq -d rmohr/activemq:5.15.9-alpine
     docker run --link activemq:activemq --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
 
-**Note:** Dockerfiles are designed to run in the cluster mode always, to run the TIBCO JasperReports® Server alone, comment `COPY --chown=jasperserver:jasperserver cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/` in Dockerfile and then rebuild the image.
+**Note:** Dockerfiles are designed to run in the cluster mode always, to run the JasperReports® Server alone, comment `COPY --chown=jasperserver:jasperserver cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/` in Dockerfile and then rebuild the image.
 
 ### Repository Setup Using External DB
 
@@ -231,7 +244,6 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 # Deploying the Application in Cluster Mode
 
 - It uses haproxy as a load balancer and activemq as a cache replication. Before launching the application, make sure images are created successfully and repository DB setup is also completed.
-- Update the value of parameter 'replicas' in cluster-docker-compose.yml file depending upon how many containers you would want to create.
 
    `docker-compose -f cluster-docker-compose.yml up -d`
 
@@ -253,7 +265,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 7. Build the docker image for Scalable Query Engine by using following commands:
    1. `cd <CONTAINER_PATH>/Docker/scalableQueryEngine`
    2. Run `docker-compose build`
-8. If keystore files (jrsks, jrsksp) do not exist, generate them. You can find information about generating keystore files at the [Using TIBCO JasperReports® Server Installer](#using-tibco-jasperreports-server-installer) section.
+8. If keystore files (jrsks, jrsksp) do not exist, generate them. You can find information about generating keystore files at the [Using JasperReports® Server Installer](#using-jasperreports-server-installer) section.
 9. Copy jrsks, jrsksp into jrs and scalableQueryEngine folders, then keystore files location can be mapped as volume:
    1. copy .jrsks, .jrsksp into `<CONTAINER_PATH>/Docker/jrs/resources/keystore`
    2. copy .jrsks, .jrsksp  into `<CONTAINER_PATH>/Docker/scalableQueryEngine/resources/keystore`
@@ -262,7 +274,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 11. Set up and load repository database by using following commands:
     1. `cd <CONTAINER_PATH>/Docker/jrs`
     2. Run `docker-compose run jasperserver-buildomatic`
-12. Start the JasperReports® Server application, for more information, see [Deploying the TIBCO JasperReports® Server Application](#deploying-the-tibco-jasperreports-server-application) section.
+12. Start the JasperReports® Server application, for more information, see [Deploying the JasperReports® Server Application](#deploying-the-jasperreports-server-application) section.
     1. `cd <CONTAINER_PATH>/Docker/jrs`
     2. Run `docker-compose up -d jasperserver-webapp`
 13. Start the Scalable Query Engine by using following commands:
