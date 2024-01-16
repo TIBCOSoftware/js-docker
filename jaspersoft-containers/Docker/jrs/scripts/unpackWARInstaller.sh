@@ -5,5 +5,5 @@
 # in the license file that is distributed with this file.
 
 cd ../../../../
-unzip -o -q TIB_js-jrs_*.zip -d .
+unzip -o -q js-jrs_*.zip -d .
 

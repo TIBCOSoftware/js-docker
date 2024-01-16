@@ -56,11 +56,11 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 8.2.0|
+|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 9.0.0|
 |SCALABLE_QUERY_ENGINE_IMAGE_NAME| Scalable Query Engine image name |scalable-query-engine|
 |SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME| Scalable Query Engine JDBC drivers image name| scalable-query-engine-driver|
-|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 8.2.0|
-|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 8.2.0|
+|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 9.0.0|
+|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 9.0.0|
 |JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Debian and Amazon Linux 2, and it is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk"and "amazoncorretto:11", "amazoncorretto:17" |openjdk:11-jdk|
 |ks | .jrsks keystore path |/etc/secrets/keystore|
 |ksp | .jrsksp keystore path | /etc/secrets/keystore |
