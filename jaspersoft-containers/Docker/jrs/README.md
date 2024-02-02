@@ -31,7 +31,7 @@ This distribution includes Dockerfile and supporting files for building, configu
 
 # Prerequisites
 
-1. Docker-engine (19.x+) setup with Docker Compose  (3.9+)
+1. Docker-engine (20.x+) setup with Docker Compose  (3.9+)
 1. Knowledge of Docker 
 1. Git 
 1. JasperReports&reg; Server
@@ -71,9 +71,9 @@ These variables are passed to the command line with `--build-arg` for docker bui
 |INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|8.2.0|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |8.2.0|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |8.2.0|
+|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|9.0.0|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |9.0.0|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |9.0.0|
 |TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.65-jdk11-openjdk" ,"tomcat:9.0.62-jdk17-openjdk" for Debian and "tomcat:9.0.73-jdk11-corretto","tomcat:9.0.73-jdk-17-corretto" for Amazon Linux 2 |tomcat:9.0.65-jdk11-openjdk|
 |JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk" and  "amazoncorretto:11","amazoncorretto:17"|openjdk:11-jdk|
 RELEASE_DATE|Release date of JasperReports® Server | May 13, 2022 |
