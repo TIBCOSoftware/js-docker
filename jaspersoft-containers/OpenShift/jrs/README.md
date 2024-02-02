@@ -40,7 +40,7 @@ These parameters and values are the same as parameters in values.yaml.
 | Parameter| Description | default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)| 
-| jrsVersion| JasperReports® Server release version | 8.2.0 | 
+| jrsVersion| JasperReports® Server release version | 9.0.0 | 
 | image.tag | Name of the JasperReports® Server webapp image tag | JasperReports® Server Release Version|
 | image.name| Name of the JasperReports® Server webapp image | jrscontainerregistry.azurecr.io/jrs/webapp|
 | image.pullPolicy| Docker image pull policy  | IfNotPresent|
@@ -121,11 +121,11 @@ These parameters and values are the same as parameters in values.yaml.
 | ingress.tls | Adds TLS secret name to allow secure traffic | null| 
 | scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
 | scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 1|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 8.2.0|
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 9.0.0|
 | scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
 | scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
 | scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | true |
-| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 8.2.0 |
+| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 9.0.0 |
 | scalable-query-engine.drivers.image.name |  | null |
 | scalable-query-engine.drivers.storageClassName |   | hostpath |
 | scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP |

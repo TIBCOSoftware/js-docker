@@ -21,10 +21,9 @@ case "$PACKAGE_MGR" in
 		rm -rf /var/cache/yum
 		;;
 	"apt_get" )
-		apt-get -y update &&
-		apt-get install -y --no-install-recommends apt-utils rsync
-		apt-get install unzip
-		apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+		DEBIAN_FRONTEND=noninteractive apt-get -y update &&
+		DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils unzip rsync
+		DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 		rm -rf /var/lib/apt/lists/*
 		;;
 esac
