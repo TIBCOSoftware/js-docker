@@ -251,40 +251,6 @@ autoscaling:
   scaleDown:
     stabilizationWindowSeconds: 300
 
-# Configure the default cluster level metrics for jasperserver webapp using prometheus operator
-
-metrics:
-  enabled: false
-
-kube-prometheus-stack:
-  prometheus-node-exporter:
-    hostRootFsMount: false
-  grafana:
-    service:
-      type: NodePort
-
-# To enable centralized logging using EFK stack
-logging:
-  enabled: false
-  fluentd:
-    imageName: fluent/fluentd-kubernetes-daemonset
-    imageTag: v1.12.3-debian-elasticsearch7-1.0
-    esClusterName: elasticsearch
-    esPort: 9200
-
-# Elastic search configuration for logging
-
-elasticsearch:
-  replicas: 1
-  volumeClaimTemplate:
-    resources:
-      requests:
-        storage: 10Gi
-
-## Visualization for logging
-kibana:
-  service:
-    type: NodePort
 
 ## Tolerations for JRS webapp
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

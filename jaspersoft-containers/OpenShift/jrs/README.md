@@ -343,6 +343,16 @@ To get the host name, run the below command:
 
 See the [ Official Docs](https://docs.openshift.com/container-platform/4.8/networking/routes/secured-routes.html) for TLS configuration. You can do it from the OpenShift webconsole or update the `route.tls` section in values.yaml.
 
+## Logging and Monitoring Configuration
+
+Please note that logging and monitoring are included by default in OpenShift. For configuration details, refer to the official documentation. You can find more information at the following links:
+
+- [OpenShift Documentation](https://docs.openshift.com/container-platform/4.11/welcome/index.html)
+
+- [Monitoring in OpenShift](https://docs.openshift.com/container-platform/4.11/virt/logging_events_monitoring/virt-openshift-cluster-monitoring.html)
+
+- [About Logging](https://docs.openshift.com/container-platform/4.11/logging/cluster-logging.html#cluster-logging)
+
 # Integrating the Scalable Query Engine and JasperReports® Server
 
 1. Enable the Scalable Query Engine to be installed by changing the `scalableQueryEngine.enabled = true`.
