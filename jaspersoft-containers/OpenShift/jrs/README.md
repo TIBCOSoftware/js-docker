@@ -76,6 +76,11 @@ These parameters and values are the same as parameters in values.yaml.
 | db.audit.dbName | JasperReports Server audit DB name | jasperserver |
 | db.audit.dbUserName | JasperReports Server audit DB user name | postgres |
 | db.audit.dbPassword | JasperReports Server audit DB password | postgres |
+| db.jndiRestrictedAccess | Use special read-only user to access Analytics jndi. Enable only with corresponding property in default_master.properties, refer to JasperReports® Server Install Guide | false |
+| db.analytics.dbUserName | JasperReports® Server analytics read-only DB username, used when secrets enabled | postgres |
+| db.analytics.dbPassword | JasperReports® Server analytics read-only DB password, used when secrets enabled | postgres |
+| db.auditAnalytics.dbUserName | JasperReports® Server Audit Analytics read-only DB username, used when secrets enabled | postgres |                                                                                                                                                                                                                                                   
+| db.auditAnalytics.dbPassword | JasperReports® Server Audit Analytics read-only DB password, used when secrets enabled | postgres |
 | extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 |
 | extraEnv.normal | Adds all the normal key value pair variables | null |
 | extraEnv.secrets | Adds all the environment references from secrets or configmaps| null | 

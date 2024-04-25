@@ -85,7 +85,13 @@ db:
     dbName:
     dbUserName:
     dbPassword:
-
+  jndiRestrictedAccess: false
+  analytics:
+    dbUserName: postgres
+    dbPassword: postgres
+  auditAnalytics:
+    dbUserName: postgres
+    dbPassword: postgres
 ## Set env variables
 ## ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
 ## ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables
