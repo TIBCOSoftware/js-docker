@@ -289,8 +289,6 @@ metrics:
   enabled: false
 
 kube-prometheus-stack:
-  prometheus-node-exporter:
-    hostRootFsMount: false
   grafana:
     service:
       type: NodePort
@@ -307,16 +305,15 @@ logging:
 # Elastic search configuration for logging
 
 elasticsearch:
-  replicas: 1
-  volumeClaimTemplate:
-    resources:
-      requests:
-        storage: 10Gi
-
-## Visualization for logging
-kibana:
   service:
     type: NodePort
+
+## Visualization for logging
+  global:
+    kibanaEnabled: true 
+  kibana:
+    service:
+      type: NodePort
 
 ## Tolerations for JRS webapp
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

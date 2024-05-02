@@ -63,13 +63,17 @@ spec:
           image: {{ .Values.logging.fluentd.imageName }}:{{ .Values.logging.fluentd.imageTag }}
           env:
               - name:  FLUENT_ELASTICSEARCH_HOST
-                value: "{{ .Values.logging.fluentd.esClusterName }}-master.{{.Release.Namespace }}.svc.cluster.local"
+                value: "{{ .Release.Name }}-elasticsearch.{{.Release.Namespace }}.svc.cluster.local"
               - name:  FLUENT_ELASTICSEARCH_PORT
                 value: "{{ .Values.logging.fluentd.esPort }}"
               - name: FLUENT_ELASTICSEARCH_SCHEME
                 value: "http"
               - name: FLUENTD_SYSTEMD_CONF
                 value: disable
+              - name: FLUENT_CONTAINER_TAIL_PARSER_TYPE
+                value: cri
+              - name: FLUENT_CONTAINER_TAIL_EXCLUDE_PATH
+                value: /var/log/containers/fluent*
           resources:
             limits:
               memory: 512Mi

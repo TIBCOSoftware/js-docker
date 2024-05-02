@@ -76,6 +76,11 @@ These parameters and values are the same as parameters in values.yaml.
 | db.audit.dbName | JasperReports Server audit DB name | jasperserver |
 | db.audit.dbUserName | JasperReports Server audit DB user name | postgres |
 | db.audit.dbPassword | JasperReports Server audit DB password | postgres |
+| db.jndiRestrictedAccess | Use special read-only user to access Analytics jndi. Enable only with corresponding property in default_master.properties, refer to JasperReports® Server Install Guide | false |
+| db.analytics.dbUserName | JasperReports® Server analytics read-only DB username, used when secrets enabled | postgres |
+| db.analytics.dbPassword | JasperReports® Server analytics read-only DB password, used when secrets enabled | postgres |
+| db.auditAnalytics.dbUserName | JasperReports® Server Audit Analytics read-only DB username, used when secrets enabled | postgres |                                                                                                                                                                                                                                                   
+| db.auditAnalytics.dbPassword | JasperReports® Server Audit Analytics read-only DB password, used when secrets enabled | postgres |
 | extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 |
 | extraEnv.normal | Adds all the normal key value pair variables | null |
 | extraEnv.secrets | Adds all the environment references from secrets or configmaps| null | 
@@ -342,6 +347,16 @@ To get the host name, run the below command:
         oc get route jrs-jasperserver-pro  -o jsonpath='{.status.ingress[0].host}'
 
 See the [ Official Docs](https://docs.openshift.com/container-platform/4.8/networking/routes/secured-routes.html) for TLS configuration. You can do it from the OpenShift webconsole or update the `route.tls` section in values.yaml.
+
+## Logging and Monitoring Configuration
+
+Please note that logging and monitoring are included by default in OpenShift. For configuration details, refer to the official documentation. You can find more information at the following links:
+
+- [OpenShift Documentation](https://docs.openshift.com/container-platform/4.11/welcome/index.html)
+
+- [Monitoring in OpenShift](https://docs.openshift.com/container-platform/4.11/virt/logging_events_monitoring/virt-openshift-cluster-monitoring.html)
+
+- [About Logging](https://docs.openshift.com/container-platform/4.11/logging/cluster-logging.html#cluster-logging)
 
 # Integrating the Scalable Query Engine and JasperReports® Server
 
