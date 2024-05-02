@@ -1,15 +1,6 @@
 dependencies:
-- name: kube-prometheus-stack
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 16.0.1
-- name: elasticsearch
-  repository: https://helm.elastic.co
-  version: 7.12.0
-- name: kibana
-  repository: https://helm.elastic.co
-  version: 7.12.0
 - name: scalable-query-engine
   repository: file://../../scalableQueryEngine/helm
   version: 1.0.0
-digest: sha256:6cc5582e010b7b299e7d6db3923de1553e0597473982201a71155c9cc268850a
-generated: "2021-08-24T12:29:45.8782614+05:30"
+digest: sha256:f4f39bc099039cfaf5d91949f1cebca86172757dd23043140977e7d942f9d33b
+generated: "2024-04-25T21:12:11.0758453+05:30"
