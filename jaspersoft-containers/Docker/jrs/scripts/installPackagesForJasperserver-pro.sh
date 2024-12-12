@@ -11,7 +11,6 @@ else
 fi
 echo "Installing packages with $PACKAGE_MGR"
 
-
 case "$PACKAGE_MGR" in
 	"yum" )
 		yum -y update &&
@@ -38,4 +37,3 @@ case "$PACKAGE_MGR" in
 		rm -rf /var/lib/apt/lists/*
 		;;
 esac
-
