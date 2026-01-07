@@ -71,7 +71,8 @@
                    maxThreads="300"
                    connectionTimeout="60000"
                    maxConnections="10000"
-                   redirectPort="8443" />
+                   redirectPort="8443"
+                   discardFacades="false" />
         <!-- A "Connector" using the shared thread pool-->
         <!--
         <Connector executor="tomcatThreadPool"

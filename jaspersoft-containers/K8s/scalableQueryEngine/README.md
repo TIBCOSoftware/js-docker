@@ -35,7 +35,7 @@ These parameters and values are the same as parameters in `K8s/scalableQueryEngi
 | Parameter| Description | Default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 2 (It will not come into effect if autoscaling is enabled.)|
-| jrsVersion| JasperReports® Server release version  | 9.0.0|
+| jrsVersion| JasperReports® Server release version  | 10.0.0|
 | image.name| Name of the Scalable Query Engine image | null |
 | image.tag | Name of the Scalable Query Engine image tag | JasperReports&reg; Server Release Version|
 | image.pullPolicy | Docker image pull policy | IfNotPresent |

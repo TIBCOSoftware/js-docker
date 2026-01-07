@@ -27,8 +27,7 @@
 
 # Introduction
 
-This distribution includes Dockerfile and supporting files for building, configuring, and running JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. ActiveMQ JMS is used for caching.
-
+This distribution includes Dockerfile and supporting files for building, configuring, and running JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. JRS comes with an inbuilt Infinispan for caching.
 # Prerequisites
 
 1. Docker-engine (20.x+) setup with Docker Compose  (3.9+)
@@ -68,14 +67,14 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium.**| false|
+|INSTALL_CHROMIUM| Whether Chrome installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|9.0.0|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |9.0.0|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |9.0.0|
-|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.65-jdk11-openjdk" ,"tomcat:9.0.62-jdk17-openjdk" for Debian and "tomcat:9.0.73-jdk11-corretto","tomcat:9.0.73-jdk-17-corretto" for Amazon Linux 2 |tomcat:9.0.65-jdk11-openjdk|
-|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk" and  "amazoncorretto:11","amazoncorretto:17"|openjdk:11-jdk|
+|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|10.0.0|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |10.0.0|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |10.0.0|
+|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2. It is of two types "tomcat:10.1.43-jdk17-temurin" for Ubuntu and "tomcat:10-jdk17-corretto" for Amazon Linux 2 |tomcat:10.1.43-jdk17-temurin|
+|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2023. It is of two types "eclipse-temurin:17-jdk-noble" and "amazoncorretto:17-al2023-jdk"|eclipse-temurin:17-jdk-noble|
 RELEASE_DATE|Release date of JasperReports® Server | May 13, 2022 |
 |JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in JasperReports® Server. For more information, see the JasperReports® Server documentation . |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
 
@@ -107,11 +106,17 @@ Update the chrome.path in `Docker/jrs/resources/default-properties/default_maste
  
 |Base Image | Chrome-path|
 |-----------|------------|
-|tomcat:9.0.65-jdk11-openjdk| /usr/bin/chromium|
-|tomcat:9.0.62-jdk17-openjdk| /usr/bin/chromium|
-|tomcat:9.0.73-jdk11-corretto| /usr/bin/chromium-browser|
-|tomcat:9.0.73-jdk17-corretto| /usr/bin/chromium-browser|
+|tomcat:temurin| /usr/bin/chromium|
+|tomcat:corretto| /usr/bin/chromium-browser|
 
+**Note on Replaced Chromium with Chrome**
+
+Chromium has been replaced with Chrome because the Tomcat base image (based on Ubuntu) does not support installing Chromium in the container.If you are using your own custom Tomcat image based on Debian and need Chromium, uncomment lines 33–35 and comment out the Chrome section (lines 38–51) in:
+
+jaspersoft-containers/Docker/jrs/scripts/installPackagesForJasperserver-pro.sh
+
+JasperReports Server requires the installation of Google Chrome to enable the export functionality. The users must provide consent to install chrome. If you wish to proceed with the installation of Chrome, review the Google Terms of Service and Google Chrome and ChromeOS Additional Terms of Service, and select INSTALL_CHROMIUM as true to acknowledge the terms.
+For more information about Chrome/Chromium in JasperReports Server, see the JasperReports Server Administrator Guide.
 
 **Note on Chromium /dev/shm size limit**
 
@@ -214,7 +219,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 
 ## Install JasperReports® Server license
 1. To install JasperReports® Server license, copy obtained license file into `<CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license`.
-2. Set the permissions to 644 for license file `chmod 644 <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license/jasperserver.license`.
+2. Set the permissions to 644 for license file `chmod 644 <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license/jaspersoft.jrs.license`.
 
 
 ## Using Docker Compose
@@ -229,16 +234,14 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 ## Using Docker Run
 
  ### Repository Setup Using Docker Container
- 
-    docker run --name activemq -d rmohr/activemq:5.15.9-alpine
-    docker run --link activemq:activemq --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
+   
+    docker run  --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license" -d jasperserver-webapp:<jrs_version>
 
 **Note:** Dockerfiles are designed to run in the cluster mode always, to run the JasperReports® Server alone, comment `COPY --chown=jasperserver:jasperserver cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/` in Dockerfile and then rebuild the image.
 
 ### Repository Setup Using External DB
 
-    docker run --name activemq -d rmohr/activemq:5.15.9-alpine
-    docker run --link activemq:activemq   --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
+    docker run  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license " -d jasperserver-webapp:<jrs_version>
 
 
 # Deploying the Application in Cluster Mode
