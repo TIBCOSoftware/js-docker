@@ -128,7 +128,7 @@ By default, Chromium uses /dev/shm that has 64MB storage to store its internal d
 
 **Note on Chromium Sandbox:**
    
-  Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
+  Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/)
 
 If you see the Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
         
