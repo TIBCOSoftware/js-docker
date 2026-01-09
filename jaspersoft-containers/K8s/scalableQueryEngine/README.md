@@ -133,7 +133,7 @@ These parameters and values are the same as parameters in `K8s/scalableQueryEngi
 | jrs.proxy.timedOut | timeout | 30000 |
 | drivers.image.enabled | Enables the drivers  | true |
 | drivers.image.name | Image name for Scalable Query Engine Driver image | null |
-| drivers.image.tag | Scalable Query Engine Driver image tag | 9.0.0 |
+| drivers.image.tag | Scalable Query Engine Driver image tag | 10.0.0 |
 | drivers.image.pullPolicy | Image pull policy | IfNotPresent |
 | drivers.storageClassName | Driver image storage class name | hostPath |
 | drivers.image.jdbcDriversPath | JDBC drivers path  | /usr/lib/drivers |
