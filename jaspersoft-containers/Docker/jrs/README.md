@@ -67,7 +67,7 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chrome installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
+|INSTALL_CHROMIUM| Whether Chrome installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chrome. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
 |JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|10.0.0|
@@ -101,7 +101,7 @@ If deploying JasperReports® Server with docker images based on JDK17, an additi
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/java.nio.channels=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/javax.security.auth.login=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED --add-opens java.base/jdk.internal.access.foreign=ALL-UNNAMED --add-opens java.base/sun.net.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens java.base/sun.util.calendar=ALL-UNNAMED"
 ```
 
-### Chromium Configuration 
+### Chrome/Chromium Configuration 
 Update the chrome.path in `Docker/jrs/resources/default-properties/default_master.properties`.
  
 |Base Image | Chrome-path|
@@ -109,28 +109,28 @@ Update the chrome.path in `Docker/jrs/resources/default-properties/default_maste
 |tomcat:temurin| /usr/bin/chromium|
 |tomcat:corretto| /usr/bin/chromium-browser|
 
-**Note on Replaced Chromium with Chrome**
+**Note on Chromium being replaced with Chrome**
 
 Chromium has been replaced with Chrome because the Tomcat base image (based on Ubuntu) does not support installing Chromium in the container.If you are using your own custom Tomcat image based on Debian and need Chromium, uncomment lines 33–35 and comment out the Chrome section (lines 38–51) in:
 
 jaspersoft-containers/Docker/jrs/scripts/installPackagesForJasperserver-pro.sh
 
-JasperReports Server requires the installation of Google Chrome to enable the export functionality. The users must provide consent to install chrome. If you wish to proceed with the installation of Chrome, review the Google Terms of Service and Google Chrome and ChromeOS Additional Terms of Service, and select INSTALL_CHROMIUM as true to acknowledge the terms.
+JasperReports Server requires the installation of Google Chrome to enable the export functionality. The users must provide consent to install chrome. If you wish to proceed with the installation of Chrome, review the Google Terms of Service and Google Chrome and ChromeOS Additional Terms of Service, and select INSTALL_CHROMIUM as true to acknowledge the terms.We opted to utilize the established INSTALL_CHROMIUM property rather than introducing new variables. This decision ensures stability across all affected files while successfully executing the Chrome installation.
 For more information about Chrome/Chromium in JasperReports Server, see the JasperReports Server Administrator Guide.
 
-**Note on Chromium /dev/shm size limit**
+**Note on Chrome/Chromium /dev/shm size limit**
 
-By default, Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
+By default, Chrome/Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
 
     echo 'net.sf.jasperreports.chrome.argument.disable-dev-shm-usage=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties
 
 
 
-**Note on Chromium Sandbox:**
+**Note on Chrome/Chromium Sandbox:**
    
   Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/)
 
-If you see the Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
+If you see the Chrome/Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
         
     echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties` 
 
