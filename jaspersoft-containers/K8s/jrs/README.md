@@ -478,11 +478,11 @@ In case if you want to control traffic on AWS Application Load Balancer side ins
 1. Clone the jaspersoft-containers ``git clone git@github.com:TIBCOSoftware/js-docker.git``.
 2. Run ``cd <CONTAINER_PATH>`` and download a commercial edition of JasperReports® Server WAR File installer zip to your current directory.
 <br />**Note:**  CONTAINER_PATH=<YOUR_SYSTEM_DIR>/js-docker
-3. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, tags, chromium installation, etc.
+3. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs`` and update the `.env` if you need to change the version, tags, chrome/chromium installation, etc.
 4. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/scripts`` and then run ``./unpackWARInstaller.sh`` to unzip the installer file.
 5. Update the dbHost in ``<CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/default-properties/default_master.properties`` with the name ``repository-postgresql.<k8s-namespace>.svc.cluster.local`` to create DB in K8s cluster. 
 <br />**Note:** In the following steps PostgreSQL chart will be deployed into namespace called `jrs`, in such case `dbHost=repository-postgresql.jrs.svc.cluster.local`
-6. Configure Chromium and chromium properties, if needed. Refer to [this doc](../../Docker/jrs#chromium-configuration)
+6. Configure Chrome/Chromium and chrome/chromium properties, if needed. Refer to [this doc](../../Docker/jrs#chromechromium-configuration)
 7. Apply customizations to JasperReports® Server webapp and buildomatic images. Refer to [this doc](../../Docker/jrs#jasperreports-server-and-buildomatic-customization)
 8. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs`` and then run ``docker-compose build`` to build the images.
 9. Push built images into the repository which is accessible for k8s cluster, for example ECR can be used for EKS clusters. To tag and push images to the repository, [see Docker doc](https://docs.docker.com/engine/reference/commandline/push/#push-a-new-image-to-a-registry).
