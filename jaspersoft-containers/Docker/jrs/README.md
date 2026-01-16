@@ -27,8 +27,7 @@
 
 # Introduction
 
-This distribution includes Dockerfile and supporting files for building, configuring, and running JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. ActiveMQ JMS is used for caching.
-
+This distribution includes Dockerfile and supporting files for building, configuring, and running JasperReports® Server in containers. Orchestration is done by Kubernetes and all the deployment configurations are managed by Helm charts for Kubernetes. JRS comes with an inbuilt Infinispan for caching.
 # Prerequisites
 
 1. Docker-engine (20.x+) setup with Docker Compose  (3.9+)
@@ -68,14 +67,14 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium.**| false|
+|INSTALL_CHROMIUM| Whether Chrome installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chrome. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
-|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|9.0.0|
-|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |9.0.0|
-|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |9.0.0|
-|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.65-jdk11-openjdk" ,"tomcat:9.0.62-jdk17-openjdk" for Debian and "tomcat:9.0.73-jdk11-corretto","tomcat:9.0.73-jdk-17-corretto" for Amazon Linux 2 |tomcat:9.0.65-jdk11-openjdk|
-|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk" and  "amazoncorretto:11","amazoncorretto:17"|openjdk:11-jdk|
+|JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|10.0.0|
+|JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |10.0.0|
+|JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |10.0.0|
+|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2. It is of two types "tomcat:10.1.43-jdk17-temurin" for Ubuntu and "tomcat:10-jdk17-corretto" for Amazon Linux 2 |tomcat:10.1.43-jdk17-temurin|
+|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2023. It is of two types "eclipse-temurin:17-jdk-noble" and "amazoncorretto:17-al2023-jdk"|eclipse-temurin:17-jdk-noble|
 RELEASE_DATE|Release date of JasperReports® Server | May 13, 2022 |
 |JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in JasperReports® Server. For more information, see the JasperReports® Server documentation . |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
 
@@ -99,33 +98,39 @@ This configuration option enables customization of the Java Virtual Machine sett
 If deploying JasperReports® Server with docker images based on JDK17, an additional JAVA_OPTS options need to be added in the `Docker/jrs/docker-compose.yml` or `Docker/jrs/cluster-docker-compose.yml` files:
 ```yaml
     environment:
-      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/java.nio.channels=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/javax.security.auth.login=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED --add-opens java.base/jdk.internal.access.foreign=ALL-UNNAMED --add-opens java.base/sun.net.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens java.base/sun.util.calendar=ALL-UNNAMED"
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/java.nio.channels=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/javax.security.auth.login=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED --add-opens java.base/jdk.internal.access.foreign=ALL-UNNAMED --add-opens java.base/sun.net.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens java.base/sun.util.calendar=ALL-UNNAMED"
 ```
 
-### Chromium Configuration 
+### Chrome/Chromium Configuration 
 Update the chrome.path in `Docker/jrs/resources/default-properties/default_master.properties`.
  
 |Base Image | Chrome-path|
 |-----------|------------|
-|tomcat:9.0.65-jdk11-openjdk| /usr/bin/chromium|
-|tomcat:9.0.62-jdk17-openjdk| /usr/bin/chromium|
-|tomcat:9.0.73-jdk11-corretto| /usr/bin/chromium-browser|
-|tomcat:9.0.73-jdk17-corretto| /usr/bin/chromium-browser|
+|tomcat:temurin| /usr/bin/chromium|
+|tomcat:corretto| /usr/bin/chromium-browser|
 
+**Note on Chromium being replaced with Chrome**
 
-**Note on Chromium /dev/shm size limit**
+Chromium has been replaced with Chrome because the Tomcat base image (based on Ubuntu) does not support installing Chromium in the container.If you are using your own custom Tomcat image based on Debian and need Chromium, uncomment lines 33–35 and comment out the Chrome section (lines 38–51) in:
 
-By default, Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
+jaspersoft-containers/Docker/jrs/scripts/installPackagesForJasperserver-pro.sh
+
+JasperReports Server requires the installation of Google Chrome to enable the export functionality. The users must provide consent to install chrome. If you wish to proceed with the installation of Chrome, review the Google Terms of Service and Google Chrome and ChromeOS Additional Terms of Service, and select INSTALL_CHROMIUM as true to acknowledge the terms.We opted to utilize the established INSTALL_CHROMIUM property rather than introducing new variables. This decision ensures stability across all affected files while successfully executing the Chrome installation.
+For more information about Chrome/Chromium in JasperReports Server, see the JasperReports Server Administrator Guide.
+
+**Note on Chrome/Chromium /dev/shm size limit**
+
+By default, Chrome/Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
 
     echo 'net.sf.jasperreports.chrome.argument.disable-dev-shm-usage=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties
 
 
 
-**Note on Chromium Sandbox:**
+**Note on Chrome/Chromium Sandbox:**
    
-  Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
+  Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/)
 
-If you see the Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
+If you see the Chrome/Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
         
     echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties` 
 
@@ -214,7 +219,7 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 
 ## Install JasperReports® Server license
 1. To install JasperReports® Server license, copy obtained license file into `<CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license`.
-2. Set the permissions to 644 for license file `chmod 644 <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license/jasperserver.license`.
+2. Set the permissions to 644 for license file `chmod 644 <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license/jaspersoft.jrs.license`.
 
 
 ## Using Docker Compose
@@ -229,21 +234,19 @@ If you plan to work with **default** JasperReports® Server and buildomatic setu
 ## Using Docker Run
 
  ### Repository Setup Using Docker Container
- 
-    docker run --name activemq -d rmohr/activemq:5.15.9-alpine
-    docker run --link activemq:activemq --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
+   
+    docker run  --link repository:repository  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license" -d jasperserver-webapp:<jrs_version>
 
 **Note:** Dockerfiles are designed to run in the cluster mode always, to run the JasperReports® Server alone, comment `COPY --chown=jasperserver:jasperserver cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/` in Dockerfile and then rebuild the image.
 
 ### Repository Setup Using External DB
 
-    docker run --name activemq -d rmohr/activemq:5.15.9-alpine
-    docker run --link activemq:activemq   --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 " -d jasperserver-webapp:<jrs_version>
+    docker run  --name jrs_jasperserver-webapp -p 8080:8080 -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/license:/usr/local/share/jasperserver-pro/license  -v <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/keystore:/usr/local/share/jasperserver-pro/keystore -e JAVA_OPTS="-Xmx3500M -Djs.license.directory=/usr/local/share/jasperserver-pro/license " -d jasperserver-webapp:<jrs_version>
 
 
 # Deploying the Application in Cluster Mode
 
-- It uses haproxy as a load balancer and activemq as a cache replication. Before launching the application, make sure images are created successfully and repository DB setup is also completed.
+- It uses haproxy as a load balancer and infinispan as a cache replication. Before launching the application, make sure images are created successfully and repository DB setup is also completed.
 
    `docker-compose -f cluster-docker-compose.yml up -d`
 

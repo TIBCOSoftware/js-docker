@@ -1,18 +1,18 @@
-# Copyright © 2005-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
+# Copyright © 2005-2025. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
-#ARG JDK_BASE_IMAGE=amazoncorretto:11
-#ARG JDK_BASE_IMAGE=amazoncorretto:17
-#ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk
-ARG JDK_BASE_IMAGE=openjdk:11-jdk
+
+#ARG JDK_BASE_IMAGE=amazoncorretto:17-al2023-jdk
+ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk-noble
+
 FROM ${JDK_BASE_IMAGE}
 
-ARG JASPERREPORTS_SERVER_VERSION=9.0.0
+ARG JASPERREPORTS_SERVER_VERSION=10.0.0
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
 ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-9.0.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-10.0.0}
 ENV JRS_HOME /usr/src/jasperreports-server
 ENV BUILDOMATIC_MODE non-interactive
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
@@ -32,7 +32,7 @@ COPY ${CONTAINER_DISTRO}/scripts/buildomatic-entrypoint.sh /usr/local/scripts/en
 COPY ${CONTAINER_DISTRO}/resources/default-properties /usr/src/jasperreports-server/buildomatic
 COPY ${CONTAINER_DISTRO}/resources/buildomatic-customization ${JRS_HOME}/buildomatic/
 
-RUN chmod +x /usr/local/scripts/*.sh && \
+RUN sed -i 's/\r$//' /usr/local/scripts/*.sh && chmod +x /usr/local/scripts/*.sh && \
     chmod +x ${JRS_HOME}/buildomatic/js-* && \
     chmod +x ${JRS_HOME}/buildomatic/bin/*.sh && \
     chmod +x ${JRS_HOME}/apache-ant/bin/* && \

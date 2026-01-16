@@ -6,10 +6,6 @@ Expand the name of the chart.
 {{- end }}
 
 
-{{- define "jms.name" -}}
-{{- default .Chart.Name .Values.jms.name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -73,16 +69,8 @@ Define env varibales here
 
 {{- define "env" -}}
 env:
-{{- if and .Values.jms.enabled  (not .Values.jms.jmsBrokerUrl) }}
  - name: JAVA_OPTS
-   value: " {{ .Values.extraEnv.javaOpts}} -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource  -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://jasperserver-cache-service.{{.Release.Namespace}}.svc.cluster.local:61616"
-{{- else if  .Values.jms.jmsBrokerUrl }}
- - name: JAVA_OPTS
-   value: " {{ .Values.extraEnv.javaOpts}} -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider={{ .Values.jms.jmsBrokerUrl }}"
-{{ else }}
- - name: JAVA_OPTS
-   value: "{{ .Values.extraEnv.javaOpts}} -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource -Djs.license.directory=/usr/local/share/jasperserver-pro/license"
-{{- end }}
+   value: "{{ .Values.extraEnv.javaOpts}} -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource -Djava.net.preferIPv4Stack=true -Djs.license.directory=/usr/local/share/jasperserver-pro/license"
 {{- if and .Values.scalableQueryEngine.enabled (not .Values.scalableQueryEngineUrl ) }}
  - name: "SCALABLE_QUERY_ENGINE_ENABLED"
    value: "true"
@@ -120,11 +108,6 @@ securityContext:
 {{/*
 Define security context
 */}}
-
-{{- define "jmssecuritycontext" -}}
-securityContext:
-  {{ toYaml .Values.jms.securityContext | nindent 2 }}
-{{- end -}}
 
 
 {{/*
@@ -258,29 +241,6 @@ readinessProbe:
 {{- end -}}
 
 
-{{/*
-Define jms health check
-*/}}
-
-{{- define "jmshealthcheck" -}}
-{{- if eq .Values.jms.healthcheck.enabled true }}
-livenessProbe:
-  tcpSocket:
-    port: {{ .Values.jms.healthcheck.livenessProbe.port }}
-  initialDelaySeconds: {{ .Values.jms.healthcheck.livenessProbe.initialDelaySeconds }}
-  periodSeconds: {{ .Values.jms.healthcheck.livenessProbe.periodSeconds }}
-  failureThreshold: {{ .Values.jms.healthcheck.livenessProbe.failureThreshold }}
-
-readinessProbe:
-  tcpSocket:
-    port: {{ .Values.jms.healthcheck.livenessProbe.port }}
-  initialDelaySeconds: {{ .Values.jms.healthcheck.readinessProbe.initialDelaySeconds }}
-  periodSeconds: {{ .Values.jms.healthcheck.readinessProbe.periodSeconds }}
-  failureThreshold: {{ .Values.jms.healthcheck.readinessProbe.failureThreshold }}
-{{- end }}
-
-{{- end -}}
-
 
 {{- define "resources" -}}
 {{- if eq .Values.resources.enabled true }}
@@ -291,18 +251,6 @@ resources:
   requests:
     cpu: {{ .Values.resources.requests.cpu }}
     memory: {{ .Values.resources.requests.memory }}
-{{- end }}
-{{- end -}}
-
-{{- define "jmsresources" -}}
-{{- if eq .Values.jms.resources.enabled true }}
-resources:
-  limits:
-    cpu: {{ .Values.jms.resources.limits.cpu }}
-    memory: {{ .Values.jms.resources.limits.memory }}
-  requests:
-    cpu: {{ .Values.jms.resources.requests.cpu }}
-    memory: {{ .Values.jms.resources.requests.memory }}
 {{- end }}
 {{- end -}}
 

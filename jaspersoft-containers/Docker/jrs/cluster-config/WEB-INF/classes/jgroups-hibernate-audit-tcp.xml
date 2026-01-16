@@ -1,0 +1,35 @@
+<!--
+    TCP based stack, with flow control and message bundling. This is usually used when IP
+    multicasting cannot be used in a network, e.g. because it is disabled (routers discard multicast).
+    Note that TCP.bind_addr and TCPPING.initial_hosts should be set, possibly via system properties, e.g.
+    -Djgroups.bind_addr=192.168.5.2 and -Djgroups.tcpping.initial_hosts=192.168.5.2[7800]
+    author: Bela Ban
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="urn:org:jgroups"
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd"
+        >
+    <TCP bind_addr="${JGROUPS_BIND_ADDR:match-interface:eth1,match-interface:eth0,match-interface:en0,SITE_LOCAL}"
+         bind_port="${JGROUPS_BIND_PORT:7820}"/>
+    <com.jaspersoft.ji.cache.JS_JDBC_PING datasource_jndi_name="jdbc/jasperserver"
+                                          info_writer_sleep_time="1000"
+                                          info_writer_max_writes_after_view="3"
+                                          remove_all_data_on_view_change="false"/>
+    <MERGE3  min_interval="10000"
+             max_interval="30000"/>
+    <FD_SOCK2/>
+    <FD_ALL3 timeout="40000" interval="5000" />
+    <VERIFY_SUSPECT2 timeout="15000"  />
+    <BARRIER />
+    <pbcast.NAKACK2 use_mcast_xmit="false" />
+    <UNICAST3 />
+    <pbcast.STABLE desired_avg_gossip="50000"
+                   max_bytes="4M"/>
+    <pbcast.GMS print_local_addr="true" join_timeout="2000"/>
+    <MFC max_credits="10M"
+         min_threshold="0.4"/>
+    <UFC max_credits="10M"
+             min_threshold="0.4"/>
+    <FRAG2 frag_size="60K"  />
+    <pbcast.STATE_TRANSFER/>
+</config>
