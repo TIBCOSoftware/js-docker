@@ -22,7 +22,7 @@ and all the deployment configurations are managed by Helm charts and Redis is us
  
 # Prerequisites
 
-1. Docker-engine (19.x+) setup with Docker Compose (3.9+)
+1. Docker-engine (20.x+) setup with Docker Compose (3.9+)
 1. Knowledge of Docker
 1. Git
 1. JasperReports&reg; Server
@@ -56,12 +56,12 @@ and all the deployment configurations are managed by Helm charts and Redis is us
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 9.0.0|
+|JASPERREPORTS_SERVER_VERSION | JasperReports Server release version | 10.0.0|
 |SCALABLE_QUERY_ENGINE_IMAGE_NAME| Scalable Query Engine image name |scalable-query-engine|
 |SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_NAME| Scalable Query Engine JDBC drivers image name| scalable-query-engine-driver|
-|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 9.0.0|
-|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 9.0.0|
-|JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Debian and Amazon Linux 2, and it is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk"and "amazoncorretto:11", "amazoncorretto:17" |openjdk:11-jdk|
+|SCALABLE_QUERY_ENGINE_DRIVER_IMAGE_TAG| Docker tag for Scalable Query Engine | 10.0.0|
+|SCALABLE_QUERY_ENGINE_IMAGE_TAG| Docker tag for Scalable Query Engine Driver | 10.0.0|
+|JDK_BASE_IMAGE | Docker image certified for the version of JasperReports Server being deployed based on Ubuntu and Amazon Linux 2023, and it is of two types "eclipse-temurin:17-jdk-noble"and "amazoncorretto:17-al2023-jdk" |eclipse-temurin:17-jdk-noble|
 |ks | .jrsks keystore path |/etc/secrets/keystore|
 |ksp | .jrsksp keystore path | /etc/secrets/keystore |
 |RELEASE_DATE | JasperReports Server release date | Nov 14, 2021 |

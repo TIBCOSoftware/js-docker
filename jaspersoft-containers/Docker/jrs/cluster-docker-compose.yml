@@ -1,4 +1,4 @@
-# Copyright © 2021-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
+# Copyright © 2021-2025. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
@@ -12,10 +12,11 @@ services:
       - jrs_network
     env_file: .env
     environment:
-      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djs.license.directory=/usr/local/share/jasperserver-pro/license -Djasperserver.cache.jms.provider=tcp://activemq:61616 "
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 -Djava.net.preferIPv4Stack=true -Djs.license.directory=/usr/local/share/jasperserver-pro/license --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/java.nio.channels=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/javax.security.auth.login=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED --add-opens java.base/jdk.internal.access.foreign=ALL-UNNAMED --add-opens java.base/sun.net.util=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens java.base/sun.util.calendar=ALL-UNNAMED"
+
     volumes:
       - ./resources/keystore:/usr/local/share/jasperserver-pro/keystore
-      - ./resources/license/jasperserver.license:/usr/local/share/jasperserver-pro/license/jasperserver.license
+      - ./resources/license/jaspersoft.jrs.license:/usr/local/share/jasperserver-pro/license/jaspersoft.jrs.license
     mem_limit: 6g
     mem_reservation: 3g
     cpu_shares: 1000
@@ -23,7 +24,7 @@ services:
       mode: replicated
       replicas: 2
     depends_on:
-      - activemq
+      - repository
 
   ####### Loadbalancer to manage the JRS Instances and session replication
   haproxy:
@@ -31,21 +32,29 @@ services:
     networks:
       - jrs_network
     ports:
-      - 80:80
+      - ${HOST_PORT:-80}:80
       - 9999:9999
     volumes:
       - ./cluster-config:/usr/local/etc/haproxy
     depends_on:
       - jasperserver-webapp
 
-  ##### Repository cache replication runs on 61616 port and 8161 to access from web
-  activemq:
-    image: bansamadev/activemq:5.17.2
+  ##### JasperReportServer Repository
+  repository:
+    image: postgres:12
     networks:
       - jrs_network
     ports:
-      - 8161:8161
-      - 61616:61616
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+    name: jrs-repository-vol
 
 networks:
   jrs_network:

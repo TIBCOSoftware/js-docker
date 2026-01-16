@@ -1,6 +1,7 @@
 
 
 
+
 <details>
 <summary>Table of Contents</summary>
 <!-- TOC -->
@@ -10,7 +11,6 @@
     - [Parameters](#parameters)
     - [Adding External Helm Repositories](#adding-external-helm-repositories)
 - [Installing JasperReports® Server](#installing-jasperreports-server)
-    - [JMS Configuration](#jms-configuration)
     - [Repository DB Does Not Exist](#repository-db-does-not-exist)
     - [Repository DB Already Exists](#repository-db-already-exists)
     - [Route Configuration](#route-configuration)
@@ -24,7 +24,7 @@
 This helm chart is used to install JasperReports® Server in OpenShift and integrate it with the JasperReports® Server Scalable Query Engine.
 
 # Prerequisites
-1. Docker-engine (19.x+) setup with Docker Compose  (3.9+)
+1. Docker-engine (20.x+) setup with Docker Compose  (3.9+)
 1. OpenShift cluster with 4.6+
 1. JasperReports® Server
 1. Keystore
@@ -40,7 +40,7 @@ These parameters and values are the same as parameters in values.yaml.
 | Parameter| Description | default Value |
 |------------| -------------| ----------|
 | replicaCount| Number of pods | 1 (It will not come into effect if autoscaling is enabled.)| 
-| jrsVersion| JasperReports® Server release version | 9.0.0 | 
+| jrsVersion| JasperReports® Server release version | 10.0.0 | 
 | image.tag | Name of the JasperReports® Server webapp image tag | JasperReports® Server Release Version|
 | image.name| Name of the JasperReports® Server webapp image | jrscontainerregistry.azurecr.io/jrs/webapp|
 | image.pullPolicy| Docker image pull policy  | IfNotPresent|
@@ -79,8 +79,7 @@ These parameters and values are the same as parameters in values.yaml.
 | db.jndiRestrictedAccess | Use special read-only user to access Analytics jndi. Enable only with corresponding property in default_master.properties, refer to JasperReports® Server Install Guide | false |
 | db.analytics.dbUserName | JasperReports® Server analytics read-only DB username, used when secrets enabled | postgres |
 | db.analytics.dbPassword | JasperReports® Server analytics read-only DB password, used when secrets enabled | postgres |
-| db.auditAnalytics.dbUserName | JasperReports® Server Audit Analytics read-only DB username, used when secrets enabled | postgres |                                                                                                                                                                                                                                                   
-| db.auditAnalytics.dbPassword | JasperReports® Server Audit Analytics read-only DB password, used when secrets enabled | postgres |
+| db.auditAnalytics.dbUserName | JasperReports® Server Audit Analytics read-only DB username, used when secrets enabled | postgres |                                                                                                                                                                                                                                                     | db.auditAnalytics.dbPassword | JasperReports® Server Audit Analytics read-only DB password, used when secrets enabled | postgres |                                                                                   
 | extraEnv.javaopts | Adds all JAVA_OPTS  | -XX:+UseContainerSupport -XX:MinRAMPercentage=33.0 -XX:MaxRAMPercentage=75.0 |
 | extraEnv.normal | Adds all the normal key value pair variables | null |
 | extraEnv.secrets | Adds all the environment references from secrets or configmaps| null | 
@@ -104,33 +103,17 @@ These parameters and values are the same as parameters in values.yaml.
 | resources.limits.memory | Maximum memory | 7.5Gi |
 | resources.requests.cpu | Minimum CPU | "2" |
 | resources.requests.memory | Minimum memory | 3.5Gi |
-| jms.enabled | Enables the ActiveMQ cache service | true|
-| jms.jmsBrokerUrl |  | null|
-| jms.name | Name of the JMS | jasperserver-cache|
-| jms.serviceName | Name of the JMS Service | jasperserver-cache-service |
-| jms.imageName | Name of the Activemq image | bansamadev/activemq |
-| jms.imageTag | Activemq image tag | 5.17.2 |
-| jms.healthcheck.enabled |  | true |
-| jms.healthcheck.livenessProbe.port | Container port | 61616 |
-| jms.healthcheck.livenessProbe.initialDelaySeconds | Initial delay  | 100 |
-| jms.healthcheck.livenessProbe.failureThreshold | Threshold for health check | 10 |
-| jms.healthcheck.livenessProbe.periodSeconds | Time period for health check | 10 |
-| jms.healthcheck.readinessProbe.port | Container port | 61616 |
-| jms.healthcheck.readinessProbe.initialDelaySeconds | Initial delay  | 10 |
-| jms.healthcheck.readinessProbe.failureThreshold | Threshold for health check | 15 |
-| jms.healthcheck.readinessProbe.periodSeconds | Time period for health check | 10 |
-| jms.securityContext.capabilities.drop | Linux capabilities to drop for the pod  | All |
 | ingress.enabled | Work with multiple pods and stickyness | false|
 | ingress.annotations.ingress.kubernetes.io\/cookie-persistence|  | "JRS_COOKIE"|
 | ingress.hosts.host | Adds valid DNS hostname to access the JasperReports® Server | null|
 | ingress.tls | Adds TLS secret name to allow secure traffic | null| 
 | scalableQueryEngine.enabled | Communicates with Scalable Query Engine | false|
 | scalable-query-engine.replicaCount | Number of pods for Scalable Query Engine | 1|
-| scalable-query-engine.image.tag | Scalable Query Engine image tag | 9.0.0|
+| scalable-query-engine.image.tag | Scalable Query Engine image tag | 10.0.0|
 | scalable-query-engine.image.name | Name of the Scalable Query Engine image | null |
 | scalable-query-engine.image.pullPolicy| Scalable Query Engine image pull policy | ifNotPresent |
 | scalable-query-engine.autoscaling.enabled | Enables the HPA for Scalable Query Engine | true |
-| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 9.0.0 |
+| scalable-query-engine.drivers.image.tag | Scalable Query Engine image tag | 10.0.0 |
 | scalable-query-engine.drivers.image.name |  | null |
 | scalable-query-engine.drivers.storageClassName |   | hostpath |
 | scalable-query-engine.kubernetes-ingress.controller.service.type |  | ClusterIP |
@@ -306,16 +289,14 @@ or update your custom secret file `OpenShift/jrs/helm/templates/envsecret.yaml` 
 4. Generate the keystore and copy it to the `OpenShift/jrs/helm/secrets/keystore` folder, see here for [Keystore Generation ](../../Docker/jrs#keystore-generation).
 5. Copy the JasperReports® Server license to the `OpenShift/jrs/helm/secrets/license` folder.
 
-## JMS Configuration
-By default, JasperReports® Server will install using activemq docker image. You can disable it by changing the parameter `jms.enabled=false`.
-
-External JMS instance can also be used instead of in-build JMS setup by adding the external jms url `jms.jmsBrokerUrl`. You can access it by using tcp port, for instance `tcp://<JMS-URL>:61616`.
+## Cache Configuration
+JasperReports® Server uses Infinispan as its default caching mechanism to enhance performance and reduce database load. Before building the Docker images you can review and adjust the cache configuration in the default_master.properties file. appCacheType=infinispan-embedded For single-node installations, update the configuration as shown below: appCacheType=infinispan-local This ensures the appropriate caching mode is used based on your deployment setup.
 
 ## Repository DB Does Not Exist
 
 -  To set up the Repository DB in the OpenShift cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres  --version 11.9.13 `
+`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --set image.tag=latest --set primary.resourcesPreset="" --set primary.resources.requests.memory=512Mi --set primary.resources.limits.memory=512Mi --namespace jrs --create-namespace`
 
 
 - Check the pods status and make sure pods are in a running state.
@@ -371,4 +352,7 @@ Please note that logging and monitoring are included by default in OpenShift. Fo
 # Troubleshooting
 - If repository setup fails due to password authentication, remove the PostgreSQL helm chart, and the persistent volume claim and then re-install the PostgreSQL chart by setting the password ``--set postgresqlPassword=postgres``.
 - If you encounter an issue with deployment due to keystore issues, check the [Keystore Generation](../../Docker/jrs#keystore-generation) steps to resolve this issue.
+-If you encounter any issues while installing PostgreSQL using the above command, use the following alternative command:
+
+`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --set image.tag=latest --set primary.podSecurityContext.enabled=true --set primary.podSecurityContext.fsGroup=1001 --set primary.containerSecurityContext.enabled=true --set primary.containerSecurityContext.runAsUser=1001 --set volumePermissions.enabled=true --set primary.resources.requests.memory=512Mi --set primary.resources.limits.memory=512Mi --namespace jrs --create-namespace`
 

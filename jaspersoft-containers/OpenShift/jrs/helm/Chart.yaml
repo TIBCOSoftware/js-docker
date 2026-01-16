@@ -3,7 +3,7 @@ name: jasperserver-pro
 description: JasperReportServer deployment in K8s
 type: application
 version: 1.0.0
-appVersion: "9.0.0"
+appVersion: "10.0.0"
 keywords:
   - Analytics
   - BI Tool
@@ -15,6 +15,7 @@ maintainers:
     url: https://www.jaspersoft.com/
 
 dependencies:
+  
   - name: scalable-query-engine
     version: "1.0.0"
     repository: "file://../../scalableQueryEngine/helm"

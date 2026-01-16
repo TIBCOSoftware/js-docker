@@ -2,17 +2,15 @@
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
-#ARG JDK_BASE_IMAGE=amazoncorretto:11
-#ARG JDK_BASE_IMAGE=amazoncorretto:17
-#ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk
-ARG JDK_BASE_IMAGE=openjdk:11-jdk
-ARG JASPERREPORTS_SERVER_VERSION=9.0.0
+#ARG JDK_BASE_IMAGE=amazoncorretto:17-al2023-jdk
+#ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk-noble
+ARG JASPERREPORTS_SERVER_VERSION=10.0.0
 
 FROM ${JDK_BASE_IMAGE} AS worker
 
 ARG JASPERREPORTS_SERVER_VERSION
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/scalableQueryEngine
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-9.0.0}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-10.0.0}
 ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
 
 ENV WORKER_HOME /usr/local/scalable-query-engine
