@@ -2,10 +2,10 @@
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file
 
-#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.73-jdk11-corretto
-#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.62-jdk17-openjdk
-#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.73-jdk17-corretto
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.65-jdk11-openjdk
+#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.118-jdk11-corretto-al2
+#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.118-jdk17-temurin-noble
+#ARG TOMCAT_BASE_IMAGE=tomcat:9.0.118-jdk17-corretto-al2
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.118-jdk11-temurin-noble
 
 ARG INSTALL_CHROMIUM=false
 ARG JASPERREPORTS_SERVER_VERSION=9.0.0
@@ -26,6 +26,8 @@ ENV BUILDOMATIC_MODE non-interactive
 COPY ${JRS_DISTRO}/buildomatic ${JRS_HOME}/buildomatic/
 COPY ${JRS_DISTRO}/apache-ant ${JRS_HOME}/apache-ant/
 COPY ${JRS_DISTRO}/jasperserver-pro.war  ${JRS_HOME}/
+COPY ${JRS_DISTRO}/jrws-jrio-jrs.war  ${JRS_HOME}/
+COPY ${JRS_DISTRO}/jrws-repository-jrs.war ${JRS_HOME}/
 COPY ${CONTAINER_DISTRO}/resources/buildomatic-customization ${JRS_HOME}/buildomatic/
 COPY ${CONTAINER_DISTRO}/resources/default-properties ${JRS_HOME}/buildomatic/
 COPY ${CONTAINER_DISTRO}/resources/keystore /usr/local/share/jasperserver-pro/keystore
@@ -56,6 +58,8 @@ FROM ${TOMCAT_BASE_IMAGE}
 ARG INSTALL_CHROMIUM
 ARG JASPERREPORTS_SERVER_VERSION
 ARG CONTAINER_DISTRO=jaspersoft-containers/Docker/jrs
+ARG JRS_DISTRO=jasperreports-server-pro-${JASPERREPORTS_SERVER_VERSION}-bin
+ENV JRS_HOME /usr/src/jasperreports-server
 ENV RELEASE_DATE ${RELEASE_DATE:- 13-05-2022}
 
 
@@ -80,6 +84,8 @@ RUN useradd  -m jasperserver -u 10099 && chown -R jasperserver:root $CATALINA_HO
 USER 10099
 
 WORKDIR $CATALINA_HOME
+COPY --from=deployment --chown=jasperserver:root ${JRS_HOME}/jrws-jrio-jrs.war $CATALINA_HOME/webapps/jrio.war
+COPY --from=deployment --chown=jasperserver:root ${JRS_HOME}/jrws-repository-jrs.war $CATALINA_HOME/webapps/repo.war
 COPY --from=deployment --chown=jasperserver:root /usr/local/tomcat .
 COPY --chown=jasperserver:root ${CONTAINER_DISTRO}/resources/jasperserver-customization .
 COPY --chown=jasperserver:root ${CONTAINER_DISTRO}/cluster-config/WEB-INF  $CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/

@@ -21,14 +21,20 @@ dependencies:
     condition: ingress.enabled
 
   - name: kube-prometheus-stack
-    version: 56.3.0
+    version: 60.5.0
     repository: "@prometheus-community"
     condition: metrics.enabled
 
   - name: elasticsearch
-    version: 19.17.2
-    repository: "https://charts.bitnami.com/bitnami"
+    version: 7.17.3
+    repository: "https://helm.elastic.co"
     condition: logging.enabled
+  
+  - name: kibana 
+    version: 7.17.3
+    repository: "https://helm.elastic.co" 
+    condition: logging.enabled
+    
 
   - name: scalable-query-engine
     version: "1.0.0"

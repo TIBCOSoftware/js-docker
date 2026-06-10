@@ -5,7 +5,7 @@
 #ARG JDK_BASE_IMAGE=amazoncorretto:11
 #ARG JDK_BASE_IMAGE=amazoncorretto:17
 #ARG JDK_BASE_IMAGE=eclipse-temurin:17-jdk
-ARG JDK_BASE_IMAGE=openjdk:11-jdk
+ARG JDK_BASE_IMAGE=eclipse-temurin:11.0.31_11-jdk-jammy
 FROM ${JDK_BASE_IMAGE}
 
 ARG JASPERREPORTS_SERVER_VERSION=9.0.0

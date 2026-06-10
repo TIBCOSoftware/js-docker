@@ -305,15 +305,18 @@ logging:
 # Elastic search configuration for logging
 
 elasticsearch:
-  service:
-    type: NodePort
+  replicas: 1
+  volumeClaimTemplate:
+    resources:
+      requests:
+        storage: 10Gi
+  
 
 ## Visualization for logging
-  global:
-    kibanaEnabled: true 
-  kibana:
-    service:
-      type: NodePort
+   
+kibana:
+  service:
+    type: NodePort
 
 ## Tolerations for JRS webapp
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
