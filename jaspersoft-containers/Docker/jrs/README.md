@@ -68,14 +68,14 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chromium.**| false|
+|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chrome. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
 |JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|9.0.0|
 |JASPERREPORTS_SERVER_APP_IMAGE_TAG|Image tag of the JasperReports® Server web app |9.0.0|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_TAG|Image tag of the JasperReports® Server buildomatic |9.0.0|
-|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "tomcat:9.0.65-jdk11-openjdk" ,"tomcat:9.0.62-jdk17-openjdk" for Debian and "tomcat:9.0.73-jdk11-corretto","tomcat:9.0.73-jdk-17-corretto" for Amazon Linux 2 |tomcat:9.0.65-jdk11-openjdk|
-|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Debian and Amazon Linux 2. It is of two types "openjdk:11-jdk","eclipse-temurin:17-jdk" and  "amazoncorretto:11","amazoncorretto:17"|openjdk:11-jdk|
+|TOMCAT_BASE_IMAGE|Tomcat Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2. It is of two types "tomcat:9.0.118-jdk11-temurin-noble" ,"tomcat:9.0.118-jdk17-temurin-noble" for Ubuntu and "tomcat:9.0.118-jdk11-corretto-al2","tomcat:9.0.118-jdk17-corretto-al2" for Amazon Linux 2 |tomcat:9.0.118-jdk11-temurin-noble|
+|JDK_BASE_IMAGE|Java Docker image certified for the version of JasperReports® Server being deployed based on Ubuntu and Amazon Linux 2. It is of two types "eclipse-temurin:11.0.31_11-jdk-jammy","eclipse-temurin:17-jdk" and "amazoncorretto:11","amazoncorretto:17"|eclipse-temurin:11.0.31_11-jdk-jammy|
 RELEASE_DATE|Release date of JasperReports® Server | May 13, 2022 |
 |JS_INSTALL_TARGETS| Used for repository setup, import, and export. Provides all the lists of ANT targets to perform any buildomatic action in JasperReports® Server. For more information, see the JasperReports® Server documentation . |gen-config pre-install-test-pro prepare-all-pro-dbs-normal|
 
@@ -107,21 +107,29 @@ Update the chrome.path in `Docker/jrs/resources/default-properties/default_maste
  
 |Base Image | Chrome-path|
 |-----------|------------|
-|tomcat:9.0.65-jdk11-openjdk| /usr/bin/chromium|
-|tomcat:9.0.62-jdk17-openjdk| /usr/bin/chromium|
-|tomcat:9.0.73-jdk11-corretto| /usr/bin/chromium-browser|
-|tomcat:9.0.73-jdk17-corretto| /usr/bin/chromium-browser|
+|tomcat:9.0.118-jdk11-temurin-noble| /usr/bin/chromium|
+|tomcat:9.0.118-jdk17-temurin-noble| /usr/bin/chromium|
+|tomcat:9.0.118-jdk11-corretto-al2| /usr/bin/chromium-browser|
+|tomcat:9.0.118-jdk17-temurin-noble| /usr/bin/chromium-browser|
+
+**Note on Chromium being replaced with Chrome**
+
+Chromium has been replaced with Chrome because the Tomcat base image (based on Ubuntu) does not support installing Chromium in the container. If you are using your own custom Tomcat image based on Debian and need Chromium, uncomment lines 33–35 and comment out the Chrome section (lines 38–51) in:
+
+jaspersoft-containers/Docker/jrs/scripts/installPackagesForJasperserver-pro.sh
+
+JasperReports Server requires the installation of Google Chrome to enable the export functionality. The users must provide consent to install chrome. If you wish to proceed with the installation of Chrome, review the Google Terms of Service and Google Chrome and ChromeOS Additional Terms of Service, and select INSTALL_CHROMIUM as true to acknowledge the terms. We opted to utilize the established INSTALL_CHROMIUM property rather than introducing new variables. This decision ensures stability across all affected files while successfully executing the Chrome installation. For more information about Chrome/Chromium in JasperReports Server, see the JasperReports Server Administrator Guide.
 
 
-**Note on Chromium /dev/shm size limit**
+**Note on Chrome/Chromium /dev/shm size limit**
 
-By default, Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
+By default, Chrome/Chromium uses /dev/shm that has 64MB storage to store its internal data and some Operating System images. When exporting large Dashboards in the JasperReports® Server, 64MB may not be enough and users may see Chrome-related timeout exceptions. To resolve it, uncomment the following line in `scripts/entrypoint.sh`.
 
     echo 'net.sf.jasperreports.chrome.argument.disable-dev-shm-usage=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties
 
 
 
-**Note on Chromium Sandbox:**
+**Note on Chrome/Chromium Sandbox:**
    
   Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
 
