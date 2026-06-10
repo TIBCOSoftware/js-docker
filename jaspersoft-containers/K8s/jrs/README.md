@@ -372,7 +372,7 @@ For more information and configuration, see the [Official Docs](https://artifact
 
 -  To set up the Repository DB in K8s cluster, run the below command. For this, we are using bitnami/postgresql Helm chart. See the [Official Docs](https://artifacthub.io/packages/helm/bitnami/postgresql) to configure the DB in cluster mode.
 
-`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres  --version 11.9.13 --namespace jrs --create-namespace`
+`helm install repository bitnami/postgresql --set auth.postgresPassword=postgres --namespace jrs --create-namespace`
 
 
 - Check the pods status and make sure pods are in a running state.
@@ -494,7 +494,7 @@ In case if you want to control traffic on AWS Application Load Balancer side ins
 4. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/scripts`` and then run ``./unpackWARInstaller.sh`` to unzip the installer file.
 5. Update the dbHost in ``<CONTAINER_PATH>/jaspersoft-containers/Docker/jrs/resources/default-properties/default_master.properties`` with the name ``repository-postgresql.<k8s-namespace>.svc.cluster.local`` to create DB in K8s cluster. 
 <br />**Note:** In the following steps PostgreSQL chart will be deployed into namespace called `jrs`, in such case `dbHost=repository-postgresql.jrs.svc.cluster.local`
-6. Configure Chromium and chromium properties, if needed. Refer to [this doc](../../Docker/jrs#chromium-configuration)
+6. Configure Chrome/Chromium and chrome/chromium properties, if needed. Refer to [this doc](../../Docker/jrs#chromechromium-configuration)
 7. Apply customizations to JasperReports® Server webapp and buildomatic images. Refer to [this doc](../../Docker/jrs#jasperreports-server-and-buildomatic-customization)
 8. Run ``cd <CONTAINER_PATH>/jaspersoft-containers/Docker/jrs`` and then run ``docker-compose build`` to build the images.
 9. Push built images into the repository which is accessible for k8s cluster, for example ECR can be used for EKS clusters. To tag and push images to the repository, [see Docker doc](https://docs.docker.com/engine/reference/commandline/push/#push-a-new-image-to-a-registry).
