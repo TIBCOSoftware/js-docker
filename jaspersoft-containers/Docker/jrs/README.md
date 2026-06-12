@@ -68,7 +68,7 @@ These variables are passed to the command line with `--build-arg` for docker bui
 
 | Environment Variable Name | Description | Default Value|
 |------------| -------------|--------------|
-|INSTALL_CHROMIUM| Whether Chromium installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chrome. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
+|INSTALL_CHROMIUM| Whether Chrome installed. **Note: Cloud Software Group, Inc. is not liable for license violation of chrome. Users must provide consent to install Chrome by selecting INSTALL_CHROMIUM as true to acknowledge the terms.**| false|
 |JASPERREPORTS_SERVER_APP_IMAGE_NAME| Name of the JasperReports® Server image | jasperserver-webapp|
 |JASPERREPORTS_SERVER_BUILDOMATIC_IMAGE_NAME| Name of the JasperReports® Server buildomatic image | jasperserver-buildomatic|
 |JASPERREPORTS_SERVER_VERSION|Version number of JasperReports® Server|9.0.0|
