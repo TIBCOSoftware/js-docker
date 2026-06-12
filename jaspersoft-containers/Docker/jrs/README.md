@@ -133,7 +133,7 @@ By default, Chrome/Chromium uses /dev/shm that has 64MB storage to store its int
    
   Some Linux operating systems require Chromium-sandbox and it depends on virtualization. [See here for more information](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/sandboxing.md)
 
-If you see the Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
+If you see the Chrome/Chromium issue in JasperReports® Server using Docker deployment, uncomment the following line in `scripts/entrypoint.sh`.
         
     echo 'net.sf.jasperreports.chrome.argument.no-sandbox=true' >>$CATALINA_HOME/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties` 
 
